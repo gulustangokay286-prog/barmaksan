@@ -1,0 +1,93 @@
+.header {
+  padding: 32px 0 8px;
+}
+.kicker {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 650;
+  color: var(--gold-ink);
+}
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-3);
+}
+.crumbs a {
+  border-radius: 4px;
+  transition: color var(--t-fast);
+}
+.crumbs a:hover {
+  color: var(--ink);
+}
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.crumb svg {
+  color: var(--ink-4);
+}
+.title {
+  max-width: 22ch;
+  text-wrap: balance;
+}
+.lead {
+  margin-top: 10px;
+  max-width: 62ch;
+  font-size: 17px;
+  line-height: 26px;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+.sectionTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.sectionTitle h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.sectionCount {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 767px) {
+  .header {
+    padding-top: 18px;
+  }
+  .lead {
+    font-size: 16px;
+    line-height: 24px;
+  }
+}

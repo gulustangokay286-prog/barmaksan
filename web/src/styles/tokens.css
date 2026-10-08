@@ -1,0 +1,192 @@
+/*
+ * Bilgi Kütüphanesi — tasarım token'ları.
+ * Kurallar: gradient yok, glow yok, tam yuvarlak (pill) köşe yok, durum noktası yok.
+ * Renk yalnızca anlam taşıdığında: altın = güncel / aktif.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Zeminler */
+  --canvas: #f6f6f4;
+  --surface: #ffffff;
+  --surface-2: #fbfbfa;
+  --fill: #f0f0ed;          /* ürün görseli zemini: beyaz makineler bunun üstünde okunur */
+  --fill-hover: rgba(0, 0, 0, 0.045);
+  --fill-press: rgba(0, 0, 0, 0.075);
+  --fill-selected: rgba(0, 0, 0, 0.055);
+
+  /* Metin */
+  --ink: #1f1f21;
+  --ink-2: #5c5c61;
+  --ink-3: #8b8b90;
+  --ink-4: #b4b4b8;
+  --ink-inverse: #ffffff;
+
+  /* Çizgi */
+  --line: rgba(0, 0, 0, 0.08);
+  --line-strong: rgba(0, 0, 0, 0.14);
+
+  /* Marka */
+  --gold: #d9b625;
+  --gold-ink: #7a6200;
+  --gold-soft: rgba(217, 182, 37, 0.26);   /* arama vurgusu */
+  --danger: #b3261e;
+
+  /* Malzemeler (yarı saydam + bulanık) */
+  --material-bar: rgba(246, 246, 244, 0.74);
+  --material-sheet: rgba(255, 255, 255, 0.84);
+  --material-scrim: rgba(24, 24, 26, 0.28);
+  --material-lightbox: rgba(12, 12, 13, 0.9);
+  --blur-bar: blur(24px) saturate(180%);
+  --blur-sheet: blur(34px) saturate(180%);
+
+  /* Üst bar + kenar çubuğu: tek parça çerçeve. Açık temada açık; koyu temada koyu (#2a2a2e). */
+  --bar-bg: rgba(237, 237, 233, 0.9);
+  --bar-bg-solid: #edede9;
+  --side-bg: #edede9;
+  --side-ink: rgba(31, 31, 33, 0.74);
+  --side-ink-strong: #1f1f21;
+  --side-ink-3: rgba(31, 31, 33, 0.44);
+  --side-fill: rgba(0, 0, 0, 0.06);
+  --side-line: rgba(0, 0, 0, 0.07);
+  --bar-line: rgba(0, 0, 0, 0.08);
+  --bar-fill: rgba(0, 0, 0, 0.05);
+  --bar-fill-hover: rgba(0, 0, 0, 0.085);
+  --on-bar: #1f1f21;
+  --on-bar-2: rgba(31, 31, 33, 0.62);
+  --on-bar-3: rgba(31, 31, 33, 0.38);
+  --bar-menu-ring: rgba(0, 0, 0, 0.08);
+  --bar-scrollbar: rgba(0, 0, 0, 0.16);
+  --chrome-texture: url('/brand/pattern-mill-ink.svg');
+  --scrim-solid: rgba(20, 20, 22, 0.42);
+
+  /* Gölge: yalnızca yüzen yüzeyler */
+  --shadow-float: 0 1px 1px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.1), 0 32px 80px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  /* Biçim */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 18px;
+
+  /* Boşluk (4'ün katları) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-14: 56px;
+  --s-18: 72px;
+
+  /* Yerleşim */
+  --sidebar-w: 264px;
+  --bar-h: 56px;
+  --page-max: 1200px;
+  --content-max: var(--page-max);
+  --grid-gap: 24px;
+  --gutter: 40px;
+  --section-gap: 80px;
+  --tabbar-h: 0px;
+
+  /* Yazı */
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI', system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI Variable Display', 'Segoe UI', system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, monospace;
+
+  /* Hareket */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.64, 0, 0.78, 0);
+  --t-fast: 140ms;
+  --t-base: 220ms;
+}
+
+/*
+ * Koyu tema: Sitede yalnızca kenar çubuğu ve üst bar (çerçeve) koyu olur;
+ * içerik (belgeler, sayfalar, zemin) açık kalır ("yalnızca sidebar rengi oynar").
+ * Koyu çerçeve tonu: açık moddaki eski koyuluk (#2a2a2e).
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bar-bg: rgba(42, 42, 46, 0.94);
+    --bar-bg-solid: #2a2a2e;
+    --side-bg: #2a2a2e;
+    --side-ink: rgba(242, 242, 239, 0.74);
+    --side-ink-strong: #ffffff;
+    --side-ink-3: rgba(242, 242, 239, 0.42);
+    --side-fill: rgba(255, 255, 255, 0.09);
+    --side-line: rgba(255, 255, 255, 0.07);
+    --bar-line: rgba(255, 255, 255, 0.07);
+    --bar-fill: rgba(255, 255, 255, 0.09);
+    --bar-fill-hover: rgba(255, 255, 255, 0.15);
+    --on-bar: #f2f2ef;
+    --on-bar-2: rgba(242, 242, 239, 0.62);
+    --on-bar-3: rgba(242, 242, 239, 0.34);
+    --bar-menu-ring: rgba(255, 255, 255, 0.1);
+    --bar-scrollbar: rgba(255, 255, 255, 0.16);
+    --chrome-texture: url('/brand/pattern-mill.svg');
+    --scrim-solid: rgba(20, 20, 22, 0.42);
+  }
+}
+
+:root[data-theme='dark'] {
+  --bar-bg: rgba(42, 42, 46, 0.94);
+  --bar-bg-solid: #2a2a2e;
+  --side-bg: #2a2a2e;
+  --side-ink: rgba(242, 242, 239, 0.74);
+  --side-ink-strong: #ffffff;
+  --side-ink-3: rgba(242, 242, 239, 0.42);
+  --side-fill: rgba(255, 255, 255, 0.09);
+  --side-line: rgba(255, 255, 255, 0.07);
+  --bar-line: rgba(255, 255, 255, 0.07);
+  --bar-fill: rgba(255, 255, 255, 0.09);
+  --bar-fill-hover: rgba(255, 255, 255, 0.15);
+  --on-bar: #f2f2ef;
+  --on-bar-2: rgba(242, 242, 239, 0.62);
+  --on-bar-3: rgba(242, 242, 239, 0.34);
+  --bar-menu-ring: rgba(255, 255, 255, 0.1);
+  --bar-scrollbar: rgba(255, 255, 255, 0.16);
+  --chrome-texture: url('/brand/pattern-mill.svg');
+  --scrim-solid: rgba(20, 20, 22, 0.42);
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --gutter: 24px;
+    --grid-gap: 20px;
+    --section-gap: 64px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --gutter: 16px;
+    --grid-gap: 16px;
+    --section-gap: 48px;
+    --bar-h: 52px;
+    --tabbar-h: 58px;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --bar-bg: var(--bar-bg-solid);
+    --material-bar: var(--canvas);
+    --material-sheet: var(--surface);
+    --blur-bar: none;
+    --blur-sheet: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --line: rgba(0, 0, 0, 0.3);
+    --ink-2: #3a3a3d;
+    --ink-3: #55555a;
+  }
+}

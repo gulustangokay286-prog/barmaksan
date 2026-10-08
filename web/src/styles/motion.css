@@ -1,0 +1,149 @@
+/*
+ * Hareket katmanı — yalnızca kompozitörde çalışan özellikler (transform, opacity).
+ * Büyük yüzeylerde filtre (blur) yok: kaydırmayı ve geçişleri kasan şey odur.
+ */
+
+/* ── Sayfa geçişi: View Transitions ─────────────────────────────────────────
+ * Kök anında değişir (kenar çubuğu ve üst bar sabit kalır); yalnızca içerik
+ * derinlikten gelir. Adlandırılmış öğeler (makine görseli, doküman sayfası)
+ * bir sayfadan diğerine morph olur. */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+/* Tema değişimi: renkler kısa bir geçişle döner (sınıf yalnızca değişim anında, ~420 ms). */
+html.theme-switch,
+html.theme-switch *,
+html.theme-switch *::before,
+html.theme-switch *::after {
+  transition: background-color 360ms var(--ease-out), border-color 360ms var(--ease-out), color 360ms var(--ease-out), fill 360ms var(--ease-out), box-shadow 360ms var(--ease-out) !important;
+}
+
+/* Sıradan gezinmede (kenar çubuğu, kırıntı, liste) View Transition yok: sayfa anında değişir ve
+ * yalnızca kısa bir opaklık girişi oynar. Morph'lu geçişte (html[data-morph]) bu giriş kapalıdır.
+ * Not: `animation: none` DEĞİL, süre 0. data-morph ~900 ms sonra kalkınca `none` → animasyon
+ * geçişi animasyonu baştan başlatıyordu (sayfa bir saniye sonra yeniden yükleniyormuş gibi).
+ * Yalnızca süre değişince aynı animasyon sürer; zaten bitmiş olduğu için hiçbir şey oynamaz. */
+.page-enter {
+  animation: page-in 220ms var(--ease-out) backwards;
+}
+.page-enter[data-history-return] {
+  animation: none;
+}
+html[data-morph] .page-enter {
+  animation-duration: 0s;
+}
+/* İskelet yerini içeriğe bırakırken: kısa, kompozitörde bir giriş. */
+.fade-in {
+  animation: content-in 260ms var(--ease-out) backwards;
+}
+html[data-morph] .fade-in {
+  animation-duration: 0s;
+}
+@keyframes content-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+::view-transition-group(machine-hero),
+::view-transition-group(doc-page) {
+  animation-duration: 440ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 2;
+}
+::view-transition-old(machine-hero),
+::view-transition-new(machine-hero),
+::view-transition-old(doc-page),
+::view-transition-new(doc-page) {
+  animation-duration: 440ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Üst bar ve sekme çubuğu geçiş sırasında içeriğin üstünde kalır. */
+::view-transition-group(topbar),
+::view-transition-group(tabbar) {
+  z-index: 10;
+  animation: none;
+}
+::view-transition-old(topbar),
+::view-transition-new(topbar),
+::view-transition-old(tabbar),
+::view-transition-new(tabbar) {
+  animation: none;
+}
+::view-transition-old(topbar),
+::view-transition-old(tabbar) {
+  display: none;
+}
+
+/* ── Kaydırmaya bağlı giriş (CSS scroll-driven, kompozitörde) ───────────────
+ * Destek yoksa öğeler doğrudan görünür. */
+
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 70%;
+  }
+  .reveal-3d {
+    animation: reveal-3d linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 85%;
+    transform-origin: 50% 0%;
+  }
+  .reveal-page {
+    animation: reveal-page linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 55%;
+    transform-origin: 50% 100%;
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes reveal-3d {
+  from {
+    opacity: 0;
+    transform: perspective(900px) rotateX(16deg) translateY(28px) scale(0.97);
+  }
+}
+@keyframes reveal-page {
+  from {
+    opacity: 0.2;
+    transform: perspective(1600px) rotateX(9deg) translateY(36px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+  .reveal,
+  .reveal-3d,
+  .reveal-page {
+    animation: none !important;
+  }
+}
+
+/* ── Kaydırma kilidi: ana sayfada bölümlere yumuşak yaslanma ─────────────── */
+html.snap {
+  scroll-snap-type: y proximity;
+}

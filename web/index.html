@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="tr" class="is-splash">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#0e0e0f" />
+    <meta name="description" content="Barmaksan ve Uğur Promilling'in teknik ve kurumsal dosyaları — her zaman en güncel hâliyle." />
+    <link rel="icon" type="image/png" sizes="32x32" href="/brand/mark-32.png" />
+    <link rel="apple-touch-icon" href="/brand/mark-180.png" />
+    <link rel="preload" as="image" href="/brand/barmaksan-dark.png" />
+    <link rel="preload" as="image" href="/brand/barmaksan-light.png" />
+    <title>Bilgi Kütüphanesi · Barmaksan</title>
+    <script>
+      // Tema ilk boyamadan önce: kayıtlı seçim, yoksa varsayılan 'dark' (koyu mod).
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem('bk.theme'); } catch (e) {}
+        if (t !== 'dark' && t !== 'light') t = 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.setAttribute('content', t === 'dark' ? '#2a2a2e' : '#edede9');
+      })();
+    </script>
+
+    <!--
+      Açılış perdesi: JS paketi inmeden, ilk karede çizilir. Mantık: logonun kendi yatay ekseni
+      ilerleme çizgisidir; yükleme bitince logo bu eksenden ikiye ayrılıp perde gibi açılır.
+      Gradient / glow yok; yalnızca transform, opacity ve clip-path.
+    -->
+    <style>
+      html.is-splash,
+      html.is-splash body {
+        background: #0e0e0f;
+        overflow: hidden;
+      }
+      html[data-theme='light'].is-splash,
+      html[data-theme='light'].is-splash body {
+        background: #f6f6f4;
+      }
+      #splash {
+        --lw: min(440px, 72vw);
+        --gold: #e2bf3a;
+        position: fixed;
+        inset: 0;
+        z-index: 2147483000;
+        overflow: hidden;
+        color: #f2f2ef;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI', system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      html[data-theme='light'] #splash {
+        color: #1f1f21;
+      }
+      #splash .half {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: calc(50% + 1px);
+        overflow: hidden;
+        background: #0e0e0f;
+        will-change: transform;
+        transition: transform 980ms cubic-bezier(0.76, 0, 0.18, 1);
+      }
+      html[data-theme='light'] #splash .half {
+        background: #f6f6f4;
+      }
+      #splash .top { top: 0; }
+      #splash .bot { bottom: 0; }
+      #splash .stage { position: absolute; left: 0; right: 0; height: 200%; }
+      #splash .top .stage { top: 0; }
+      #splash .bot .stage { bottom: 0; }
+
+      /* Logo: ekseni ekranın tam ortasında; iki yarıda aynı çizilir, dikişi görünmez. */
+      #splash .logo {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: var(--lw);
+        aspect-ratio: 836 / 272;
+        transform: translate(-50%, -50%);
+      }
+      #splash .logo img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      #splash .mark {
+        clip-path: circle(calc(var(--lw) * 0.166) at 16.3% 50%);
+        animation: sp-mark 760ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
+      }
+      #splash .word {
+        clip-path: inset(0 0 0 33%);
+        animation: sp-word 900ms cubic-bezier(0.65, 0, 0.2, 1) 260ms both;
+      }
+      @keyframes sp-mark {
+        from { clip-path: circle(0 at 16.3% 50%); }
+      }
+      @keyframes sp-word {
+        from { clip-path: inset(0 100% 0 33%); }
+      }
+
+      /* İlerleme: logonun altında ince eksen çizgisi, gerçek yükleme durumuna bağlı. */
+      #splash .meta {
+        position: absolute;
+        left: 50%;
+        top: calc(50% + var(--lw) * 0.163 + 34px);
+        width: var(--lw);
+        transform: translateX(-50%);
+        animation: sp-meta 600ms cubic-bezier(0.22, 1, 0.36, 1) 760ms both;
+      }
+      #splash .track {
+        position: relative;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.14);
+      }
+      html[data-theme='light'] #splash .track {
+        background: rgba(0, 0, 0, 0.09);
+      }
+      #splash .fill {
+        position: absolute;
+        inset: 0;
+        background: var(--gold);
+        transform: scaleX(var(--p, 0));
+        transform-origin: left center;
+      }
+      #splash .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: 12px;
+        font-size: 11px;
+        line-height: 14px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(242, 242, 239, 0.5);
+        font-variant-numeric: tabular-nums;
+      }
+      html[data-theme='light'] #splash .row {
+        color: rgba(31, 31, 33, 0.5);
+      }
+      #splash .pct { color: rgba(242, 242, 239, 0.86); letter-spacing: 0.04em; }
+      html[data-theme='light'] #splash .pct { color: rgba(31, 31, 33, 0.86); }
+      html:not([data-theme='light']) #splash .logo-light {
+        display: none !important;
+      }
+      html[data-theme='light'] #splash .logo-dark {
+        display: none !important;
+      }
+      @keyframes sp-meta {
+        from { opacity: 0; transform: translate(-50%, 6px); }
+      }
+
+      /* Açılış: önce çizgi söner, sonra iki yarı eksenden ayrılır. */
+      #splash.is-done .meta {
+        opacity: 0;
+        transition: opacity 220ms ease-out;
+        animation: none;
+      }
+      #splash.is-done .top { transform: translateY(-101%); transition-delay: 200ms; }
+      #splash.is-done .bot { transform: translateY(101%); transition-delay: 200ms; }
+
+      @media (prefers-reduced-motion: reduce) {
+        #splash .mark, #splash .word, #splash .meta { animation: none; }
+        #splash .half { transition: opacity 300ms linear; }
+        #splash.is-done .top, #splash.is-done .bot { transform: none; opacity: 0; transition-delay: 0s; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="splash" role="presentation" aria-hidden="true">
+      <div class="half top"><div class="stage">
+        <div class="logo">
+          <img class="mark logo-dark" src="/brand/barmaksan-dark.png" alt="" />
+          <img class="word logo-dark" src="/brand/barmaksan-dark.png" alt="" />
+          <img class="mark logo-light" src="/brand/barmaksan-light.png" alt="" />
+          <img class="word logo-light" src="/brand/barmaksan-light.png" alt="" />
+        </div>
+        <div class="meta"><div class="track"><div class="fill"></div></div><div class="row"><span class="lbl"></span><span class="pct">0</span></div></div>
+      </div></div>
+      <div class="half bot"><div class="stage">
+        <div class="logo">
+          <img class="mark logo-dark" src="/brand/barmaksan-dark.png" alt="" />
+          <img class="word logo-dark" src="/brand/barmaksan-dark.png" alt="" />
+          <img class="mark logo-light" src="/brand/barmaksan-light.png" alt="" />
+          <img class="word logo-light" src="/brand/barmaksan-light.png" alt="" />
+        </div>
+        <div class="meta"><div class="track"><div class="fill"></div></div><div class="row"><span class="lbl"></span><span class="pct">0</span></div></div>
+      </div></div>
+    </div>
+    <div id="root"></div>
+
+    <script>
+      // Açılış perdesi API'si. Uygulama gerçek ilerlemeyi bildirir; perde en az MIN ms görünür.
+      (function () {
+        var MIN = 1700, MAX = 6500;
+        var el = document.getElementById('splash');
+        var root = document.documentElement;
+        var fills = el.querySelectorAll('.fill');
+        var pcts = el.querySelectorAll('.pct');
+        var lbls = el.querySelectorAll('.lbl');
+        var lang = 'tr';
+        try { var sv = localStorage.getItem('bk.lang'); lang = sv === 'en' || sv === 'tr' ? sv : (navigator.language || 'tr').slice(0, 2) === 'tr' ? 'tr' : 'en'; } catch (e) {}
+        for (var i = 0; i < lbls.length; i++) lbls[i].textContent = lang === 'tr' ? 'Bilgi Kütüphanesi' : 'Knowledge Library';
+
+        var t0 = performance.now();
+        var target = 0.1, shown = 0, finished = false, opened = false, listeners = [], last = t0;
+        function tick(now) {
+          if (opened) return;
+          var elapsed = now - t0;
+          var dt = Math.min(1000, now - last); last = now; // kare hızından bağımsız yumuşatma
+          // Çizgi hem gerçek duruma hem zamana bağlı: ikisinden geride olanı izler.
+          // Böylece önbellekten gelen açılışta bile perde yarım kalmaz, yavaş ağda da yalan söylemez.
+          var creep = Math.min(0.55, 0.1 + elapsed / 9000); // uygulama haber vermezse bile ilerler
+          var real = finished ? 1 : Math.min(Math.max(target, creep), 0.94);
+          var time = Math.min(1, elapsed / (MIN - 250));
+          var goal = Math.min(real, time);
+          shown += (goal - shown) * (1 - Math.exp(-dt / 110));
+          if (elapsed > MAX && !finished) finished = true;
+          if (finished && goal >= 1 && shown > 0.985) { shown = 1; paint(1); open(); return; }
+          paint(shown);
+        }
+        function loop(now) {
+          tick(now);
+          if (!opened) requestAnimationFrame(loop);
+        }
+        // Kare üretimi kısılırsa (arka plan sekmesi) zamanlayıcı devralır; perde asla takılmaz.
+        var guard = setInterval(function () {
+          if (opened) return clearInterval(guard);
+          var now = performance.now();
+          if (now - last > 200) tick(now);
+        }, 150);
+        function paint(v) {
+          var s = v.toFixed(4), n = String(Math.round(v * 100));
+          for (var i = 0; i < fills.length; i++) fills[i].style.setProperty('--p', s);
+          for (var j = 0; j < pcts.length; j++) pcts[j].textContent = n;
+        }
+        function open() {
+          if (opened) return;
+          opened = true;
+          el.classList.add('is-done');
+          for (var i = 0; i < fills.length; i++) fills[i].style.setProperty('--p', '1');
+          for (var j = 0; j < pcts.length; j++) pcts[j].textContent = '100';
+          // Perde ayrılmaya başlarken uygulama girişlerini oynatır.
+          setTimeout(function () { listeners.forEach(function (f) { f(); }); listeners = []; }, 260);
+          setTimeout(function () { root.classList.remove('is-splash'); el.parentNode && el.parentNode.removeChild(el); }, 1400);
+        }
+        window.__splash = {
+          progress: function (p) { if (p > target) target = p; },
+          finish: function () { finished = true; },
+          onOpen: function (f) { if (opened) f(); else listeners.push(f); },
+          get opened() { return opened; },
+        };
+        requestAnimationFrame(loop);
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

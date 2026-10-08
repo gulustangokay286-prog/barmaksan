@@ -1,0 +1,324 @@
+import { useEffect, useRef, useState } from 'react';
+import { useLocation, useParams, useSearchParams } from 'react-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { AnimatePresence, motion } from 'motion/react';
+import { Icon } from '../components/Icon';
+import { DocumentSkeleton } from '../components/Skeletons';
+import { DocActions } from '../components/Docs';
+import { useRouteReady } from '../lib/route';
+import { FadeImage } from '../components/ui';
+import { api, downloadLink, permalink, versionLink, type DocDetail, type FileInfo, type Version } from '../lib/api';
+import { Link } from '../lib/link';
+import { useI18n } from '../lib/i18n';
+import { useDocTypes, usePageChrome, useUi } from '../lib/ui';
+import { docQuery } from '../lib/query';
+import { formatDate, formatDateTime, formatDuration, languageLabel } from '../lib/format';
+import { useLargeTitle } from '../lib/useLargeTitle';
+import NotFound from './NotFound';
+import p from './pages.module.css';
+import dc from './document.module.css';
+
+const MAX_PAGES = 60;
+
+/** "Klasör Adı — Teknik Fiş" → "Teknik Fiş": konum zaten üstte yazıyor. */
+function shortTitle(title: string, folder: string) {
+  const parts = title.split(/\s+[—–-]\s+/);
+  if (folder && parts.length > 1 && parts[0].trim().toLocaleLowerCase('tr') === folder.trim().toLocaleLowerCase('tr')) return parts.slice(1).join(' — ');
+  return title;
+}
+
+export default function DocumentPage() {
+  const { id = '' } = useParams();
+  const [params] = useSearchParams();
+  const { hash } = useLocation();
+  const { t, pick, lang } = useI18n();
+  const types = useDocTypes();
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const ready = useRouteReady();
+  const { data: d, isLoading, error } = useQuery(docQuery(id));
+  const back = d?.crumbs.at(-1);
+  const vParam = Number(params.get('v'));
+  const viewingOld = !!d?.versions.some((v) => v.no === vParam && v.no !== d.current?.no);
+  const hrefOf = (c: { kind: string; slug: string }) => (c.kind === 'machine' ? `/m/${c.slug}` : `/k/${c.slug}`);
+  usePageChrome(
+    d ? `${pick(d.title)}${viewingOld ? ` · v${vParam}` : ''}` : null,
+    back ? { to: hrefOf(back), label: pick(back.name) } : null,
+    d ? [...d.crumbs.map((c) => ({ label: pick(c.name), to: hrefOf(c) })), ...(viewingOld && back?.kind === 'machine' ? [{ label: lang === 'tr' ? 'Eski sürümler' : 'Older versions', to: `${hrefOf(back)}#eski-surumler` }] : [])] : null,
+  );
+  useLargeTitle(titleRef, [d?.id, ready]);
+
+  useEffect(() => {
+    if (hash === '#gecmis' && d) document.getElementById('gecmis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [hash, d]);
+
+  if (error) return <NotFound />;
+  if (!ready || isLoading || !d) return <DocumentSkeleton />;
+
+  const viewing = d.versions.find((v) => v.no === vParam) ?? d.versions[0];
+  const isCurrent = viewing?.no === d.current?.no;
+  const type = types.get(d.type);
+
+  return (
+    <div className={`${p.page} fade-in`}>
+      <div className={p.docLayout}>
+        <div className={p.viewer}>
+          {viewing?.file && <StableViewer file={viewing.file} doc={d} />}
+        </div>
+
+        <aside className={p.panel}>
+          <div>
+            {back && (
+              <Link to={back.kind === 'machine' ? `/m/${back.slug}` : `/k/${back.slug}`} className={dc.parent}>
+                {pick(back.name)}
+                <Icon name="chevronRight" size={13} strokeWidth={1.8} />
+              </Link>
+            )}
+            <h1 ref={titleRef} className={dc.title}>{shortTitle(pick(d.title), back ? pick(back.name) : '')}</h1>
+            {viewing && (
+              <p className={dc.meta}>
+                {[
+                  type?.versioned ? `v${viewing.no}` : null,
+                  formatDate(viewing.createdAt, lang, { day: 'numeric', month: 'long', year: 'numeric' }),
+                  viewing.file?.ext.toUpperCase(),
+                  languageLabel(d.language),
+                ].filter(Boolean).join(' · ')}
+              </p>
+            )}
+          </div>
+
+          {!isCurrent && d.current && (
+            <p className={dc.old}>
+              {lang === 'tr' ? `Eski bir sürüme (v${viewing?.no}) bakıyorsunuz.` : `You are viewing an older version (v${viewing?.no}).`}{' '}
+              <Link to={`/dokuman/${d.id}`} preventScrollReset replace>{t('goCurrent')}</Link>
+            </p>
+          )}
+
+          <PanelActions d={d} viewing={viewing} isCurrent={isCurrent} />
+
+          {type?.versioned && (
+            <section id="gecmis" style={{ scrollMarginTop: 80 }}>
+              <h2 className={dc.h2}>{t('versionHistory')}</h2>
+              <Timeline d={d} viewing={viewing?.no} />
+            </section>
+          )}
+
+          <section>
+            <h2 className={dc.h2}>{t('details')}</h2>
+            <Facts d={d} file={viewing?.file ?? null} version={viewing} />
+          </section>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+function PanelActions({ d, viewing, isCurrent }: { d: DocDetail; viewing?: Version; isCurrent: boolean }) {
+  const { t, pick } = useI18n();
+  const { editor, setUpload } = useUi();
+  const openHref = isCurrent || !viewing ? `/d/${d.id}` : versionLink(d.id, viewing.no);
+  const dlHref = isCurrent || !viewing ? downloadLink(d.id) : downloadLink(d.id, viewing.no);
+  return (
+    <div>
+      <DocActions
+        openHref={openHref}
+        downloadHref={dlHref}
+        copyHref={permalink(d.id)}
+        extra={editor ? <button className={dc.action} onClick={() => setUpload({ mode: 'version', docId: d.id, title: pick(d.title) })}>{t('newVersion')}</button> : undefined}
+      />
+      <p className={dc.hint}>{t('permalinkHint')}</p>
+    </div>
+  );
+}
+
+function Timeline({ d, viewing }: { d: DocDetail; viewing?: number }) {
+  const { t, lang } = useI18n();
+  const { hash } = useLocation();
+  const { editor, notify } = useUi();
+  const qc = useQueryClient();
+  const restore = async (no: number) => {
+    await api.restoreVersion(d.id, no);
+    await qc.invalidateQueries();
+    notify(t('published'));
+  };
+  const renderVersion = (v: Version) => {
+    const current = v.no === d.current?.no;
+    return (
+      <li key={v.no} className={dc.version} data-current={current || undefined} data-viewing={v.no === viewing || undefined}>
+        <span className={dc.vNo}>v{v.no}</span>
+        <span className={dc.vBody}>
+          <span className={dc.vNote}>{v.note || (lang === 'tr' ? 'İlk yayın' : 'First release')}</span>
+          <span className={dc.vMeta}>{formatDate(v.createdAt, lang)}{v.author ? ` · ${v.author}` : ''}</span>
+          <span className={dc.vLinks}>
+            {v.no !== viewing && <Link to={current ? `/dokuman/${d.id}` : `/dokuman/${d.id}?v=${v.no}`} preventScrollReset replace>{lang === 'tr' ? 'Görüntüle' : 'View'}</Link>}
+            <a href={current ? downloadLink(d.id) : downloadLink(d.id, v.no)}>{t('download')}</a>
+            {editor && !current && <button onClick={() => restore(v.no)}>{t('restore')}</button>}
+          </span>
+        </span>
+      </li>
+    );
+  };
+  const old = d.versions.filter((v) => v.no !== d.current?.no);
+  const viewingOld = viewing != null && viewing !== d.current?.no;
+  const [open, setOpen] = useState(hash === '#gecmis' || viewingOld);
+  // Eski bir sürüme bağlantıyla gelindiyse liste açık olsun.
+  const [wasOld, setWasOld] = useState(viewingOld);
+  if (viewingOld !== wasOld) {
+    setWasOld(viewingOld);
+    if (viewingOld) setOpen(true);
+  }
+  return (
+    <div>
+      <ol className={dc.versions}>{d.current && renderVersion(d.current)}</ol>
+      {old.length > 0 && (
+        <>
+          <button className={dc.older} onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-controls="onceki-surumler">
+            <span>{lang === 'tr' ? 'Önceki sürümler' : 'Earlier versions'}</span>
+            <span className={dc.olderCount}>{old.length}</span>
+            <Icon name="chevronDown" size={14} strokeWidth={1.8} className={dc.olderChevron} data-open={open || undefined} />
+          </button>
+          <AnimatePresence initial={false}>
+            {open && (
+              <motion.div
+                id="onceki-surumler"
+                className={dc.olderWrap}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ type: 'spring', bounce: 0, duration: 0.42 }}
+              >
+                <ol className={dc.versions} data-older>{old.map(renderVersion)}</ol>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
+    </div>
+  );
+}
+
+function Facts({ d, file, version }: { d: DocDetail; file: FileInfo | null; version?: Version }) {
+  const { t, pick, lang } = useI18n();
+  const rows: [string, React.ReactNode][] = [];
+  if (file) rows.push([t('format'), `${file.ext.toUpperCase()}`]);
+  if (file?.pages) rows.push([t('pages'), String(file.pages)]);
+  if (file?.width && file.height) rows.push([t('dimensions'), `${file.width} × ${file.height}`]);
+  if (file?.durationMs) rows.push([t('duration'), formatDuration(file.durationMs)]);
+  const ll = languageLabel(d.language);
+  if (ll) rows.push([t('language'), ll]);
+  const folder = d.crumbs.at(-1);
+  if (folder) rows.push([t('location'), <Link key="l" to={folder.kind === 'machine' ? `/m/${folder.slug}` : `/k/${folder.slug}`}>{pick(folder.name)}</Link>]);
+  if (version) rows.push([t('updated'), formatDateTime(version.createdAt, lang)]);
+  if (version?.author) rows.push([t('uploadedBy'), version.author]);
+  return (
+    <dl className={dc.facts}>
+      {rows.map(([k, v]) => (
+        <div key={k}>
+          <dt>{k}</dt>
+          <dd>{v}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/**
+ * Sürüm değişince yeni dosyanın ilk sayfası hazır olana kadar eski sayfalar ekranda kalır,
+ * sonra yeni sürüm tek seferde yerine geçer: boş sayfa ya da yeniden yükleme görünmez.
+ */
+function StableViewer({ file, doc }: { file: FileInfo; doc: DocDetail }) {
+  const [shown, setShown] = useState(file);
+  useEffect(() => {
+    if (file.id === shown.id) return;
+    let cancelled = false;
+    const src = file.kind === 'pdf' ? `/files/${file.id}/page/1.webp` : file.preview ?? file.thumb;
+    if (!src) {
+      setShown(file);
+      return;
+    }
+    const img = new Image();
+    img.src = src;
+    img.decode().catch(() => {}).finally(() => { if (!cancelled) setShown(file); });
+    return () => { cancelled = true; };
+  }, [file, shown.id]);
+  return <div key={shown.id} className="fade-in"><Viewer file={shown} doc={doc} /></div>;
+}
+
+function Viewer({ file, doc }: { file: FileInfo; doc: DocDetail }) {
+  const { t, pick } = useI18n();
+  const { setLightbox } = useUi();
+  const [ratio, setRatio] = useState(1 / 1.414);
+
+  if (file.kind === 'pdf' && file.pages) {
+    const shown = Math.min(file.pages, MAX_PAGES);
+    return (
+      <>
+        {Array.from({ length: shown }, (_, i) => i + 1).map((n) => (
+          <PdfPage
+            key={`${file.id}-${n}`}
+            src={`/files/${file.id}/page/${n}.webp`}
+            under={n === 1 ? file.thumb : null}
+            n={n}
+            total={file.pages!}
+            ratio={ratio}
+            onRatio={n === 1 ? setRatio : undefined}
+          />
+        ))}
+        {file.pages > MAX_PAGES && (
+          <div className={p.viewerMore}>
+            {file.pages - MAX_PAGES} {t('pages').toLowerCase()} · <a href={downloadLink(doc.id)}>{t('download')}</a>
+          </div>
+        )}
+      </>
+    );
+  }
+  if (file.kind === 'image') {
+    return (
+      <button className={p.viewerMedia} style={{ aspectRatio: file.width && file.height ? `${file.width} / ${file.height}` : undefined }} onClick={() => setLightbox({ items: [doc], index: 0 })} aria-label={pick(doc.title)}>
+        <FadeImage src={file.preview ?? file.raw} eager />
+      </button>
+    );
+  }
+  if (file.kind === 'video') {
+    return (
+      <div className={p.viewerMedia}>
+        <video src={file.raw} poster={file.preview ?? undefined} controls playsInline preload="metadata" />
+      </div>
+    );
+  }
+  return (
+    <div className={p.noPreview}>
+      <Icon name="file" size={32} />
+      <span>{file.ext.toUpperCase()} · {t('download')}</span>
+    </div>
+  );
+}
+
+/** Sayfa: ilk sayfa morph hedefidir; tam çözünürlük gelene kadar küçük resim altta durur. */
+function PdfPage({ src, under, n, total, ratio, onRatio }: { src: string; under: string | null; n: number; total: number; ratio: number; onRatio?: (r: number) => void }) {
+  const [own, setOwn] = useState<number | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div
+      className={`${p.page_} ${n > 1 ? 'reveal-page' : ''}`}
+      style={{ aspectRatio: String(own ?? ratio), viewTransitionName: n === 1 ? 'doc-page' : undefined }}
+    >
+      {under && <img className={p.pageUnder} src={under} alt="" decoding="sync" />}
+      <img
+        className={p.pageImg}
+        src={src}
+        alt={`${n} / ${total}`}
+        loading={n <= 2 ? 'eager' : 'lazy'}
+        decoding="async"
+        data-loaded={loaded || undefined}
+        onLoad={(e) => {
+          const img = e.currentTarget;
+          const r = img.naturalWidth / img.naturalHeight;
+          setOwn(r);
+          setLoaded(true);
+          onRatio?.(r);
+        }}
+      />
+      {total > 1 && <span className={p.pageNo}>{n} / {total}</span>}
+    </div>
+  );
+}

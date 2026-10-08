@@ -1,0 +1,8 @@
+# Sertifika alınana kadar geçici: yalnızca ACME doğrulaması.
+server {
+    listen 80;
+    listen [::]:80;
+    server_name barmaksan.chenki.net;
+    location /.well-known/acme-challenge/ { root /var/www/acme; }
+    location / { return 503; }
+}

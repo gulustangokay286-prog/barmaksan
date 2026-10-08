@@ -1,0 +1,22 @@
+.folder {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  scroll-margin-top: calc(var(--bar-h) + 20px);
+  overflow: hidden;
+}
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  text-align: left;
+  background: var(--fill);
+}
+.toggle:hover { background: var(--fill-hover); }
+.toggle svg { flex: none; color: var(--ink-3); }
+.title { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 14px; font-weight: 600; }
+.count { color: var(--ink-3); font-size: 13px; font-variant-numeric: tabular-nums; }
+.body { padding: 12px; }
+.body > * + * { margin-top: 10px; }

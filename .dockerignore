@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+data
+storage
+.git
+.claude
+docs/brief/audio
+docs/brief/transcripts.raw.json
+assets/brand/*.tiff
+**/.DS_Store

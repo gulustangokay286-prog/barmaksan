@@ -1,0 +1,301 @@
+/*
+ * Medya kütüphanesi: arayüz geri çekilir, görsel öne çıkar.
+ * Görseller kendi oranlarında; satırlar tam genişlik (justified); başlıklar görselin
+ * üstünde yalnızca üzerine gelince, koyu cam çipte.
+ */
+
+.header {
+  padding: 32px 0 0;
+}
+.title {
+  font-family: var(--font-display);
+  font-size: 40px;
+  line-height: 44px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.lead {
+  margin-top: 10px;
+  max-width: 60ch;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+/* ── Koleksiyonlar ───────────────────────────────────────────────────────── */
+
+.collections {
+  display: flex;
+  gap: 14px;
+  margin: 28px calc(-1 * var(--gutter)) 0;
+  padding: 4px var(--gutter) 8px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding: 0 var(--gutter);
+  scrollbar-width: none;
+}
+.collections::-webkit-scrollbar {
+  display: none;
+}
+.card {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 168px;
+  text-align: left;
+  scroll-snap-align: start;
+  border-radius: 14px;
+}
+.cardImage {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--fill);
+  box-shadow: 0 0 0 0 var(--ink);
+  transition: box-shadow 220ms var(--ease-out), transform 160ms var(--ease-out);
+}
+.cardImage img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cardImage[data-contain] img {
+  inset: 12%;
+  width: 76%;
+  height: 76%;
+  object-fit: contain;
+}
+.card:hover .cardImage img {
+  transform: scale(1.05);
+}
+.card:active .cardImage {
+  transform: scale(0.97);
+}
+/* Seçili: görselin çevresinde içten bir halka (zemin rengiyle ayrılmış). */
+.card[data-active] .cardImage {
+  box-shadow: 0 0 0 2px var(--canvas), 0 0 0 4px var(--ink);
+}
+.mosaic {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+}
+.mosaic > span {
+  position: relative;
+  overflow: hidden;
+  background: var(--fill-press);
+}
+.cardText {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 2px;
+}
+.cardName {
+  min-width: 0;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 560;
+  letter-spacing: -0.006em;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--t-fast);
+}
+.card:hover .cardName,
+.card[data-active] .cardName {
+  color: var(--ink);
+}
+.cardCount {
+  font-size: 13px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Araç çubuğu (yapışık) ───────────────────────────────────────────────── */
+
+.toolbar {
+  position: sticky;
+  top: var(--bar-h);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 24px calc(-1 * var(--gutter)) 8px;
+  padding: 12px var(--gutter);
+  background: var(--material-bar);
+  -webkit-backdrop-filter: var(--blur-bar);
+  backdrop-filter: var(--blur-bar);
+  box-shadow: 0 1px 0 var(--line);
+}
+.toolbarTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 650;
+  letter-spacing: -0.016em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.toolbarTitle span {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink-3);
+}
+
+/* ── Gruplar ve ızgara ───────────────────────────────────────────────────── */
+
+.group {
+  margin-top: 28px;
+}
+.group:first-child {
+  margin-top: 16px;
+}
+.groupHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.008em;
+}
+.groupHead span {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+.row {
+  display: flex;
+  gap: var(--gap);
+}
+.tile {
+  position: relative;
+  flex: 0 1 auto;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--fill);
+  isolation: isolate;
+}
+.frame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-4);
+}
+.frame img {
+  width: 100%;
+  height: 100%;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tile:hover .frame img {
+  transform: scale(1.04);
+}
+.tile:active {
+  transform: scale(0.985);
+  transition: transform 120ms var(--ease-out);
+}
+.tile:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 6px;
+  background: rgba(16, 16, 18, 0.55);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+/* Başlık: yalnızca üzerine gelince, koyu cam çipte (gradient yok). */
+.caption {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  max-width: calc(100% - 16px);
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: rgba(16, 16, 18, 0.55);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  font-size: 12.5px;
+  line-height: 16px;
+  font-weight: 560;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 200ms var(--ease-out), transform 260ms var(--ease-out);
+  pointer-events: none;
+}
+.tile:hover .caption,
+.tile:focus-visible .caption {
+  opacity: 1;
+  transform: none;
+}
+@media (hover: none) {
+  .caption {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .title {
+    font-size: 30px;
+    line-height: 34px;
+  }
+  .card {
+    width: 132px;
+  }
+  .toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .toolbarTitle {
+    font-size: 17px;
+  }
+  .tile {
+    border-radius: 6px;
+  }
+}

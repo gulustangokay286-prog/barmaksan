@@ -1,0 +1,592 @@
+[
+ {
+  "slug": "cop-sasoru-cleanmax-1",
+  "category": "temizleme",
+  "name_tr": "Çöp Sasörü / Cleanmax 1",
+  "name_en": "Cleanmax 1",
+  "summary_tr": "Çöp Sasörü Cleanmax 1, un, irmik ve bakliyat tesislerinde temizleme ünitelerinde sınıflandırıcı olarak kullanılır. Yüksek kapasitesiyle verimli ve etkili temizleme sağlar.",
+  "summary_en": "It is used at cleaning section as a seperator in flour, semolina and pulses plants. Effective cleaning at high capacity.",
+  "image": "machines/cop-sasoru-cleanmax-1.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/cop-sasoru-cleanmax-1"
+ },
+ {
+  "slug": "cop-sasoru-cleanmax-2",
+  "category": "temizleme",
+  "name_tr": "Çöp Sasörü / Cleanmax 2",
+  "name_en": "Cleanmax 2",
+  "summary_tr": "Çöp Sasörü / Cleanmax 2 Un, irmik ve bakliyat tesislerinde temizleme ünitelerinde sınıflandırıcı olarak kullanılmaktadır.",
+  "summary_en": "Is used Cleanmax 2 as a classifier in cleaning units of flour, semolina, and grain plants",
+  "image": "machines/cop-sasoru-cleanmax-2.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/cop-sasoru-cleanmax-2"
+ },
+ {
+  "slug": "cop-sasoru-cleanmax-4",
+  "category": "temizleme",
+  "name_tr": "Çöp Sasörü / Cleanmax 4",
+  "name_en": "Cleanmax 4",
+  "summary_tr": "Çöp Sasörü / Cleanmax 4 Un, irmik ve bakliyat tesislerinde temizleme ünitelerinde sınıflandırıcı olarak kullanılmaktadır.",
+  "summary_en": "Çöp Sasörü / Cleanmax 4 Un, irmik ve bakliyat tesislerinde temizleme ünitelerinde sınıflandırıcı olarak kullanılmaktadır.",
+  "image": "machines/cop-sasoru-cleanmax-4.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/cop-sasoru-cleanmax-4"
+ },
+ {
+  "slug": "kabuk-soyucu",
+  "category": "temizleme",
+  "name_tr": "Kabuk Soyucu",
+  "name_en": "Horizontal Scourer",
+  "summary_tr": "Un ve irmik fabrikalarında temizleme bölümlerinde kullanılır. Makinenin içindeki yüksek hızla dönen rotor üzerindeki soyucu paletler, tanenin kabuk kısmını ve taneye yapışan kirleri çeşitli yöntemlerle ayırır.",
+  "summary_en": "It is used at the first and second cleaning  sections in the flour and semolina mills. It separates the shell part of the grain and impurities that remain on the grain, from the grain via scourer pallets on the high-speed impeller.\"",
+  "image": "machines/kabuk-soyucu.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/kabuk-soyucu"
+ },
+ {
+  "slug": "siniflandiricili-tas-ayirici-ultrator",
+  "category": "temizleme",
+  "name_tr": "Sınıflandırıcılı Taş Ayırıcı / Ultrator",
+  "name_en": "Ultrator Dry Stoner & Cassifier",
+  "summary_tr": "Sınıflandırıcılı Taş Ayırıcı / Ultrator temizleme bölümünde çok fonksiyonlu ve yararlı bir makinadır.",
+  "summary_en": "It is a multi-functional and handy machine in the cleaning section. It separates stones and high density impurities in the grain.",
+  "image": "machines/siniflandiricili-tas-ayirici-ultrator.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/siniflandiricili-tas-ayirici-ultrator"
+ },
+ {
+  "slug": "jet-filtre",
+  "category": "temizleme",
+  "name_tr": "Jet Filtre",
+  "name_en": "Jet Filter",
+  "summary_tr": "Jet Filtre; hava-toz karışımının tozdan arındırılarak tozun tutulup temiz havanın bacadan atılmasını sağlar",
+  "summary_en": "Jet Filter provides that the air-dust mixture is separate from dust, the dust is retained and clean air is exhausted from the chimney.",
+  "image": "machines/jet-filtre.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/jet-filtre"
+ },
+ {
+  "slug": "alcak-basinc-aspiratoru-fani",
+  "category": "temizleme",
+  "name_tr": "Alçak Basınç Aspiratörü / Fanı",
+  "name_en": "Low Pressure Fan",
+  "summary_tr": "Alçak basınç aspiratörleri gıda sektöründe faaliyet gösteren sanayi kuruluşları, ısıtma ve havalandırma tesisleri ve döküm sanayi gibi endüstri kollarında kullanılır.",
+  "summary_en": "Low-Pressure aspirators are used in industrial companies, food sector, heating and aeration plants and also in the casting industry.",
+  "image": "machines/alcak-basinc-aspiratoru-fani.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/alcak-basinc-aspiratoru-fani"
+ },
+ {
+  "slug": "cebri-tav-makinesi-acili-yogun-tavlama",
+  "category": "temizleme",
+  "name_tr": "Cebri Tav Makinesi (Açılı Yoğun Tavlama)",
+  "name_en": "Inclined Intensive Dampener",
+  "summary_tr": "Cebri Tav Makinesi Un ve irmik fabrikalarında kuru temizleme yapıldığında tahıla daha az sürede daha az su kullanarak istenilen yeterli tavlamayı sağlamak için kullanılır. Aynı zamanda yüksek hızla dönen rotor sayesinde meydana gelen sürtünme neticesinde",
+  "summary_en": "Inclined Intensive Dampener machine is used in flour and semolina mills to achieve the desired tempering in a shorter time and with less water during dry cleaning of grains.",
+  "image": "machines/cebri-tav-makinesi-acili-yogun-tavlama.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/cebri-tav-makinesi-acili-yogun-tavlama"
+ },
+ {
+  "slug": "cebri-tav-makinesi-acili-yogun-tavlama-uclu",
+  "category": "temizleme",
+  "name_tr": "Cebri Tav Makinesi (Açılı Yoğun Tavlama) | Üçlü",
+  "name_en": "Inclined Intensive Dampener | Triple",
+  "summary_tr": "Cebri Tav (Açılı Yoğun Tavlama) Makinesi Un ve irmik fabrikalarında kuru temizleme yapıldığında tahıla daha az sürede daha az su kullanarak istenilen yeterli tavlamayı sağlamak için kullanılır.",
+  "summary_en": "Inclined Intensive Dampener machine is used in flour and semolina mills to achieve the desired tempering in a shorter time and with less water during dry cleaning of grains.",
+  "image": "machines/cebri-tav-makinesi-acili-yogun-tavlama-uclu.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/cebri-tav-makinesi-acili-yogun-tavlama-uclu"
+ },
+ {
+  "slug": "boru-miknatis",
+  "category": "temizleme",
+  "name_tr": "Boru Mıknatıs",
+  "name_en": "Pipe Magnet",
+  "summary_tr": "Boru mıknatıslar tahıl ve bakliyat işleyen tesislerde makinaların girişlerinde, ürün içerisinde metal parçalarını ayırmak için kullanılır.",
+  "summary_en": "Pipe Magnet is used to separate metal pieces from products in grain and pulses plants",
+  "image": "machines/boru-miknatis.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/boru-miknatis"
+ },
+ {
+  "slug": "cekicli-degirmen-ogutme-makinesi",
+  "category": "temizleme",
+  "name_tr": "Çekiçli Değirmen - Öğütme Makinesi",
+  "name_en": "Hammer Mill",
+  "summary_tr": "Çekiçli değirmen; bütün taneli kuru veya az rutubetli yabancı madde analizleri kolayca öğütülür. Yem sanayisinde bu amaçla kullanılır.",
+  "summary_en": "This hammer mill grinds dry or low moisture screenings easily. For this reason, it is used in the food industry. The body is of steel and weld construction. The hammers are on the rotor which turns a mill.",
+  "image": "machines/cekicli-degirmen-ogutme-makinesi.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/cekicli-degirmen-ogutme-makinesi"
+ },
+ {
+  "slug": "kafes-miknatis",
+  "category": "temizleme",
+  "name_tr": "Kafes Mıknatıs",
+  "name_en": "Lattice Magnet",
+  "summary_tr": "Kafes Mıknatıs tahıl içerisindeki metal parçaları ayrıştırarak makinaya gelebilecek zararı önlemektir.",
+  "summary_en": "It is used to separate metal pieces from grain to avoid damage to the machine. A multiple grid system is used to provide that the machine can run successfully. It is placed into the stainless steel body (quality of 304 or 316) or the painted steel body to",
+  "image": "machines/kafes-miknatis.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/kafes-miknatis"
+ },
+ {
+  "slug": "mana-siklon",
+  "category": "temizleme",
+  "name_tr": "Mana Siklon",
+  "name_en": "Mana Cyclone",
+  "summary_tr": "Mana Siklon buğday temizleme ünitelerinde hava kanallarından sonra filtre veya merkezi toz siklonundan önce kullanılır.",
+  "summary_en": "It is used after air canal and before the filter or central dust cyclone in the cleaning section.",
+  "image": "machines/mana-siklon.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/mana-siklon"
+ },
+ {
+  "slug": "otomatik-pacal-makinesi-tahil-karistirma",
+  "category": "temizleme",
+  "name_tr": "Otomatik Paçal Makinesi (Tahıl Karıştırma)",
+  "name_en": "Automatic Blending Machine",
+  "summary_tr": "Otomatik Paçal Makinesi farklı tahıl türlerini öğütmeden veya tavlamadan önce operatör panelinden istenen karıştırma oranlarını ve saatlik tonajı belirlememizi sağlayan özelliklere sahip bir makinedir.",
+  "summary_en": "Automatic Blending Machine has features that allow to determination of the desired blending rates and hourly tonnage from the operator panel before grinding or tempering different types of grains.",
+  "image": "machines/otomatik-pacal-makinesi-tahil-karistirma.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/otomatik-pacal-makinesi-tahil-karistirma"
+ },
+ {
+  "slug": "manuel-pacal-makinesi-tahil-karistirma",
+  "category": "temizleme",
+  "name_tr": "Manuel Paçal Makinesi (Tahıl Karıştırma)",
+  "name_en": "Manuel Blending Machine",
+  "summary_tr": "Manuel Paçal Makinesi farklı tür tahılların öğütme öncesi veya tavlama öncesi manuel olarak operatör panelinden istenilen oranları ayarlanarak karıştırılmasına ve kapasitelendirilmesine yarayan makinadır.",
+  "summary_en": "This machine is used for the capacity adjustment and the mixing of different kinds of grain in requested rates manually by the operator panel before the grinding of grain.",
+  "image": "machines/manuel-pacal-makinesi-tahil-karistirma.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/manuel-pacal-makinesi-tahil-karistirma"
+ },
+ {
+  "slug": "otomatik-tavlama-makinesi-sistemi",
+  "category": "temizleme",
+  "name_tr": "Otomatik Tavlama Makinesi (Sistemi)",
+  "name_en": "Automatic Dampening System",
+  "summary_tr": "Otomatik Tavlama Sistemi, buğdayın anlık nem ve hektolitre değerlerini ölçerek optimum tavlama süreci sağlar. Sistem, hedeflenen neme göre gereken su debisini otomatik olarak hesaplayarak suyun doğru miktarda eklenmesini sağlar.",
+  "summary_en": "Automatic Dampening System: Wheat Moisture Control and Precision Water Balance. The Automatic Dampening System measures the real-time moisture and hectoliter values of wheat to ensure an optimal tempering process. The system automatically calculates the r",
+  "image": "machines/otomatik-tavlama-makinesi-sistemi.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/otomatik-tavlama-makinesi-sistemi"
+ },
+ {
+  "slug": "radyal-tarar",
+  "category": "temizleme",
+  "name_tr": "Radyal Tarar",
+  "name_en": "Radial Tarar",
+  "summary_tr": "Radyal Tarar Buğday, arpa, mısır ve benzeri gibi yoğunluğu çok olan tahıl ürünlerinden, yoğunluğu daha az olan tahılların içerisindeki hafif tanelerin, kabuk, saman ve toz gibi yabancı maddelerin aspirasyon kanalında ayrılmasını sağlar.",
+  "summary_en": "Radial Tarar is used for the separation of low-density impurities,from heavy density grains such as wheat, rye, barley, oat and maize in aspiration canal",
+  "image": "machines/radyal-tarar.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/radyal-tarar"
+ },
+ {
+  "slug": "cop-sasoru",
+  "category": "temizleme",
+  "name_tr": "Çöp Sasörü",
+  "name_en": "Separator",
+  "summary_tr": "Çöp Sasörü Tahıl ürünlerinden yabancı maddeleri ayrıştırmak için kullanılır. Çerçevenin eğimi ve vibrasyonu istenildiği gibi ayarlanabilir.",
+  "summary_en": "Seperator is used for separating impurities from the grains It has an adjustable inclination screen and vibration system.",
+  "image": "machines/cop-sasoru.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/cop-sasoru"
+ },
+ {
+  "slug": "toz-siklonu",
+  "category": "temizleme",
+  "name_tr": "Toz Siklonu",
+  "name_en": "Dust Cyclone",
+  "summary_tr": "Toz Siklonu aspirasyon bölümlerinde ürünün tozunu toplayıcı, toz ve hava ayrıştırıcı olarak kullanılır.",
+  "summary_en": "Dust Cylone is used in the aspiration system of plants. It generally collects the dust of grain, separate dust from the air, located in the aspiration system of cleaning machines.",
+  "image": "machines/toz-siklonu.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/toz-siklonu"
+ },
+ {
+  "slug": "triyor",
+  "category": "temizleme",
+  "name_tr": "Triyör",
+  "name_en": "Indented Cylinder",
+  "summary_tr": "Triyör Makinesi Tahıl öğüten fabrikalarda tahıl içinde bulunan istenmeyen yuvarlak şekilli ve uzun şekilli parçaların tahıldan ayrılması işleminde kullanılır.",
+  "summary_en": "This machine is used for the separation of unwanted long and round shaped impurities in the grain. Cylinders which have cubby holes are driven with the help of a reducer motor.Thanks to the cubby holes that are on the cylinders, unwanted impurities are se",
+  "image": "machines/triyor.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/triyor"
+ },
+ {
+  "slug": "cift-katli-tas-ayirici-unlof",
+  "category": "temizleme",
+  "name_tr": "Çift Katlı Taş Ayırıcı Unlof",
+  "name_en": "Double Deck Dry Stoner with Aspiration",
+  "summary_tr": "Çift Katlı Taş Ayırıcı Tahıl ve bakliyat temizleme ünitelerinde kullanılır. Ürün içerisindeki taş ve özgül ağırlık bakımından üründen ağır olan yabancı maddeleri ayırır.",
+  "summary_en": "It is used in grain and pulse cleaning sections; it separates stone and other impurities that more dense than the product.",
+  "image": "machines/cift-katli-tas-ayirici-unlof.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/cift-katli-tas-ayirici-unlof"
+ },
+ {
+  "slug": "debimetre",
+  "category": "temizleme",
+  "name_tr": "Debimetre",
+  "name_en": "Flowmeter",
+  "summary_tr": "Debimetre buğdayın tavlama işleminde kullanılır. Buğdayın akışını algılayan sensörün devreye girmesiyle sistemde su kontrolü sağlayan valf otomatik olarak açılır ve kapanır. Sisteme verilen su miktarı ayarlanabilir ve cam göstergeden izlenebilir. Su siste",
+  "summary_en": "Flowmeter is used in grain and pulse cleaning sections; it separates stone and other impurities that more dense than the product.",
+  "image": "machines/debimetre.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/debimetre"
+ },
+ {
+  "slug": "valsli-degirmen",
+  "category": "ogutme",
+  "name_tr": "Valsli Değirmen",
+  "name_en": "Thunderoll Rollermill",
+  "summary_tr": "Valsli Değirmen, yeni dizaynı ve sessiz çalışma özelliği ile öne çıkarken, kolay bakım ve temizlik imkanları sayesinde işletme süreçlerini kolaylaştırır. Yüksek stabilitesi ve hijyen standartları ile uzun ömürlü ve düşük işletme maliyetli bir çözümdür.",
+  "summary_en": "The Thunderoll Rollermill stands out with its new design and quiet operation, while facilitating operational processes with easy maintenance and cleaning options. With its high stability and hygiene standards, it provides a long-lasting solution with low",
+  "image": "machines/valsli-degirmen.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/valsli-degirmen"
+ },
+ {
+  "slug": "cift-katli-valsli-degirmen",
+  "category": "ogutme",
+  "name_tr": "Çift Katlı Valsli Değirmen",
+  "name_en": "Thunderoll Rollermill (Double Deck)",
+  "summary_tr": "Çift Katlı Valsli Değirmen, yeni dizaynı ve sessiz çalışma özelliği ile öne çıkarken, kolay bakım ve temizlik imkanları sayesinde işletme süreçlerini kolaylaştırır. Yüksek stabilitesi ve hijyen standartları ile uzun ömürlü ve düşük işletme maliyetli bir ç",
+  "summary_en": "Çift Katlı Valsli Değirmen, yeni dizaynı ve sessiz çalışma özelliği ile öne çıkarken, kolay bakım ve temizlik imkanları sayesinde işletme süreçlerini kolaylaştırır. Yüksek stabilitesi ve hijyen standartları ile uzun ömürlü ve düşük işletme maliyetli bir ç",
+  "image": "machines/cift-katli-valsli-degirmen.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/cift-katli-valsli-degirmen"
+ },
+ {
+  "slug": "kare-elek-grandsifter",
+  "category": "ogutme",
+  "name_tr": "Kare Elek | Grandsifter",
+  "name_en": "Grandsifter Square Plansifter",
+  "summary_tr": "Kare elek un fabrikalarında un üretimi işleminde büyük rol oynayan bir makinedir.",
+  "summary_en": "The Grandsifter Square Plansifter is a very important machine for the process of flour production.",
+  "image": "machines/kare-elek-grandsifter.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/kare-elek-grandsifter"
+ },
+ {
+  "slug": "irmik-sasoru",
+  "category": "ogutme",
+  "name_tr": "İrmik Sasörü",
+  "name_en": "Semolina Purifier",
+  "summary_tr": "İrmik Sasörü un ve irmik fabrikalarında, irmiklerin temizlenmesi ve sınıflandırılması için kullanılır.",
+  "summary_en": "The Semolina Purifier is used to clean and classify semolina in flour and semolina plants.",
+  "image": "machines/irmik-sasoru.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/irmik-sasoru"
+ },
+ {
+  "slug": "vibro-kepek-fircasi",
+  "category": "ogutme",
+  "name_tr": "Vibro Kepek Fırçası",
+  "name_en": "Vibro Bran Finisher",
+  "summary_tr": "Vibro Kepek Fırçası kepeğe yapışmış olan un parçalarını ayırmada kullanılır.",
+  "summary_en": "Vibro Bran Finisher is used to separate flour particles stuck to the bran. This helps increase the efficiency of flour mills.",
+  "image": "machines/vibro-kepek-fircasi.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/vibro-kepek-fircasi"
+ },
+ {
+  "slug": "kare-elek-planmaster",
+  "category": "ogutme",
+  "name_tr": "Kare Elek | Planmaster",
+  "name_en": "Planmaster Square Plansifter",
+  "summary_tr": "Kare elek un fabrikalarında un üretimi işleminde büyük rol oynayan bir makinedır.",
+  "summary_en": "The square plansifter is a very important machine for the process of flour production. It is used to sift and classify ground grain that comes from rollermill. The sifting process of arranging is according to the milling diagram.",
+  "image": "machines/kare-elek-planmaster.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/kare-elek-planmaster"
+ },
+ {
+  "slug": "misir-isleme-makinasi-gronamac",
+  "category": "ogutme",
+  "name_tr": "Mısır İşleme Makinası (Gronamac)",
+  "name_en": "Corn Processing Machine (Gronamac)",
+  "summary_tr": "Mısır İşleme Makinesi mısır tanelerinde yüksek yağ oranı içeren germ kısmının hassas ayrımını sağlar.",
+  "summary_en": "It provides precise seperation of the germ part containing high oil in the corn grains",
+  "image": "machines/misir-isleme-makinasi-gronamac.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/misir-isleme-makinasi-gronamac"
+ },
+ {
+  "slug": "kepek-fircasi",
+  "category": "ogutme",
+  "name_tr": "Kepek Fırçası",
+  "name_en": "Bran Finisher",
+  "summary_tr": "Kepek Fırçası Kepeğe yapışmış olan un parçalarını ayırmada kullanılır. Böylece un fabrikalarının randımanları arttırılmış olur.",
+  "summary_en": "It is used to separate flour particles stuck to the bran, so increasing the efficiency of flour mills.",
+  "image": "machines/kepek-fircasi.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/kepek-fircasi"
+ },
+ {
+  "slug": "pnomatik-fan",
+  "category": "ogutme",
+  "name_tr": "Pnömatik Fan",
+  "name_en": "Pneumatic Fan",
+  "summary_tr": "Pnömatik Fan, valslerde kırılan malın emişle taşınmasını sağlayan etkili bir sistemdir. Asgari enerji tüketimi ile maksimum verim sunarken, sessiz çalışma özelliği ile öne çıkar. Çelik kafes ile şaseye monte edilen fan, kauçuk ayaklar (takoz) üzerinde çal",
+  "summary_en": "It is the system which sucks the grinding products coming from the Rollermill. It has high production, a low energy consumption, multipurposed and operation silently. The fan which is assembled with a st",
+  "image": "machines/pnomatik-fan.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/pnomatik-fan"
+ },
+ {
+  "slug": "entoleter-bocek-oldurucu",
+  "category": "ogutme",
+  "name_tr": "Entoleter Böcek Öldürücü",
+  "name_en": "Entoleter Insect Destroyer",
+  "summary_tr": "Entoleter Böcek Öldürücü ters akım prensibi sayesinde un ve irmikte bulunan böcek yumurtalarının yüzde 99,5'inden fazlasının mutlak güvenilirlikle yok edilmesini sağlıyor. Böcek larvaları un ile birlikte ipek deliklerinden geçerken sıcak ortamında etkisiy",
+  "summary_en": "The machine is particularly effective cross current principle enables more than 99,5 percent of all eggs of insects contained in the flour and semolina to be destroyed with absolute dependability.",
+  "image": "machines/entoleter-bocek-oldurucu.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/entoleter-bocek-oldurucu"
+ },
+ {
+  "slug": "irmik-kirici",
+  "category": "ogutme",
+  "name_tr": "İrmik Kırıcı",
+  "name_en": "Impact Detacher",
+  "summary_tr": "İrmik Kırıcı un fabrikalarında irmiğin çok olduğu pasajlarda, vals yardımcısı olarak öğütme verimini arttırmak için kullanılır.",
+  "summary_en": "Impact Detacher: From simple milling assistance to stand -alone passage in grain mills is very broad. For intermediate products, it increases the fine ratio and serves to control particle size distribution. It completely manufactures metal construction.",
+  "image": "machines/irmik-kirici.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/irmik-kirici"
+ },
+ {
+  "slug": "randiman-kantari-loadcell",
+  "category": "ogutme",
+  "name_tr": "Randıman Kantarı (Loadcell)",
+  "name_en": "Extraction Scale",
+  "summary_tr": "Randıman Kantarı, tam PLC denetimi ile donatılmış olup, paslanmaz çelik load cell sayesinde hassas ve güvenilir tartım sağlar. Uzun ömürlü yapısı ve IP67 koruma sınıfındaki özel sistem panosu, zorlu ortam koşullarında dahi güvenli ve dayanıklı kullanım su",
+  "summary_en": "The Extraction Scale has a PLC system and provides precise and reliable weighing with stainless steel loadcell.",
+  "image": "machines/randiman-kantari-loadcell.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/randiman-kantari-loadcell"
+ },
+ {
+  "slug": "tambur-irmik-kirici",
+  "category": "ogutme",
+  "name_tr": "Tambur İrmik Kırıcı",
+  "name_en": "Drum Detacher",
+  "summary_tr": "Tambur İrmik Kırıcı un fabrikalarında valste öğütülürken pul haline gelmiş birbirine yapışan irmik ve kepek tanelerini birbirinden ayırmak için kullanılır.",
+  "summary_en": "The Drum Detacher is used for the separation semolina and flakes into pieces which are stuck on to each other in the rollermills.",
+  "image": "machines/tambur-irmik-kirici.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/tambur-irmik-kirici"
+ },
+ {
+  "slug": "turbo-elek",
+  "category": "ogutme",
+  "name_tr": "Turbo Elek",
+  "name_en": "Turbo Sifter",
+  "summary_tr": "Ürün, Turbo Elek içine taşınır ve rotor üzerine monte edilen açılı bıçaklarla elek duvarına çarptırılır.",
+  "summary_en": "The product is conveyed to the Turbo Sifter. The special arrangement blades of the impeller throw the product to the cylindrical screen.",
+  "image": "machines/turbo-elek.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/turbo-elek"
+ },
+ {
+  "slug": "un-ve-kepek-vidasi-vidali-tasiyici",
+  "category": "ogutme",
+  "name_tr": "Un ve Kepek Vidası (Vidalı Taşıyıcı)",
+  "name_en": "Screw Conveyor",
+  "summary_tr": "Un ve Kepek Vidası (Vidalı Taşıyıcı); bitmiş ürünlerin yatay olarak taşınmasında kullanılır. Bitmiş ürünün farklı pasajlardan toplanarak istenilen yere (silo veya paketleme) sevk edilme",
+  "summary_en": "The screw conveyor is used to transport grain and finished products horizontally.The power of the machine should be adjusted well and according to the capacity to make it work constantly and effectively. It has a U shaped body.",
+  "image": "machines/un-ve-kepek-vidasi-vidali-tasiyici.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/un-ve-kepek-vidasi-vidali-tasiyici"
+ },
+ {
+  "slug": "vidali-mal-yedirici",
+  "category": "ogutme",
+  "name_tr": "Vidalı Mal Yedirici",
+  "name_en": "Screw Feeder",
+  "summary_tr": "Vidalı Mal Yedirici filtre çıkışlarında, atık depo altlarında kullanılır.",
+  "summary_en": "It is used in the filter outlet and under the offal bin.",
+  "image": "machines/vidali-mal-yedirici.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/vidali-mal-yedirici"
+ },
+ {
+  "slug": "vitamin-katki-dozaj-makinesi",
+  "category": "ogutme",
+  "name_tr": "Vitamin Katkı (Dozaj) Makinesi",
+  "name_en": "Vitamin Adding Machine",
+  "summary_tr": "Vitamin Katkı (Dozaj) Makinesi öğütülmüş ürünün içerisinde vitaminin istenilen miktarda sisteme karışmasını sağlar.",
+  "summary_en": "It supplies to mix the requested amount of vitamin into the grinded product and to be mixed into the system.",
+  "image": "machines/vitamin-katki-dozaj-makinesi.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/vitamin-katki-dozaj-makinesi"
+ },
+ {
+  "slug": "degirmen-hava-kanali",
+  "category": "ogutme",
+  "name_tr": "Değirmen Hava Kanalı",
+  "name_en": "Air Canal",
+  "summary_tr": "Hava kanalı buğday, arpa, mısır gibi tahılların içerisinde bulunan kabuk ve yabancı maddeleri aspirasyon sistemi ile ayırmak için kullanılır.",
+  "summary_en": "The air canal is used to separate husks and foreign materials in grains such as wheat, barley, and corn through an aspiration system.",
+  "image": "machines/degirmen-hava-kanali.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/degirmen-hava-kanali"
+ },
+ {
+  "slug": "hava-kilidi",
+  "category": "tasima",
+  "name_tr": "Hava Kilidi",
+  "name_en": "Airlock",
+  "summary_tr": "Hava Kilidi, pnömatik sistemlerde hava ve ürünün ayrışmasını sağlayan kritik bir ekipmandır. Bu işlem sırasında hava kaybını minimuma indirmek için özel olarak tasarlanmıştır, böylece sistemin verimliliği artırılır.",
+  "summary_en": "Airlock is a important equipment used in pneumatic systems to separate air and product. It is specifically designed to minimize air loss during this process, so enhancing the system’s efficiency.",
+  "image": "machines/hava-kilidi.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/hava-kilidi"
+ },
+ {
+  "slug": "eklus",
+  "category": "tasima",
+  "name_tr": "Eklüs",
+  "name_en": "Ecluse",
+  "summary_tr": "Eklüs pnömatik taşıma sistemlerinde ürünün sızdırmadan ve sürekli olarak beslenmesini sağlar.",
+  "summary_en": "Ecluse is used to feed the product regularly and without leaking out into pneumatic conveying pipes at the pneumatic conveying systems.",
+  "image": "machines/eklus.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/eklus"
+ },
+ {
+  "slug": "blower",
+  "category": "tasima",
+  "name_tr": "Blower",
+  "name_en": "Blover",
+  "summary_tr": "Blower, her türlü tahıl ve bakliyatın dikey ve yatay taşınmasında kullanılan etkili bir sistemdir. Aynı zamanda filtre torbalarının temizlenmesinde de tercih edilir. Direkt akuple veya kayış kasnaklı çalışma özelliği ile farklı kullanım seçenekleri sunar.",
+  "summary_en": "Blover is used for the horizontal or vertical transfer of all kinds of grain and pulses.",
+  "image": "machines/blower.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/blower"
+ },
+ {
+  "slug": "kovali-elevator",
+  "category": "tasima",
+  "name_tr": "Bucket Elevator",
+  "name_en": null,
+  "summary_tr": "Bucket Elevator is used to transport granular or final products from bottom to top through buckets attached to belts.",
+  "summary_en": null,
+  "image": "machines/kovali-elevator.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/kovali-elevator"
+ },
+ {
+  "slug": "paletli-konveyor-tasiyici",
+  "category": "tasima",
+  "name_tr": "Paletli (Konveyör) Taşıyıcı",
+  "name_en": "Pallette Conveyor",
+  "summary_tr": "Paletli (Konveyör) Taşıyıcı; tavlı buğdayın yatay olarak taşınmasında kullanılır.",
+  "summary_en": "Pallette conveyor is used to transporting damped wheat horizontally.",
+  "image": "machines/paletli-konveyor-tasiyici.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/paletli-konveyor-tasiyici"
+ },
+ {
+  "slug": "teleskopik-bant",
+  "category": "tasima",
+  "name_tr": "Teleskopik Bant",
+  "name_en": "Telescopic Conveyor Belt",
+  "summary_tr": "Teleskopik Konveyör Bantlar, nihai ürünlerin farklı boşaltma mesafelerine taşınmasında kullanılan bir taşıma ekipmanıdır.",
+  "summary_en": "Teleskopic Conveyor Belts are used to transport final products to different unloading distances.",
+  "image": "machines/teleskopik-bant.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/teleskopik-bant"
+ },
+ {
+  "slug": "tup-vida-helezon-tasiyici",
+  "category": "tasima",
+  "name_tr": "Tüp Vida (Helezon Taşıyıcı)",
+  "name_en": "Tube Screw Conveyor",
+  "summary_tr": "Tüp Vida (Helezon Taşıyıcı) Vidalı taşıyıcı tahıl veya bitmiş ürünlerin yatay olarak taşınmasında kullanılır. Verimli ve sürekli çalışması için gerekli gücün iyi seçilmesi ve kapasitesine göre uygulanması gerekmektedir.",
+  "summary_en": "The tube screw conveyor is used for the transportation of all floured thin and middle grind products vertically and inclined to the screw conveyor.  The power of the machine should be adjusted well and according to the capacity to make it work constantly",
+  "image": "machines/tup-vida-helezon-tasiyici.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/tup-vida-helezon-tasiyici"
+ },
+ {
+  "slug": "pnomatik-surgulu-klape",
+  "category": "tasima",
+  "name_tr": "Pnömatik Sürgülü Klape",
+  "name_en": "Pneumatic Sliding Gate",
+  "summary_tr": "Pnömatik Sürgülü Klape vidalı taşıyıcıların boşaltma sisteminde kullanılır. Otomosyon ile çalışan tesislerde tercih edilir.",
+  "summary_en": "It is usage area is the discharging system of the screw conveyor. It is preferred to use in automation system plants",
+  "image": "machines/pnomatik-surgulu-klape.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/pnomatik-surgulu-klape"
+ },
+ {
+  "slug": "motorlu-surgulu-klape",
+  "category": "tasima",
+  "name_tr": "Motorlu Sürgülü Klape",
+  "name_en": "Sliding Gate with Motor",
+  "summary_tr": "Motorlu Sürgülü Klape  vidalı taşıyıcıların boşaltma sisteminde kullanılır. Otomasyon ile çalışan tesislerde tercih edilir",
+  "summary_en": "Sliding Gate with Motor is used in the discharge system of screw conveyors. Preferred in plants that operate with automation",
+  "image": "machines/motorlu-surgulu-klape.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/motorlu-surgulu-klape"
+ },
+ {
+  "slug": "pnomatik-yon-klapesi-yonlendirme-valfi",
+  "category": "tasima",
+  "name_tr": "Pnömatik Yön Klapesi (Yönlendirme Valfi)",
+  "name_en": "Pneumatic Diverting Flape",
+  "summary_tr": "Pnömatik Yön Klapesi başta gıda olmak üzere, plastik, ilaç ve kimya sanayisinde ve her türlü toz granül yapıdaki malzemelerin bir noktadan farklı noktaya gönderilmesi için kullanılır.",
+  "summary_en": "Especially in the food industry, and also in plastic, medicine, and chemistry industries, this machine is used to send the dust particles from one location to another location.",
+  "image": "machines/pnomatik-yon-klapesi-yonlendirme-valfi.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/pnomatik-yon-klapesi-yonlendirme-valfi"
+ },
+ {
+  "slug": "pnomatik-siklon",
+  "category": "tasima",
+  "name_tr": "Pnömatik Siklon",
+  "name_en": "Pneumatic Cyclone",
+  "summary_tr": "Pnömatik Siklon, sehpa, hava kilidi, cam hazne ve toplayıcı borulardan oluşan bir sistemdir.",
+  "summary_en": "Pneumatic Cylone consists of a system including cyclone, tripod, airlock, glass hopper collection pipes.",
+  "image": "machines/pnomatik-siklon.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/pnomatik-siklon"
+ },
+ {
+  "slug": "zincirli-konveyor",
+  "category": "tasima",
+  "name_tr": "Chain Conveyor",
+  "name_en": null,
+  "summary_tr": "Chain Conveynor is used in all places where horizontal transportation is made. It is used in flour feed, food, mine, sawdust and soil industry.",
+  "summary_en": null,
+  "image": "machines/zincirli-konveyor.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/zincirli-konveyor"
+ },
+ {
+  "slug": "cuval-tasima-ve-yukleme-bandi",
+  "category": "tasima",
+  "name_tr": "Çuval Taşıma ve Yükleme Bandı",
+  "name_en": "Bag Transport and Conveying Band",
+  "summary_tr": "Çuval Taşıma ve Yükleme Bandı paketlenmiş ürünü bir yerden başka bir yere taşımak için kullanılır. Bant taşıma işlemini birleştirilmiş konveyör bant ile yapmaktadır.",
+  "summary_en": "Bag Transport and Conveying Band is used to transport packaged products from one place to another. The transportation is done through a combined conveyor belt.",
+  "image": "machines/cuval-tasima-ve-yukleme-bandi.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/cuval-tasima-ve-yukleme-bandi"
+ },
+ {
+  "slug": "karusel-paketleme-makinesi",
+  "category": "paketleme",
+  "name_tr": "Karusel Paketleme Makinesi",
+  "name_en": "Carousel Packaging Machine",
+  "summary_tr": "Karusel paketleme makinesi yüksek kapasiteli paketleme makinesi hassas ve randımanlı paketleme yapar.",
+  "summary_en": "High capacity packing machine makes precise and efficient packing. This is one of the most important machines of high capacity mills. Important saving from the labor. It reaches a maximum capacity of 40 tons/hour",
+  "image": "machines/karusel-paketleme-makinesi.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/karusel-paketleme-makinesi"
+ },
+ {
+  "slug": "kontrol-elegi",
+  "category": "paketleme",
+  "name_tr": "Kontrol Eleği",
+  "name_en": "Control Plansifter",
+  "summary_tr": "Yeni geliştirilen kontrol eleği UMKE 105 - 108 ve 112 tahıl öğütme işlemi yapan tesislerde (Un fabrikaları, mısır fabrikaları v.b) elde edilen ürünün paketlenmeden önce kontrol edilmesinden kullanılır. İkinci bir kullanım alanı ise düşük kapasiteli ve ala",
+  "summary_en": "The newly developed control plansifter UMKE 105 - 108 and 112 is used in grain milling facilities (such as flour mills, corn mills, etc.) to check the product before packaging.  Another application area is facilities with low capacity and space issues. It",
+  "image": "machines/kontrol-elegi.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/kontrol-elegi"
+ },
+ {
+  "slug": "otomatik-paketleme-torbalama-makinesi",
+  "category": "paketleme",
+  "name_tr": "Otomatik Paketleme (Torbalama) Makinesi",
+  "name_en": "Automatic Packaging System",
+  "summary_tr": "Otomatik paketleme (torbalama) makinesi, endüstriyel üretim süreçlerinizi optimize etmek için tasarlanmış tam PLC denetimli bir çözümdür. Paslanmaz çelik load cell sayesinde yüksek hassasiyetle tartım yapabilen bu makine, 4-10 kg, 10-25 kg ve 25-50 kg ara",
+  "summary_en": "The automatic packaging (bagging) machine is a fully PLC-controlled solution designed to optimize your industrial production processes.",
+  "image": "machines/otomatik-paketleme-torbalama-makinesi.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/otomatik-paketleme-torbalama-makinesi"
+ },
+ {
+  "slug": "silo-bosaltici",
+  "category": "paketleme",
+  "name_tr": "Silo Boşaltıcı",
+  "name_en": "Silo Discharger",
+  "summary_tr": "Silo boşaltıcı serbest akışlı depolarda depo içindeki ürünün (un, buğday, kepek vs.) depodan kolayca boşaltılmasında kullanılır.",
+  "summary_en": "Silo Discharger is used in depots on a free circulation, in a way to discharge the product (flour, wheat, bran, etc.) very easily.",
+  "image": "machines/silo-bosaltici.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/silo-bosaltici"
+ },
+ {
+  "slug": "un-dagitici",
+  "category": "paketleme",
+  "name_tr": "Un Dağıtıcı",
+  "name_en": "Flour Distributor",
+  "summary_tr": "Un Dağıtıcı değirmen bölümünden gelen ürünü düzenli bir şekilde kontrol eleğine iletir",
+  "summary_en": "The Flour Distributor transfers the product from the mill section to the control sieve in a consistent manner.",
+  "image": "machines/un-dagitici.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/un-dagitici"
+ },
+ {
+  "slug": "tonluk-paketleme-makinesi",
+  "category": "paketleme",
+  "name_tr": "Tonluk Paketleme Makinesi",
+  "name_en": "Big Bag Packaging Machine",
+  "summary_tr": "Big bag paketleme makinesi, genellikle büyük hacimli malzemelerin, tozların veya granül formdaki ürünlerin büyük torbalara dolumunu sağlayan bir makineyi ifade eder.",
+  "summary_en": "Machine refers to a machine that fills large bags with bulk materials, powders, or granule-form products.",
+  "image": "machines/tonluk-paketleme-makinesi.png",
+  "source": "https://www.ugurpromilling.com/tr/urun/tonluk-paketleme-makinesi"
+ }
+]

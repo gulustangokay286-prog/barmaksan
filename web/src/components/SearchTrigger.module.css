@@ -1,0 +1,108 @@
+/*
+ * Arama düğmesi: buzlu beyaz çubuk; yalnızca büyüteç ve yazı.
+ * Ölçüler arama panelinin giriş satırıyla aynı (yükseklik 56, sol boşluk 18, ikon 20,
+ * aralık 12, yazı 17): panel bu düğmeden büyürken hiçbir şey yerinden oynamaz.
+ */
+
+.trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  transition:
+    background-color 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-out),
+    transform 160ms var(--ease-out);
+}
+.trigger:active {
+  transform: scale(0.988);
+  transition-duration: 90ms;
+}
+.icon {
+  display: flex;
+  flex: none;
+  transition: transform 320ms var(--ease-out), color 220ms var(--ease-out);
+}
+.placeholder {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 220ms var(--ease-out);
+}
+
+/* ── Giriş sahnesi ───────────────────────────────────────────────────────── */
+
+.trigger[data-variant='hero'] {
+  gap: 12px;
+  height: 56px;
+  padding: 0 20px 0 18px;
+  border-radius: 14px;
+  /* Arama paneliyle birebir aynı malzeme: panel bu düğmeden büyürken ton değişmez. */
+  background: rgba(255, 255, 255, 0.96);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 14px 34px rgba(0, 0, 0, 0.22);
+}
+.trigger[data-variant='hero']:hover {
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 18px 44px rgba(0, 0, 0, 0.28);
+}
+.trigger[data-variant='hero'] .icon {
+  color: #3a3a3c;
+}
+.trigger[data-variant='hero'] .placeholder {
+  font-size: 17px;
+  letter-spacing: -0.014em;
+  color: #6e6e73;
+}
+/* Üzerine gelince yalnızca gölge yükselir; yazı ve ikon sabit kalır (panel bu düğmeye
+ * geri indiğinde imleç üstündeyse bile hiçbir şey kaymaz, renk değişmez). */
+
+/* ── Üst bar ─────────────────────────────────────────────────────────────── */
+
+.trigger[data-variant='bar'] {
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px 0 10px;
+  border-radius: 9px;
+  background: var(--bar-fill);
+}
+.trigger[data-variant='bar']:hover {
+  background: var(--bar-fill-hover);
+}
+.trigger[data-variant='bar'] .icon,
+.trigger[data-variant='bar'] .placeholder {
+  color: var(--on-bar-2);
+}
+.trigger[data-variant='bar'] .placeholder {
+  font-size: 13.5px;
+}
+.trigger[data-variant='bar']:hover .icon,
+.trigger[data-variant='bar']:hover .placeholder {
+  color: var(--on-bar);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .trigger[data-variant='hero'] {
+    background: #fff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .trigger[data-variant='hero'] {
+    height: 52px;
+    padding-left: 16px;
+  }
+  .trigger[data-variant='hero'] .placeholder {
+    font-size: 16px;
+  }
+}

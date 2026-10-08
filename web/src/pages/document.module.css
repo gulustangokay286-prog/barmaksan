@@ -1,0 +1,227 @@
+/* Doküman paneli: tek ses — büyük harf etiketi yok, monospace yok, süs çizgisi yok. */
+
+.parent {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-3);
+  border-radius: 4px;
+  transition: color var(--t-fast);
+}
+.parent:hover {
+  color: var(--ink);
+}
+.title {
+  margin-top: 6px;
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 33px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.meta {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.old {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-2);
+}
+.old a {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+}
+.open {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 18px;
+  border-radius: 9px;
+  background: var(--ink);
+  color: var(--ink-inverse);
+  font-size: 14px;
+  font-weight: 560;
+  transition: opacity var(--t-fast), transform 120ms var(--ease-out);
+}
+.open:hover {
+  opacity: 0.86;
+}
+.open:active {
+  transform: scale(0.97);
+}
+.action {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-2);
+  border-radius: 4px;
+  transition: color var(--t-fast);
+}
+.action:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}
+.hint {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-3);
+}
+
+.h2 {
+  margin-bottom: 8px;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.008em;
+  color: var(--ink);
+}
+
+/* Sürüm geçmişi: düz liste, ince çizgilerle. Önceki sürümler aynı çizgi ritminde, yerinde açılır. */
+.versions {
+  border-top: 1px solid var(--line);
+}
+.versions[data-older] {
+  border-top: 0;
+}
+.older {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--ink-2);
+  text-align: left;
+  transition: color var(--t-fast);
+}
+.older:hover {
+  color: var(--ink);
+}
+.olderCount {
+  color: var(--ink-3);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.olderChevron {
+  margin-left: auto;
+  color: var(--ink-3);
+  transition: transform 320ms var(--ease-out), color var(--t-fast);
+}
+.older:hover .olderChevron {
+  color: var(--ink-2);
+}
+.olderChevron[data-open] {
+  transform: rotate(180deg);
+}
+.olderWrap {
+  overflow: hidden;
+}
+.versions[data-older] .vNote {
+  color: var(--ink-2);
+}
+.version {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.vNo {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.version[data-current] .vNo {
+  font-weight: 650;
+  color: var(--ink);
+}
+.vBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.vNote {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink);
+}
+.vMeta {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-3);
+}
+.vLinks {
+  display: flex;
+  gap: 14px;
+  margin-top: 4px;
+  font-size: 13px;
+}
+.vLinks a,
+.vLinks button {
+  font-weight: 500;
+  color: var(--ink-2);
+  transition: color var(--t-fast);
+}
+.vLinks a:hover,
+.vLinks button:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}
+
+/* Bilgiler */
+.facts {
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+.facts > div {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 20px;
+}
+.facts dt {
+  color: var(--ink-3);
+}
+.facts dd {
+  margin: 0;
+  min-width: 0;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.facts dd a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}

@@ -1,0 +1,80 @@
+.bone {
+  display: block;
+  flex-shrink: 0;
+}
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 32px 0 8px;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+.tiles {
+  pointer-events: none;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tile > :first-child {
+  margin-bottom: 4px;
+}
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.rowBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.media {
+  columns: 4 240px;
+  column-gap: 16px;
+}
+.mediaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  break-inside: avoid;
+}
+.sheet {
+  display: flex;
+  gap: 24px;
+  padding: 20px;
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line);
+}
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 36px;
+}
+
+@media (max-width: 767px) {
+  .sheet {
+    padding: 14px;
+    gap: 14px;
+  }
+  .sheet > :first-child {
+    width: 96px !important;
+  }
+}

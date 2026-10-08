@@ -1,0 +1,323 @@
+.pin {
+  /* Yükseklik = sabit alan + bekleme (4vh) + geçiş (55vh) + kilit (makine başına --per-card)
+   * + son makinede bekleme (50vh) + bırakma (sabit alan kadar: içerik sayfası bu mesafede yükselip üstüne kapanır).
+   * Hero.tsx'teki PRE / MOVE / HOLD / perCard ile aynı formül. */
+  --stick: calc(100dvh - var(--bar-h) - var(--tabbar-h));
+  --per-card: 30vh;
+  position: relative;
+  height: calc(var(--stick) * 2 + 4vh + 55vh + 50vh + var(--scrub-span, 8) * var(--per-card));
+}
+/* Sahnenin bütün katmanları: bırakmada birlikte geriye çekilir. */
+.recede {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  transform-origin: 50% 0;
+}
+.dim {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: #000;
+  pointer-events: none;
+}
+.sticky {
+  position: sticky;
+  top: var(--bar-h);
+  height: calc(100dvh - var(--bar-h) - var(--tabbar-h));
+  overflow: hidden;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  background: #111113;
+  color: #fff;
+}
+
+/* ── Yerleşim: solda metin, sağda carousel'in yuvası ─────────────────────── */
+
+.layout {
+  position: relative;
+  z-index: 3; /* arama paneli carousel'in üstünde açılsın */
+  pointer-events: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+  align-items: center;
+  gap: 32px;
+  width: 100%;
+  max-width: calc(var(--page-max) + var(--gutter) * 2);
+  margin: 0 auto;
+  padding: 0 var(--gutter) 48px;
+}
+.copy {
+  min-width: 0;
+  /* Hücre tıklama yutmaz; görünürken metnin kendisi tıklanır (Home: pointerEvents). */
+  pointer-events: none;
+}
+/* Yalnızca ölçü: carousel dinlenmede bu kutunun merkezine, bu genişliğe oturur. */
+.slot {
+  min-width: 0;
+  pointer-events: none;
+}
+
+/* ── Sahne: carousel + kilit başlığı. Sticky alanın tam ortasına yerleşir;
+ *    dinlenmedeki konumu ve ölçeği JS'ten (yuvanın ölçüsü) gelir. ───────────── */
+
+.scene {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  translate: -50% -50%;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+.sceneIn {
+  position: relative;
+}
+.sceneSkeleton {
+  width: 100%;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.06);
+  animation: breathe-dark 1.6s ease-in-out infinite;
+}
+@keyframes breathe-dark {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.lockHead {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 0 8px;
+}
+.lockAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  height: 40px;
+  padding: 0 10px 0 12px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 560;
+  color: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.1);
+  transition: background-color var(--t-fast), color var(--t-fast);
+}
+.compactHero {
+  position: relative;
+  padding: 32px var(--gutter) 40px;
+  background: #111113;
+  color: #fff;
+  overflow: clip;
+}
+.compactCopy { max-width: 680px; margin: 0 auto; }
+.compactScene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 640px;
+  margin: 32px auto 0;
+}
+.lockAll:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+/* Kilit ilerlemesi: kaç makine geçildi — tek ince çizgi. */
+.lockProgress {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 14px);
+  width: 120px;
+  height: 2px;
+  translate: -50% 0;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+.lockProgress span {
+  display: block;
+  height: 100%;
+  background: #fff;
+  transform-origin: left center;
+}
+
+/* ── Görsel düzlemi (3D) ─────────────────────────────────────────────────── */
+
+/* Görsel düzlemi ekran genişliğinde ve ortada: kenar çubuğu açılıp kapanırken fotoğraflar
+ * yeniden boyutlanmaz (her karede yeniden çizim yok), yalnızca kenarları kırpılır. */
+.stage {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  translate: -50% 0;
+  z-index: -1;
+  overflow: hidden;
+}
+.plane {
+  position: absolute;
+  inset: -7%;
+  transform-origin: 50% 60%;
+}
+.slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 1.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.slide[data-on] {
+  opacity: 1;
+}
+/* Yavaş yakınlaşma, giden görsel söner­ken de sürer (sıçrama yok). */
+.slide[data-on],
+.slide[data-prev] {
+  animation: drift 9s linear forwards;
+  will-change: transform, opacity;
+}
+@keyframes drift {
+  from {
+    transform: scale(1.04) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.13) translate3d(var(--kx), var(--ky), 0);
+  }
+}
+/* Okunurluk için düz, tek renk karartma — gradient yok. */
+.shade {
+  position: absolute;
+  inset: 0;
+  background: #0b0b0d;
+}
+
+/* ── Alt şerit: görselin adı + ilerleme çizgileri ────────────────────────── */
+
+.footer {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.caption {
+  position: relative;
+  height: 20px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 540;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.78);
+  white-space: nowrap;
+}
+.caption span {
+  display: block;
+}
+.bars {
+  display: flex;
+  gap: 6px;
+}
+.bar {
+  position: relative;
+  width: 26px;
+  height: 14px;
+  padding: 6px 0;
+}
+.bar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 6px;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.28);
+}
+.barFill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 6px;
+  height: 2px;
+  border-radius: 1px;
+  background: #fff;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.barFill[data-done] {
+  transform: scaleX(1);
+}
+.barFill[data-on] {
+  animation: fill 6s linear forwards;
+}
+@keyframes fill {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Tek sütun: üstte metin, altında küçük carousel. Kaydırınca metin söner, carousel ortaya
+ * gelip büyür ve kilitlenir. Sığmazsa metin üstten başlar (auto kenar boşluğu = güvenli ortalama). */
+@media (max-width: 1023px) {
+  .recede {
+    align-items: flex-start;
+  }
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    margin-block: auto;
+    padding-top: 24px;
+    padding-bottom: 32px;
+  }
+  .slot {
+    justify-self: center;
+    width: 56%;
+  }
+}
+
+@media (max-width: 767px) {
+  .pin {
+    --per-card: 22vh;
+  }
+  .layout {
+    gap: 20px;
+    padding-top: 20px;
+  }
+  .slot {
+    width: 66%;
+  }
+  /* Telefonda alt şerit carousel'in altına biner: fotoğraflar akar, yazısı gösterilmez. */
+  .footer {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide[data-on],
+  .slide[data-prev] {
+    animation: none;
+  }
+  .barFill[data-on] {
+    animation: none;
+    transform: scaleX(1);
+  }
+}

@@ -1,0 +1,985 @@
+/*
+ * Kabuk: üst bar tam genişlik ve her zaman yapışık; altında kenar çubuğu + içerik.
+ * NOT: üst bar bir grid satırında değil, sayfa bloğunun doğrudan çocuğu. Grid öğesinin sticky
+ * sınırı kendi hücresidir; satır 56px olunca bar yapışamayıp kayıp gidiyordu.
+ */
+.shell {
+  min-height: 100dvh;
+}
+/* Kenar çubuğu sabit konumlu bir panel; içerik onun genişliği kadar içeriden başlar.
+ * Panel ve bu boşluk tek değerden sürülür (Shell.tsx): içerik yerinde daralır/genişler.
+ * overflow-x: clip — kayarken taşan içerik yatay kaydırma çubuğu açmasın (sticky'yi bozmaz). */
+.body {
+  min-height: calc(100dvh - var(--bar-h));
+  padding-left: var(--sidebar-w);
+  overflow-x: clip;
+}
+.sidebarToggle { flex: none; }
+
+/* Üç çizgi. Açılırken çizgiler sağdan, kapanırken soldan kısa bir dalga yapar (sırayla). */
+.burger {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 12px;
+}
+.burger > span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  transform-origin: 0 50%;
+}
+.burger > span:nth-child(1) { top: 0; }
+.burger > span:nth-child(2) { top: 5.25px; --d: 45ms; }
+.burger > span:nth-child(3) { top: 10.5px; --d: 90ms; }
+.burger[data-state='open'] > span { transform-origin: 100% 50%; }
+.burger[data-played][data-state='open'] > span { animation: burger-open 520ms var(--ease-out) var(--d, 0ms) both; }
+.burger[data-played][data-state='closed'] > span { animation: burger-close 520ms var(--ease-out) var(--d, 0ms) both; }
+@keyframes burger-open {
+  0% { transform: scaleX(1); }
+  38% { transform: scaleX(0.42); }
+  100% { transform: scaleX(1); }
+}
+@keyframes burger-close {
+  0% { transform: scaleX(1); }
+  38% { transform: scaleX(0.42); }
+  100% { transform: scaleX(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .burger > span { animation: none !important; }
+}
+
+/* ── Üst bar: koyu, tam genişlik, yapışık ─────────────────────────────────── */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  height: var(--bar-h);
+  background-color: var(--bar-bg);
+  /* Değirmen dokusu: üst bar ve kenar çubuğunda tek parça. "fixed" değil: Safari'de her karede
+   * yeniden çizdiriyor, panel kayınca da desen yerinden sıçrıyordu. Kenar çubuğu deseni üst
+   * barın kaldığı yerden sürdürür (bkz. .sidebar). */
+  background-image: var(--chrome-texture);
+  background-size: 420px 420px;
+  -webkit-backdrop-filter: var(--blur-bar);
+  backdrop-filter: var(--blur-bar);
+  border-bottom: 1px solid var(--bar-line);
+  color: var(--on-bar);
+}
+.brandArea {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 12px;
+  border-right: 1px solid var(--bar-line);
+  transition: border-color 320ms var(--ease-out);
+}
+.shell[data-sidebar-closed] .brandArea {
+  border-right-color: transparent;
+}
+.brand {
+  display: inline-flex;
+  border-radius: var(--r-sm);
+}
+.topbarInner {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 0 var(--gutter) 0 var(--gutter);
+}
+.topLeft {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.topCenter {
+  display: none;
+}
+.topRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: var(--bar-line);
+}
+
+/* Konum izi */
+.crumbs {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.crumbs::-webkit-scrollbar { display: none; }
+.crumbs ol {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+.crumbs li {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  font-size: 13.5px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.crumbs li svg {
+  flex: none;
+  color: var(--on-bar-3);
+}
+.crumbs li:not([data-last]) {
+  flex: none;
+}
+.crumbs li[data-last] {
+  min-width: 0;
+  flex: none;
+}
+.crumbLink {
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: var(--on-bar-2);
+  transition: color var(--t-fast), background-color var(--t-fast);
+}
+.crumbLink:hover {
+  color: var(--on-bar);
+  background: var(--bar-fill);
+}
+.crumbCurrent {
+  padding: 4px 6px;
+  font-weight: 600;
+  color: var(--on-bar);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Dar ekranda ara halkalar kısalır, son halka okunur kalır. */
+@media (max-width: 1279px) {
+  .crumbs li:not([data-last]):not(:first-child) .crumbLink {
+    max-width: 14ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.mobileNav {
+  display: none;
+}
+/* Geri: konum izinin solunda, ince bir ayraçla. */
+.backDesk {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+  padding-right: 10px;
+  border-right: 1px solid var(--bar-line);
+}
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin-left: -6px;
+  border-radius: 8px;
+  color: var(--on-bar-2);
+  transition: color var(--t-fast), background-color var(--t-fast), transform 120ms var(--ease-out);
+}
+.backBtn:hover {
+  color: var(--on-bar);
+  background: var(--bar-fill);
+}
+.backBtn:active {
+  transform: scale(0.92);
+}
+.homeTitle {
+  position: relative;
+  display: inline-flex;
+  min-width: 0;
+}
+.crumbCurrent[data-quiet] {
+  font-weight: 500;
+  color: var(--on-bar-2);
+}
+
+/* Dil menüsü */
+.langWrap {
+  position: relative;
+}
+.iconBtn[data-open] {
+  color: var(--on-bar);
+  background: var(--bar-fill);
+}
+.langMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 50;
+  min-width: 168px;
+  padding: 5px;
+  border-radius: 12px;
+  background: var(--bar-bg-solid);
+  box-shadow: 0 0 0 1px var(--bar-menu-ring), 0 16px 40px rgba(0, 0, 0, 0.2);
+  transform-origin: 100% 0;
+}
+.langMenu[data-placement='up'] {
+  top: auto;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: auto;
+  transform-origin: 0 100%;
+}
+.langItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--on-bar);
+  text-align: left;
+}
+.langItem:hover {
+  background: var(--bar-fill-hover);
+}
+.langItem svg {
+  color: var(--gold);
+}
+.compactTitle {
+  font-size: 15px;
+  font-weight: 620;
+  letter-spacing: -0.012em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+  max-width: 100%;
+  padding: 0 8px 0 4px;
+  margin-left: -6px;
+  border-radius: 8px;
+  color: var(--on-bar-2);
+  font-size: 14px;
+  font-weight: 520;
+  transition: color var(--t-fast), background-color var(--t-fast);
+}
+.back:hover {
+  color: var(--on-bar);
+  background: var(--bar-fill);
+}
+.backLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.uploadBtn {
+  background: var(--on-bar) !important;
+  color: #161618 !important;
+}
+.searchSlot {
+  display: flex;
+  justify-content: flex-end;
+  width: 280px;
+}
+.searchWrap {
+  width: 100%;
+}
+.searchMobile {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  color: var(--on-bar);
+}
+.hideSm {
+  display: inline-flex;
+  align-items: center;
+}
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  color: var(--on-bar-2);
+  transition: color var(--t-fast), background-color var(--t-fast);
+}
+.iconBtn:hover {
+  color: var(--on-bar);
+  background: var(--bar-fill);
+}
+.iconBtn[data-on] {
+  color: var(--gold);
+}
+.themeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (hover: none) {
+  .searchKeys {
+    display: none;
+  }
+}
+
+/* ── Kenar çubuğu ───────────────────────────────────────────────────────────
+ * Üst barla aynı koyu ton. Seçim basıldığı anda görünür (animasyon beklemez);
+ * açılıp kapanma saf CSS; hover'da zemin yok, yalnızca metin belirginleşir. */
+
+.sidebar {
+  position: fixed;
+  z-index: 20;
+  top: var(--bar-h);
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-w);
+  background-color: var(--side-bg);
+  background-image: var(--chrome-texture);
+  background-size: 420px 420px;
+  background-position: 0 calc(-1 * var(--bar-h));
+  color: var(--side-ink);
+  border-right: 1px solid var(--side-line);
+  contain: layout paint;
+  will-change: transform;
+}
+.sidebarInner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.sidebarScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 12px 20px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bar-scrollbar) transparent;
+}
+
+.primary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--side-line);
+}
+.primaryLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 520;
+  color: var(--side-ink);
+  transition: color 90ms linear;
+}
+.primaryLink:hover {
+  color: var(--side-ink-strong);
+}
+.primaryLink[aria-current='page'] {
+  color: var(--side-ink-strong);
+  background: var(--side-fill);
+}
+.primaryLink:active {
+  background: var(--side-fill);
+}
+
+.tree {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sectionHead {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding-left: 10px;
+}
+.sectionLabel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--side-ink-3);
+  border-radius: 6px;
+  transition: color 90ms linear;
+}
+.sectionLabel:hover,
+.sectionLabel[data-active] {
+  color: var(--side-ink-strong);
+}
+.sectionToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  color: var(--side-ink-3);
+  transition: color 90ms linear, transform var(--t-base) var(--ease-out);
+}
+.sectionToggle:hover {
+  color: var(--side-ink-strong);
+}
+.sectionToggle[data-collapsed] {
+  transform: rotate(-90deg);
+}
+.count {
+  font-size: 12px;
+  color: var(--side-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Açılıp kapanma: grid-template-rows 0fr↔1fr, JS ölçümü yok. */
+.sectionBody,
+.sub {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 220ms var(--ease-out);
+}
+.sectionBody[data-open],
+.sub[data-open] {
+  grid-template-rows: 1fr;
+}
+.sectionBody > ul,
+.sub > ul {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  visibility: hidden;
+  transition: visibility 0s linear 220ms;
+}
+.sectionBody[data-open] > ul,
+.sub[data-open] > ul {
+  visibility: visible;
+  transition-delay: 0s;
+}
+.sectionBody > ul {
+  padding-bottom: 6px;
+}
+.sub > ul {
+  position: relative;
+  margin-left: 21px;
+  padding-left: 0;
+}
+.sub > ul::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 1px;
+  background: var(--side-line);
+}
+
+.rowWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.disclosure {
+  position: absolute;
+  left: 2px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 32px;
+  color: var(--side-ink-3);
+  border-radius: 6px;
+  transition: color 90ms linear, transform var(--t-base) var(--ease-out);
+}
+.disclosure:hover {
+  color: var(--side-ink-strong);
+}
+.disclosure[data-open] {
+  transform: rotate(90deg);
+}
+.treeLink {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px 0 30px;
+  border-radius: 7px;
+  font-size: 13.5px;
+  color: var(--side-ink);
+  transition: color 90ms linear;
+}
+.treeLink[data-indent='2'] {
+  height: 30px;
+  padding-left: 14px;
+  font-size: 13px;
+}
+.treeLink:hover {
+  color: var(--side-ink-strong);
+}
+.treeLink:active {
+  background: var(--side-fill);
+}
+.treeLink[data-active] {
+  color: var(--side-ink-strong);
+  background: var(--side-fill);
+  font-weight: 560;
+}
+/* Altın çubuk yeni seçilen satırda içeri doğru büyür; eskisi anında söner. */
+.treeLink[data-active]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--gold);
+  transform-origin: center;
+  animation: bar-in 220ms var(--ease-out) both;
+}
+@keyframes bar-in {
+  from {
+    transform: scaleY(0.2);
+    opacity: 0;
+  }
+}
+.treeName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Alt bilgi */
+.foot {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--side-line);
+}
+.footStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--side-ink);
+}
+.footAdmin {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  margin-top: 6px;
+  font-size: 12.5px;
+  font-weight: 560;
+  color: var(--side-ink);
+}
+.footAdmin:hover {
+  color: var(--side-ink-strong);
+}
+.footCredit {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--side-ink-3);
+}
+.editToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 520;
+  color: var(--side-ink);
+}
+.editToggle:hover {
+  color: var(--side-ink-strong);
+}
+.editToggle[data-on] {
+  color: var(--gold);
+}
+.sheetControls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 12px -12px 0;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--side-line);
+}
+
+/* İskelet: kenar çubuğunun gerçek ritmi (nefes, gradient yok) */
+.skelLine {
+  height: 12px;
+  border-radius: 4px;
+  background: var(--side-fill);
+  animation: skel-pulse 1.6s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+.skelLabel {
+  width: 38%;
+  height: 10px;
+  margin: 10px 10px 8px;
+}
+.skelRow {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 10px 0 30px;
+}
+
+/* ── İçerik ───────────────────────────────────────────────────────────────── */
+
+
+/* ── Ekran geçişi perdesi (açılış perdesinin küçüğü) ───────────────────────── */
+
+.curtain {
+  --lw: min(320px, 56vw);
+  position: fixed;
+  z-index: 25;
+  top: var(--bar-h);
+  left: var(--sidebar-w);
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.shell[data-sidebar-closed] .curtain {
+  left: 0;
+}
+.cHalf {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: calc(50% + 1px);
+  overflow: hidden;
+  background: #0e0e0f;
+  will-change: transform;
+}
+:global(html[data-theme='light']) .cHalf {
+  background: #f6f6f4;
+}
+.cTop {
+  top: 0;
+  animation: c-up 460ms cubic-bezier(0.76, 0, 0.18, 1) 480ms both;
+}
+.cBot {
+  bottom: 0;
+  animation: c-down 460ms cubic-bezier(0.76, 0, 0.18, 1) 480ms both;
+}
+@keyframes c-up {
+  to {
+    transform: translateY(-101%);
+  }
+}
+@keyframes c-down {
+  to {
+    transform: translateY(101%);
+  }
+}
+.cStage {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 200%;
+}
+.cTop .cStage {
+  top: 0;
+}
+.cBot .cStage {
+  bottom: 0;
+}
+.cLogo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--lw);
+  aspect-ratio: 836 / 272;
+  transform: translate(-50%, -50%);
+}
+.cLogo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+:global(html[data-theme='light']) .cDark,
+:global(html:not([data-theme='light'])) .cLight {
+  display: none;
+}
+.cMark {
+  clip-path: circle(calc(var(--lw) * 0.166) at 16.3% 50%);
+  animation: c-mark 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.cWord {
+  clip-path: inset(0 0 0 33%);
+  animation: c-word 440ms cubic-bezier(0.65, 0, 0.2, 1) 70ms both;
+}
+@keyframes c-mark {
+  from {
+    clip-path: circle(0 at 16.3% 50%);
+  }
+}
+@keyframes c-word {
+  from {
+    clip-path: inset(0 100% 0 33%);
+  }
+}
+.cLine {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + var(--lw) * 0.163 + 26px);
+  width: var(--lw);
+  height: 1px;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.14);
+}
+:global(html[data-theme='light']) .cLine {
+  background: rgba(0, 0, 0, 0.09);
+}
+.cLine span {
+  position: absolute;
+  inset: 0;
+  background: var(--gold);
+  transform-origin: left center;
+  animation: c-fill 460ms cubic-bezier(0.3, 0.7, 0.2, 1) 40ms both;
+}
+@keyframes c-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+@media (max-width: 1023px) {
+  .curtain {
+    left: 0;
+    bottom: var(--tabbar-h);
+  }
+}
+
+.content {
+  min-width: 0;
+  padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+}
+
+/* ── Mobil ─────────────────────────────────────────────────────────────────── */
+
+.tabbar {
+  display: none;
+}
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--scrim-solid);
+}
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 61;
+  height: min(86dvh, 760px);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--side-bg);
+  background-image: var(--chrome-texture);
+  background-size: 420px 420px;
+  color: var(--side-ink);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  box-shadow: var(--shadow-float);
+  touch-action: none;
+}
+.sheetHead :global(.t-headline) {
+  color: var(--side-ink-strong);
+}
+.sheetHead button {
+  color: var(--side-ink) !important;
+}
+.sheetHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 12px 8px 20px;
+  cursor: grab;
+}
+.sheetBody {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 12px 0;
+  touch-action: pan-y;
+}
+
+.toastWrap {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(24px + var(--tabbar-h) + env(safe-area-inset-bottom));
+  z-index: 80;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  padding: 0 16px;
+}
+.toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-radius: 12px;
+  background: var(--bar-bg-solid);
+  box-shadow: var(--shadow-float);
+  font-size: 13.5px;
+  font-weight: 540;
+  color: var(--on-bar);
+}
+.toast svg {
+  color: var(--gold);
+}
+
+@media (max-width: 1023px) {
+  .body {
+    padding-left: 0;
+  }
+  .topbar {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .brandArea {
+    padding: 0 12px;
+    border-right: 0;
+  }
+  .sidebar {
+    display: none;
+  }
+  .body {
+    padding-left: 0 !important;
+  }
+  .searchSlot {
+    width: 220px;
+  }
+  .topbar:not([data-home]) .brand { display: none; }
+  .topbarInner { padding-left: 0; }
+  .mobileNav, .topCenter { display: none; }
+  .backDesk { display: flex; flex: none; margin-right: 6px; padding-right: 6px; }
+}
+
+@media (max-width: 767px) {
+  .searchSlot,
+  .hideSm,
+  .sep,
+  .topbar[data-home] .crumbs {
+    display: none;
+  }
+  .searchMobile {
+    display: inline-flex;
+  }
+  .mobileNav {
+    display: none;
+    min-width: 0;
+  }
+  .topbarInner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 0 12px 0 0;
+  }
+  .topCenter {
+    display: none;
+    justify-content: center;
+    min-width: 0;
+    max-width: none;
+  }
+  .crumbs li { font-size: 12.5px; }
+  .crumbLink, .crumbCurrent { padding-inline: 4px; }
+  .topbar:not(:has(.back)) .topCenter {
+    visibility: hidden;
+  }
+  .tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    /* Üst barla aynı çerçeve: temayla birlikte koyulaşır, aynı doku. */
+    background-color: var(--bar-bg);
+    background-image: var(--chrome-texture);
+    background-size: 420px 420px;
+    background-position: 0 100%;
+    -webkit-backdrop-filter: var(--blur-bar);
+    backdrop-filter: var(--blur-bar);
+    border-top: 1px solid var(--bar-line);
+  }
+  .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    font-size: 10.5px;
+    font-weight: 560;
+    letter-spacing: 0.01em;
+    color: var(--on-bar-3);
+    transition: color var(--t-fast), transform 120ms var(--ease-out);
+  }
+  .tab:active {
+    transform: scale(0.94);
+  }
+  .tab[data-active] {
+    color: var(--on-bar);
+  }
+}
+
+@keyframes skel-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}

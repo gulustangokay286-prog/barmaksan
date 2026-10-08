@@ -1,0 +1,12 @@
+node_modules/
+dist/
+data/
+storage/
+*.db
+*.db-shm
+*.db-wal
+.env
+.env.*
+!.env.example
+.DS_Store
+docs/brief/audio/

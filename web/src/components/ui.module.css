@@ -1,0 +1,244 @@
+/* Logolar */
+.lockup picture {
+  display: contents;
+}
+.lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+}
+.barmaksan {
+  height: 32px;
+  width: auto;
+}
+.ugur {
+  height: 32px;
+  width: auto;
+}
+.lockupRule {
+  width: 1px;
+  height: 26px;
+  background: var(--line-strong);
+}
+.lockupRule[data-on-dark] {
+  background: rgba(255, 255, 255, 0.18);
+}
+.lockup[data-compact] .barmaksan,
+.lockup[data-compact] .ugur {
+  height: 28px;
+}
+.lockup[data-compact] {
+  gap: 10px;
+}
+.lockup[data-compact] .lockupRule {
+  height: 18px;
+}
+
+/* Buton */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 560;
+  letter-spacing: -0.006em;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), transform 120ms var(--ease-out), opacity var(--t-fast);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.sm {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 13px;
+  border-radius: 7px;
+  gap: 5px;
+}
+.lg {
+  height: 44px;
+  padding: 0 18px;
+  font-size: 15px;
+  border-radius: 11px;
+}
+.iconOnly {
+  padding: 0;
+  width: 36px;
+}
+.sm.iconOnly {
+  width: 30px;
+}
+.lg.iconOnly {
+  width: 44px;
+}
+.primary {
+  background: var(--ink);
+  color: var(--ink-inverse);
+}
+.primary:hover {
+  opacity: 0.88;
+}
+.secondary {
+  background: var(--fill-hover);
+  color: var(--ink);
+}
+.secondary:hover {
+  background: var(--fill-press);
+}
+.ghost {
+  color: var(--ink-2);
+}
+.ghost:hover {
+  background: var(--fill-hover);
+  color: var(--ink);
+}
+.plain {
+  height: auto;
+  padding: 0;
+  color: var(--ink-2);
+}
+.plain:hover {
+  color: var(--ink);
+}
+
+/* Segment */
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  gap: 2px;
+  border-radius: 9px;
+  background: var(--fill-hover);
+}
+.segment {
+  position: relative;
+  flex-shrink: 0;
+  white-space: nowrap;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 560;
+  color: var(--ink-2);
+  transition: color var(--t-fast);
+}
+.segmented[data-size='sm'] .segment {
+  height: 24px;
+  padding: 0 9px;
+  font-size: 12px;
+}
+.segment[aria-selected='true'] {
+  color: var(--ink);
+}
+.segmentThumb {
+  position: absolute;
+  inset: 0;
+  border-radius: 7px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 0 0 0.5px var(--line);
+}
+.segmentLabel {
+  position: relative;
+}
+
+.segmented[data-tone='dark'] {
+  background: rgba(255, 255, 255, 0.08);
+}
+.segmented[data-tone='dark'] .segment {
+  color: rgba(242, 242, 239, 0.62);
+}
+.segmented[data-tone='dark'] .segment[aria-selected='true'] {
+  color: #fff;
+}
+.segmented[data-tone='dark'] .segmentThumb {
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: none;
+}
+
+/* Sürüm */
+.version {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.version[data-old] {
+  color: var(--ink-3);
+}
+.versionLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+/* Görsel */
+.fadeImg {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 420ms var(--ease-out);
+}
+.fadeImg[data-loaded] {
+  opacity: 1;
+}
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 5px;
+  border: 1px solid var(--line-strong);
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 560;
+  color: var(--ink-3);
+  line-height: 1;
+}
+
+.spinner {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  color: var(--ink-2);
+}
+.spinner > span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10%;
+  min-width: 1.5px;
+  height: 28%;
+  margin: -14% 0 0 -5%;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.18;
+  animation: spoke 0.8s linear infinite;
+}
+@keyframes spoke {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.18;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

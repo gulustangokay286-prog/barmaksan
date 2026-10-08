@@ -1,0 +1,422 @@
+/* ── Satır ─────────────────────────────────────────────────────────────────── */
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 66px;
+  padding: 9px 12px;
+  margin: 0 -12px;
+  border-radius: 12px;
+  transition: background-color var(--t-fast) var(--ease-out);
+}
+.row + .row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 62px;
+  right: 12px;
+  height: 1px;
+  background: var(--line);
+}
+.row:hover,
+.row:focus-within {
+  background: var(--fill-hover);
+}
+.row:hover::before,
+.row:hover + .row::before,
+.row:focus-within::before,
+.row:focus-within + .row::before {
+  opacity: 0;
+}
+.row:active {
+  background: var(--fill-press);
+}
+.row[data-compact] {
+  min-height: 52px;
+}
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.title {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 560;
+  letter-spacing: -0.008em;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 4px;
+}
+.title::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+}
+.titleEmpty {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 520;
+  color: var(--ink-3);
+}
+.context {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.side {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  min-width: 72px;
+  text-align: right;
+}
+.side > :first-child {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.sideSize {
+  font-variant-numeric: tabular-nums;
+}
+.sideDate {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.emptyAction {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 560;
+  color: var(--ink-2);
+  background: var(--fill-hover);
+}
+.emptyAction:hover {
+  color: var(--ink);
+  background: var(--fill-press);
+}
+
+/* ── Küçük resim ─────────────────────────────────────────────────────────── */
+
+.thumb {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 48px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--line);
+  color: var(--ink-2);
+}
+.thumb[data-size='sm'] {
+  width: 28px;
+  height: 36px;
+  border-radius: 4px;
+}
+.thumb[data-kind='image'],
+.thumb[data-kind='video'] {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: var(--fill);
+}
+.thumb[data-kind='icon'] {
+  background: var(--fill);
+  box-shadow: none;
+}
+.thumb[data-kind='empty'] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink-4);
+}
+.thumbPlay {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* ── Gruplar: başlıklar tutunur (bulanıklık yok, düz zemin) ──────────────── */
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.groupHead {
+  position: sticky;
+  top: var(--bar-h);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  margin: 0 -12px;
+  padding: 0 12px;
+  background: var(--canvas);
+  box-shadow: 0 1px 0 var(--line);
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+.groupHead svg {
+  color: var(--ink-2);
+}
+.groupShort {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+}
+.groupCount {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Makine kartı: 3D ─────────────────────────────────────────────────────── */
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 16px;
+}
+.tileImage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  margin-bottom: 10px;
+  border-radius: 16px;
+  background: var(--fill);
+  color: var(--ink-4);
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: background-color var(--t-base) var(--ease-out);
+}
+.tileFloat {
+  position: absolute;
+  inset: 13%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateZ(0);
+  transition: transform 520ms var(--ease-out);
+}
+.tile:hover .tileFloat {
+  transform: translateZ(36px) scale(1.02);
+}
+.tile:active .tileImage {
+  background: var(--fill-press);
+}
+.tile:active .tileFloat {
+  transform: translateZ(10px) scale(0.985);
+  transition-duration: 140ms;
+}
+.tileFloat img {
+  position: absolute;
+  inset: 0;
+  object-fit: contain;
+}
+.tileName {
+  font-size: 14px;
+  line-height: 19px;
+  font-weight: 560;
+  letter-spacing: -0.006em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.tileCode {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+/* ── Medya ────────────────────────────────────────────────────────────────── */
+
+.media {
+  columns: 4 240px;
+  column-gap: 16px;
+}
+.media[data-columns='dense'] {
+  columns: 3 200px;
+}
+.mediaItem {
+  display: inline-block;
+  width: 100%;
+  break-inside: avoid;
+  padding-bottom: 20px;
+}
+/* Yalnız videolar: eşit ızgara, sabit 16:9. */
+.media[data-layout='grid'] {
+  columns: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px 16px;
+}
+.media[data-layout='grid'] .mediaItem {
+  padding-bottom: 0;
+}
+.mediaButton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  border-radius: 12px;
+}
+.mediaFrame {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--fill);
+  color: var(--ink-4);
+}
+.mediaFrame img {
+  transition: transform 640ms var(--ease-out), opacity 420ms var(--ease-out);
+}
+.mediaButton:hover .mediaFrame img[data-loaded] {
+  transform: scale(1.03);
+}
+.mediaButton:active .mediaFrame {
+  transform: scale(0.985);
+  transition: transform 140ms var(--ease-out);
+}
+.mediaBadge {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: rgba(20, 20, 22, 0.72);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.mediaCaption {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0 2px;
+}
+.mediaTitle {
+  font-size: 13.5px;
+  line-height: 18px;
+  font-weight: 560;
+  color: var(--ink);
+}
+.mediaMeta {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 767px) {
+  .row {
+    gap: 12px;
+    min-height: 64px;
+  }
+  .row + .row::before {
+    left: 60px;
+  }
+  .side {
+    min-width: 56px;
+  }
+  .media {
+    columns: 2 140px;
+    column-gap: 10px;
+  }
+  .mediaItem {
+    padding-bottom: 14px;
+  }
+  .media[data-layout='grid'] {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+@media (hover: none) {
+  .tile:hover .tileFloat {
+    transform: none;
+  }
+}
+
+/* ── Belge eylemleri ─────────────────────────────────────────────────────── */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+/* İki etiket aynı hücrede: düğme en geniş olanın boyunda kalır, metin yerinde değişir. */
+.swap {
+  display: inline-grid;
+}
+.swap > span {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: opacity 180ms var(--ease-out), transform 260ms var(--ease-out);
+}
+.swap > span:last-child {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.swap[data-on] > span:first-child {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+.swap[data-on] > span:last-child {
+  opacity: 1;
+  transform: none;
+}

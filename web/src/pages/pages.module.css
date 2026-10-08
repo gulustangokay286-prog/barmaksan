@@ -1,0 +1,649 @@
+.page {
+  width: 100%;
+  max-width: calc(var(--content-max) + var(--gutter) * 2);
+  margin: 0 auto;
+  padding: 0 var(--gutter) 96px;
+}
+.section {
+  margin-top: 64px;
+}
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 14px;
+  font-weight: 540;
+  color: var(--ink-2);
+  border-radius: 6px;
+  transition: color var(--t-fast);
+}
+.more:hover {
+  color: var(--ink);
+}
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+.rowSkeleton {
+  height: 56px;
+  margin: 6px 0;
+}
+
+/* ── Kategoriler ve makine kartları ──────────────────────────────────────── */
+
+.categories {
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+}
+.category {
+  scroll-margin-top: calc(var(--bar-h) + 68px);
+}
+.categoryHead {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  color: var(--ink);
+  border-radius: 6px;
+}
+.categoryHead svg {
+  color: var(--ink-3);
+  transition: transform var(--t-base) var(--ease-out);
+}
+.categoryHead:hover svg {
+  transform: translateX(2px);
+}
+.categoryCount {
+  font-size: 14px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 28px var(--grid-gap);
+}
+
+/* Koleksiyonlar: kapak görseli kartın kendisi; altında düz metin. Kutu / çerçeve / ikon çipi yok. */
+.collections {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 32px 20px;
+  margin-top: 36px;
+}
+.collection {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  -webkit-tap-highlight-color: transparent;
+}
+.collectionCover {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 10px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--fill);
+  color: var(--ink-4);
+  transition: transform 160ms var(--ease-out);
+}
+.collectionCover img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition: transform 640ms var(--ease-out), opacity 420ms var(--ease-out);
+}
+/* Belge koleksiyonu: ilk sayfa kâğıt gibi, kenarlardan biraz içeride. */
+.collectionCover[data-page] img {
+  inset: auto;
+  top: 14px;
+  left: 17%;
+  width: 66%;
+  height: calc(100% - 14px);
+  object-position: top center;
+  border-radius: 3px 3px 0 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+.collection:hover .collectionCover img[data-loaded] {
+  transform: scale(1.03);
+}
+.collection:hover .collectionCover[data-page] img[data-loaded] {
+  transform: translateY(-4px);
+}
+.collection:active .collectionCover {
+  transform: scale(0.985);
+}
+.collectionPlay {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(20, 20, 22, 0.55);
+  color: #fff;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.collectionName {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 590;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.collectionCount {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Makine: görsel solda sabit, dokümanlar sağda akar ───────────────────── */
+
+.machineLayout {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  align-items: start;
+  padding-top: 32px;
+}
+.machineAside {
+  grid-column: 1 / span 5;
+  position: sticky;
+  top: calc(var(--bar-h) + 24px);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.machineImage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 0.86;
+  border-radius: 22px;
+  background: var(--fill);
+  perspective: 1000px;
+}
+.machineFloat {
+  position: relative;
+  width: 78%;
+  height: 78%;
+}
+.machineFloat img {
+  position: absolute;
+  inset: 0;
+  object-fit: contain;
+}
+.machineKicker {
+  align-self: flex-start;
+  margin-top: 24px;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 650;
+  color: var(--gold-ink);
+  border-radius: 4px;
+}
+.machineKicker:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.machineTitle {
+  margin-top: 8px;
+  font-size: 34px;
+  line-height: 38px;
+  text-wrap: balance;
+}
+.machineEn {
+  margin-top: 4px;
+  font-size: 16px;
+  color: var(--ink-3);
+}
+.machineSummary {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 14px;
+  font-size: 14.5px;
+  line-height: 22px;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.models {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.models span {
+  white-space: nowrap;
+}
+.modelsLabel {
+  font-family: var(--font);
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--ink-3);
+  width: 100%;
+}
+.asideStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.asideStats b {
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.machineMain {
+  grid-column: 7 / span 6;
+  min-width: 0;
+}
+
+.sheetCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 24px;
+  padding: 20px;
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line);
+}
+.sheetPreview {
+  position: relative;
+  display: block;
+  width: 128px;
+  aspect-ratio: 1 / 1.414;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--line), 0 8px 22px rgba(0, 0, 0, 0.07);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.sheetBody {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.sheetTitle {
+  margin-top: 6px;
+}
+.sheetMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.sheetNote {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-2);
+}
+.sheetActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 18px;
+}
+.docsBlock {
+  margin-top: 36px;
+}
+
+/* ── Doküman ────────────────────────────────────────────────────────────────── */
+
+.docLayout {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  align-items: start;
+  padding-top: 32px;
+}
+.viewer {
+  grid-column: 1 / span 8;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+.page_ {
+  position: relative;
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--line), 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+.pageUnder,
+.pageImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.pageImg {
+  opacity: 0;
+  transition: opacity 360ms var(--ease-out);
+}
+.pageImg[data-loaded] {
+  opacity: 1;
+}
+.pageNo {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(20, 20, 22, 0.7);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.viewerMedia {
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--fill);
+}
+.viewerMedia video {
+  width: 100%;
+  background: #000;
+}
+.viewerMore {
+  padding: 18px;
+  border-radius: 12px;
+  background: var(--fill);
+  font-size: 14px;
+  color: var(--ink-2);
+  text-align: center;
+}
+.noPreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  background: var(--fill);
+  color: var(--ink-3);
+}
+.panel {
+  grid-column: 9 / span 4;
+  position: sticky;
+  top: calc(var(--bar-h) + 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.panelTitle {
+  text-wrap: balance;
+}
+.panelActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.panelActions > :first-child {
+  grid-column: 1 / -1;
+}
+.permalink {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--fill);
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.permalinkUrl {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oldBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--fill);
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.oldBanner a {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.blockLabel {
+  margin-bottom: 10px;
+}
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+.tlItem {
+  position: relative;
+  padding: 0 0 16px 16px;
+  border-left: 1px solid var(--line-strong);
+}
+.tlItem:last-child {
+  padding-bottom: 0;
+}
+.tlItem[data-current] {
+  border-left: 2px solid var(--gold);
+  padding-left: 15px;
+}
+.tlHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.tlItem[data-current] .tlHead {
+  color: var(--ink);
+  font-weight: 600;
+}
+.tlNote {
+  margin-top: 3px;
+  font-size: 13.5px;
+  line-height: 19px;
+  color: var(--ink);
+}
+.tlMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.tlMeta a {
+  color: var(--ink-2);
+  font-weight: 540;
+}
+.tlMeta a:hover {
+  color: var(--ink);
+}
+.facts {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 16px;
+  font-size: 13px;
+}
+.facts dt {
+  color: var(--ink-3);
+}
+.facts dd {
+  margin: 0;
+  color: var(--ink);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.facts dd a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}
+
+/* ── Klasör / medya / son ───────────────────────────────────────────────────── */
+
+.toolbar {
+  position: sticky;
+  top: var(--bar-h);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 24px -12px 20px;
+  padding: 10px 12px;
+  background: var(--canvas);
+  box-shadow: 0 1px 0 var(--line);
+}
+.toolbarScroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dayHead {
+  position: sticky;
+  top: var(--bar-h);
+  z-index: 5;
+  margin: 28px -12px 4px;
+  padding: 10px 12px;
+  background: var(--canvas);
+  box-shadow: 0 1px 0 var(--line);
+  font-size: 13px;
+  font-weight: 650;
+}
+.empty {
+  padding: 64px 0;
+  text-align: center;
+  color: var(--ink-3);
+}
+.loadMore {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 96px 0;
+}
+
+@media (max-width: 1099px) {
+  .machineLayout {
+    row-gap: 32px;
+    padding-top: 16px;
+  }
+  .machineAside,
+  .machineMain {
+    grid-column: 1 / -1;
+  }
+  .machineAside {
+    position: static;
+  }
+  .machineImage {
+    aspect-ratio: 5 / 4;
+  }
+}
+
+@media (max-width: 1023px) {
+  .docLayout {
+    row-gap: 28px;
+  }
+  .viewer,
+  .panel {
+    grid-column: 1 / -1;
+  }
+  .panel {
+    position: static;
+    order: -1;
+  }
+}
+
+@media (max-width: 767px) {
+  .section {
+    margin-top: 48px;
+  }
+  .machineTitle {
+    font-size: 30px;
+    line-height: 34px;
+  }
+  /* Kategoriler mobilde yatay kayar; sayfa uzamaz. */
+  .tiles {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 42%;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 var(--gutter);
+    margin: 0 calc(-1 * var(--gutter));
+    padding: 0 var(--gutter) 4px;
+    scrollbar-width: none;
+  }
+  .tiles::-webkit-scrollbar {
+    display: none;
+  }
+  .tiles > li {
+    scroll-snap-align: start;
+  }
+  .collections {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 12px;
+    margin-top: 24px;
+  }
+  .sheetCard {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 14px;
+    padding: 14px;
+  }
+  .sheetPreview {
+    width: 96px;
+  }
+}
