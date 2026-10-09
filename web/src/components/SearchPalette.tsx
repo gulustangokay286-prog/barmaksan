@@ -115,7 +115,7 @@ function measureMorph(panel: HTMLElement, origin: HTMLElement | null): Morph | n
 }
 
 function Palette({ initial, origin, onClose }: { initial: string; origin: HTMLElement | null; onClose: () => void }) {
-  const { t, pick, lang } = useI18n();
+  const { t, pick, lang, locale } = useI18n();
   const types = useDocTypes();
   const navigate = useGo();
   const reduce = useReducedMotion();
@@ -234,8 +234,8 @@ function Palette({ initial, origin, onClose }: { initial: string; origin: HTMLEl
   }, []);
 
   const { data, isFetching } = useQuery({
-    queryKey: ['search', debounced, type],
-    queryFn: ({ signal }) => api.search(debounced, type || undefined, signal),
+    queryKey: ['search', debounced, type, locale],
+    queryFn: ({ signal }) => api.search(debounced, type || undefined, signal, locale),
     enabled: debounced.length > 0,
     placeholderData: keepPreviousData,
     staleTime: 30_000,

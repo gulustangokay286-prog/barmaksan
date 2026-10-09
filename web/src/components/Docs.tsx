@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { motion } from 'motion/react';
 import { Icon } from './Icon';
 import { Button, FadeImage, LinkButton, VersionTag, useTilt } from './ui';
-import { Link } from '../lib/link';
+import { Link, useGo } from '../lib/link';
 import { useI18n } from '../lib/i18n';
-import { copyText, useDocTypes, useUi } from '../lib/ui';
-import { formatDuration, formatRelative, languageLabel } from '../lib/format';
+import { copyText, useDocTypes, useFolderTrail, useUi } from '../lib/ui';
+import { formatDuration, languageLabel, shortTitle } from '../lib/format';
+import { DateStamp } from './DateStamp';
 import { prefetchDoc, prefetchFolder } from '../lib/query';
 import { markMorph } from '../lib/morph';
-import type { Doc, DocType, FolderChild } from '../lib/api';
+import type { Doc, DocType, FolderChild, Name } from '../lib/api';
 import s from './Docs.module.css';
 
 export const docHref = (d: Doc) => `/dokuman/${d.id}`;
@@ -62,11 +63,27 @@ export function DocThumb({ doc, size = 'md' }: { doc: Doc; size?: 'sm' | 'md' | 
 }
 
 /** Tek satırlık bağlam: klasör ya da biçim + dil. */
-export function DocContext({ doc, showFolder }: { doc: Doc; showFolder?: boolean }) {
+/** Belgenin yeri, ekmek kırıntısı gibi: "Temizleme ve Tavlama › Çöp Sasörü Cleanmax 4". */
+export function FolderTrail({ slug, name }: { slug: string; name: Name }) {
   const { pick } = useI18n();
+  const trail = useFolderTrail()(slug);
+  const names = trail.length ? trail.map((n) => pick(n.name)) : [pick(name)];
+  return (
+    <>
+      {names.map((n, i) => (
+        <Fragment key={i}>
+          {i > 0 && <span className={s.trailSep} aria-hidden="true">›</span>}
+          {n}
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
+export function DocContext({ doc, showFolder }: { doc: Doc; showFolder?: boolean }) {
   const file = doc.current?.file;
   const lang = languageLabel(doc.language);
-  if (showFolder) return <span className={s.context}>{pick(doc.folder.name)}</span>;
+  if (showFolder) return <span className={s.context}><FolderTrail slug={doc.folder.slug} name={doc.folder.name} /></span>;
   return (
     <span className={s.context}>
       {file?.ext.toUpperCase()}
@@ -77,13 +94,13 @@ export function DocContext({ doc, showFolder }: { doc: Doc; showFolder?: boolean
 }
 
 export function DocRow({ doc, showFolder = false, compact = false }: { doc: Doc; index?: number; showFolder?: boolean; compact?: boolean }) {
-  const { pick, lang } = useI18n();
+  const { pick } = useI18n();
   const types = useDocTypes();
   const v = doc.current;
   const versioned = types.get(doc.type)?.versioned;
   return (
     <li className={`${s.row} reveal`} data-compact={compact || undefined}>
-      <DocThumb doc={doc} size={compact ? 'sm' : 'md'} />
+      <Link to={docHref(doc)} aria-label={pick(doc.title)} onPointerEnter={() => prefetchDoc(doc.id)} onClick={(e) => markMorph(e.currentTarget.querySelector('[data-morph]'), 'doc-page')}><DocThumb doc={doc} size={compact ? 'sm' : 'md'} /></Link>
       <span className={s.body}>
         <Link
           to={docHref(doc)}
@@ -93,14 +110,14 @@ export function DocRow({ doc, showFolder = false, compact = false }: { doc: Doc;
           onFocus={() => prefetchDoc(doc.id, v?.file?.id, v?.file?.kind)}
           onClick={(e) => markMorph(e.currentTarget.closest('li')?.querySelector('[data-morph]'), 'doc-page')}
         >
-          {pick(doc.title)}
+          {showFolder ? shortTitle(pick(doc.title), pick(doc.folder.name)) : pick(doc.title)}
         </Link>
         <DocContext doc={doc} showFolder={showFolder} />
       </span>
       {v && (
         <span className={s.side}>
           {versioned ? <VersionTag no={v.no} /> : <span className={s.sideSize}>{v.file?.ext.toUpperCase() ?? ''}</span>}
-          <span className={s.sideDate}>{formatRelative(v.createdAt, lang)}</span>
+          <DateStamp iso={v.createdAt} author={v.author} className={s.sideDate} />
         </span>
       )}
     </li>
@@ -193,6 +210,7 @@ export function MachineTile({ m }: { m: Pick<FolderChild, 'slug' | 'name' | 'mod
 
 export function MediaGrid({ items, columns = 'auto' }: { items: Doc[]; columns?: 'auto' | 'dense' }) {
   const { setLightbox } = useUi();
+  const go = useGo();
   const { pick, lang } = useI18n();
   // Yalnız videolar: eşit 16:9 ızgara (sütun düzeni iki videoyu birbirinden uzaklaştırıyordu).
   const videosOnly = items.length > 0 && items.every((d) => d.current?.file?.kind === 'video');
@@ -203,7 +221,7 @@ export function MediaGrid({ items, columns = 'auto' }: { items: Doc[]; columns?:
         const ratio = videosOnly ? '16 / 9' : f?.width && f?.height ? `${f.width} / ${f.height}` : '4 / 3';
         return (
           <li key={d.id} className={`${s.mediaItem} reveal-3d`}>
-            <button className={s.mediaButton} onClick={() => setLightbox({ items, index: i })} aria-label={pick(d.title)}>
+            <button className={s.mediaButton} onClick={() => f?.kind === 'pdf' || f?.kind === 'other' ? go(docHref(d)) : setLightbox({ items, index: i })} aria-label={pick(d.title)}>
               <span data-media-id={d.id} className={s.mediaFrame} style={{ aspectRatio: ratio }}>
                 {f?.thumb ? <FadeImage src={f.thumb} fit="cover" /> : <Icon name={f?.kind === 'video' ? 'video' : 'photo'} size={24} />}
                 {f?.kind === 'video' && (

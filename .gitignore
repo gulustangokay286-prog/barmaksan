@@ -10,3 +10,4 @@ storage/
 !.env.example
 .DS_Store
 docs/brief/audio/
+.vscode/

@@ -227,13 +227,6 @@
 .recentRow:active {
   background: var(--fill-press);
 }
-.recentN {
-  width: 22px;
-  flex: none;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--ink-4);
-}
 .recentBody {
   flex: 1;
   min-width: 0;
@@ -252,19 +245,14 @@
   text-overflow: ellipsis;
 }
 .recentMeta {
-  display: flex;
-  gap: 8px;
+  display: block;
   min-width: 0;
+  text-overflow: ellipsis;
   font-size: 13px;
   line-height: 18px;
   color: var(--ink-3);
   white-space: nowrap;
   overflow: hidden;
-}
-.recentMeta span + span::before {
-  content: '·';
-  margin-right: 8px;
-  color: var(--ink-4);
 }
 .recentSide {
   display: flex;
@@ -773,9 +761,6 @@
     left: 10px;
     bottom: 10px;
     padding: 8px 11px;
-  }
-  .recentN {
-    display: none;
   }
 }
 

@@ -113,6 +113,7 @@ const NAV = [
   [
     { to: '/admin/ana-sayfa', icon: 'home', tr: 'Ana sayfa', en: 'Home page' },
     { to: '/admin/turler', icon: 'layers', tr: 'Belge türleri', en: 'Document types' },
+    { to: '/admin/diller', icon: 'translate', tr: 'İçerik dilleri', en: 'Content languages' },
     { to: '/admin/hareketler', icon: 'history', tr: 'Hareketler', en: 'Activity' },
     { to: '/admin/hesap', icon: 'user', tr: 'Hesap', en: 'Account' },
   ],

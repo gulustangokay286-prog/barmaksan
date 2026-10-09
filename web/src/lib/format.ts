@@ -42,6 +42,13 @@ export function formatRelative(iso: string, lang: Lang) {
   return formatDate(iso, lang);
 }
 
+/** "Çöp Sasörü Cleanmax 4 — Teknik Fiş" → "Teknik Fiş": belge, bulunduğu yerin adıyla başlıyorsa o kısım atılır. */
+export function shortTitle(title: string, folder: string) {
+  const parts = title.split(/\s+[—–-]\s+/);
+  if (folder && parts.length > 1 && parts[0].trim().toLocaleLowerCase('tr') === folder.trim().toLocaleLowerCase('tr')) return parts.slice(1).join(' — ');
+  return title;
+}
+
 export function formatNumber(n: number, lang: Lang) {
   return n.toLocaleString(locale(lang));
 }
@@ -62,8 +69,12 @@ export function languageLabel(l: DocLanguage) {
     case 'multi':
       return 'TR / EN / +';
     default:
-      return null;
+      return l === 'none' ? null : l.toUpperCase();
   }
+}
+
+export function matchesLanguage(documentLanguage: string, locale: string) {
+  return documentLanguage === locale || documentLanguage === 'none' || documentLanguage === 'multi' || (documentLanguage === 'tr-en' && ['tr', 'en'].includes(locale));
 }
 
 export function dayKey(iso: string) {

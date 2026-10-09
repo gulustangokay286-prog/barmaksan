@@ -13,6 +13,7 @@ import { useI18n } from '../lib/i18n';
 import { useDocTypes, useUi } from '../lib/ui';
 import { ConfirmButton, EmptyNote, PageHead, Section, Sheet, useCoverageTypes, useRun } from './shared';
 import a from './admin.module.css';
+import { MachineContentEditor, type ContentPanel } from './MachineContent';
 
 const fold = (s: string) => s.toLocaleLowerCase('tr').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i');
 
@@ -54,7 +55,7 @@ export default function AdminMachines() {
     <div className={a.page}>
       <PageHead
         title={tr ? 'Makineler' : 'Machines'}
-        lead={tr ? 'Adı, kategorisi, kapak fotoğrafı, modelleri ve özeti. Değişiklikler sitede ve aramada hemen görünür.' : 'Name, category, cover photo, models and summary. Changes show on the site and in search right away.'}
+        lead={tr ? 'Ürün bilgilerini, galerileri ve belgeleri tek yerden yönetin.' : 'Manage product information, galleries and documents in one place.'}
         actions={<button className={a.primary} onClick={() => setOpen('yeni')}><Icon name="plus" size={16} />{tr ? 'Yeni makine' : 'New machine'}</button>}
       />
 
@@ -135,12 +136,15 @@ export function MachineSheet({ slug, tree, defaultParent: parentHint, onClose, o
   const parents = tree.filter((f) => f.kind === 'category' || f.kind === 'section');
   const defaultParent = machine ? byId.get(machine.parentId ?? -1)?.slug ?? '' : parentHint ?? tree.find((f) => f.kind === 'category')?.slug ?? '';
 
+  const [panel, setPanel] = useState<'details' | 'files' | ContentPanel>('details');
+  const [contentStatus, setContentStatus] = useState({ dirty: false, busy: false });
   const [form, setForm] = useState<Form | null>(null);
   const [formFor, setFormFor] = useState<string | null>(null);
   const stamp = slug ? (creating ? 'yeni' : machine ? `${machine.slug}:${machine.updatedAt}:${machine.parentId}` : null) : null;
   if (stamp && stamp !== formFor && (creating || machine)) {
     setFormFor(stamp);
     setForm(formOf(machine, defaultParent));
+    if (formFor?.split(':')[0] !== slug) setPanel('details');
     setError(null);
   }
   if (!slug && formFor) setFormFor(null);
@@ -183,6 +187,7 @@ export function MachineSheet({ slug, tree, defaultParent: parentHint, onClose, o
 
   return (
     <Sheet
+      wide
       open={!!slug}
       onClose={onClose}
       title={creating ? (tr ? 'Yeni makine' : 'New machine') : machine ? pick(machine.name) : (tr ? 'Makine' : 'Machine')}
@@ -198,11 +203,13 @@ export function MachineSheet({ slug, tree, defaultParent: parentHint, onClose, o
               onConfirm={async () => { if (await run('archive', () => api.archiveFolder(machine.slug), tr ? 'Makine arşivlendi' : 'Machine archived')) onClose(); }}
             />
           )}
-          <span style={{ flex: 1 }} />
+          {machine && <ConfirmButton label={tr ? 'Sil' : 'Delete'} confirm={tr ? 'Makineyi ve belgelerini sil' : 'Delete machine and its files'} icon="trash" busy={!!busy || contentStatus.busy} onConfirm={async () => { if (await run('delete', () => api.deleteFolder(machine.slug), tr ? 'Makine ve belgeleri silindi' : 'Machine and files deleted')) onClose(); }} />}
+          <span className={a.draftStatus}>{dirty || contentStatus.dirty ? (tr ? 'Kaydedilmemiş değişiklikler' : 'Unsaved changes') : (tr ? 'Güncel' : 'Up to date')}</span>
           {machine && <Link to={`/m/${machine.slug}`} className={a.textBtn}>{tr ? 'Sitede aç' : 'Open on site'}</Link>}
-          <button className={a.primary} onClick={save} disabled={!!busy || !form.nameTr.trim() || !form.parent || (!creating && !dirty)}>
-            {busy === 'save' ? <Spinner size={14} /> : creating ? (tr ? 'Makineyi ekle' : 'Add machine') : (tr ? 'Kaydet' : 'Save')}
-          </button>
+          {panel === 'details' && <button className={a.primary} onClick={save} disabled={!!busy || !form.nameTr.trim() || !form.parent || (!creating && !dirty)}>
+            {busy === 'save' ? <Spinner size={14} /> : creating ? (tr ? 'Makineyi ekle' : 'Add machine') : (tr ? 'Bilgileri kaydet' : 'Save details')}
+          </button>}
+          {machine && panel !== 'details' && panel !== 'files' && <button type="submit" form={`machine-content-${machine.slug}`} className={a.primary} disabled={!contentStatus.dirty || contentStatus.busy || !!busy}>{contentStatus.busy ? <Spinner size={14} /> : <Icon name="check" size={14} />}{tr ? 'Kaydet ve yayınla' : 'Save and publish'}</button>}
         </>
       )}
     >
@@ -210,8 +217,12 @@ export function MachineSheet({ slug, tree, defaultParent: parentHint, onClose, o
         <div className={a.skelList}>{Array.from({ length: 6 }, (_, i) => <span key={i} className="skeleton" style={{ ['--i' as string]: i }} />)}</div>
       ) : (
         <>
+          {machine && <nav className={a.editorNav} aria-label={tr ? 'Makine düzenleme bölümleri' : 'Machine editing sections'}>
+            {([['details', 'Bilgiler', 'Details', 'parts'], ['profile', 'Açıklama', 'Description', 'file'], ['specifications', 'Teknik', 'Technical', 'table'], ['gallery', 'Galeri', 'Gallery', 'images'], ['files', 'Belgeler', 'Files', 'folder'], ['maintenance', 'Bakım', 'Maintenance', 'wrench']] as const).map(([id, labelTr, labelEn, icon]) => <button key={id} className={a.editorTab} aria-pressed={panel === id} onClick={() => setPanel(id)}><Icon name={icon} size={16} />{tr ? labelTr : labelEn}{id === 'files' && <span>{own.length}</span>}</button>)}
+          </nav>}
+          <div hidden={panel !== 'details'}>
           {machine && (
-            <Section title={tr ? 'Kapak' : 'Cover'}>
+            <Section title={tr ? 'Liste kapağı' : 'List cover'}>
               <div className={a.coverRow}>
                 <span className={a.coverBox}>
                   {cover?.thumb ? <FadeImage src={cover.preview ?? cover.thumb} /> : <Icon name="parts" size={28} />}
@@ -221,7 +232,7 @@ export function MachineSheet({ slug, tree, defaultParent: parentHint, onClose, o
                   <button className={a.secondary} onClick={() => fileRef.current?.click()} disabled={!!busy}>
                     <Icon name="upload" size={15} />{tr ? 'Görsel yükle' : 'Upload image'}
                   </button>
-                  <p className={a.hint}>{tr ? 'Orijinal dosya saklanır, sıkıştırılmaz. Şeffaf arka planlı PNG en iyi sonucu verir.' : 'The original is kept as is. A PNG with a transparent background works best.'}</p>
+                  <p className={a.hint}>{tr ? 'Makine listesinde bu kapak gösterilir. Ürün içindeki galeri ayrı düzenlenir. Orijinal dosya korunur.' : 'This cover appears in the machine list. The product gallery is managed separately. The original file is preserved.'}</p>
                   <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => { uploadCover(e.target.files?.[0]); e.target.value = ''; }} />
                 </div>
               </div>
@@ -293,6 +304,8 @@ export function MachineSheet({ slug, tree, defaultParent: parentHint, onClose, o
             </div>
           </Section>
 
+          </div>
+          <div hidden={panel !== 'files'}>
           {machine && (
             <Section
               title={tr ? 'Belgeler' : 'Files'}
@@ -326,6 +339,8 @@ export function MachineSheet({ slug, tree, defaultParent: parentHint, onClose, o
             </Section>
           )}
 
+          </div>
+          {machine && <MachineContentEditor key={machine.slug} slug={machine.slug} panel={panel !== 'details' && panel !== 'files' ? panel : null} onStatus={setContentStatus} />}
           {error && <p className={a.error} role="alert">{error}</p>}
         </>
       )}

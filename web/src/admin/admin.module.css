@@ -1972,3 +1972,54 @@ button.folderName:hover {
     flex-direction: column;
   }
 }
+
+/* Yönetim: düzenli çalışma alanı ve bölüm bazlı ürün düzenleme. */
+.sidebar { background: var(--surface); border-color: var(--line); }
+.navLink { height: 42px; padding-inline: 12px; color: var(--ink-2); border-radius: 10px; }
+.navLink:hover { color: var(--ink); background: var(--fill-hover); }
+.navLink[aria-current='page'] { color: var(--ink); background: var(--fill); font-weight: 650; }
+.navGroup + .navGroup, .sideFoot { border-color: var(--line); }
+.uploadBtn { background: var(--ink); color: var(--ink-inverse); height: 44px; }
+.page { max-width: 1320px; }
+.searchField { border-radius: 12px; min-height: 44px; }
+.select { min-height: 44px; border-radius: 10px; }
+.toolbar { gap: 12px; margin-bottom: 20px; }
+.machineGrid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.machineCard { display: grid; grid-template-columns: 82px minmax(0,1fr); grid-template-rows: auto auto 1fr; column-gap: 16px; padding: 16px; min-height: 130px; align-content: start; border-radius: 14px; }
+.machineCover { grid-row: 1 / 4; width: 82px; height: 96px; aspect-ratio: auto; margin: 0; }
+.machineCover img { padding: 7px; }
+.machineName { text-wrap: auto; font-size: 14.5px; line-height: 20px; }
+.machineMeta { line-height: 18px; margin-top: 5px; }
+.machineFoot { align-self: end; font-size: 12px; }
+.machineGap { padding: 2px 6px; border-radius: 5px; background: var(--fill); }
+.machineSkel { height: 130px; }
+.sheet[data-wide] { width: min(980px, 100vw); }
+.sheetHead { padding: 24px 24px 20px 32px; }
+.sheetTitle { font-size: 24px; line-height: 30px; }
+.sheetBody { padding: 0 32px 32px; }
+.sheetFoot { padding: 16px 32px calc(16px + env(safe-area-inset-bottom)); flex-wrap: wrap; }
+.sheetFoot .danger { font-size: 12.5px; }
+.sheetBody [hidden] { display: none !important; }
+.editorNav { position: sticky; top: 0; z-index: 2; display: flex; gap: 5px; padding: 14px 0; margin-bottom: 6px; background: var(--surface); border-bottom: 1px solid var(--line); overflow-x: auto; }
+.editorTab { display: flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 13px; border-radius: 9px; color: var(--ink-3); font-size: 13px; font-weight: 550; white-space: nowrap; }
+.editorTab:hover { color: var(--ink); background: var(--fill-hover); }
+.editorTab[aria-pressed='true'] { color: var(--ink); background: var(--fill); font-weight: 650; }
+.editorTab > span { color: var(--ink-3); font-size: 11px; }
+.sheet[data-wide] .sectionHead h3 { font-size: 18px; }
+.sheet[data-wide] .form { gap: 20px; }
+.sheet[data-wide] .field input, .sheet[data-wide] .field select { min-height: 44px; }
+.sheet[data-wide] .coverRow { align-items: center; }
+.sheet[data-wide] .pickGrid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+@media(max-width: 860px) {
+  .page { padding: 24px 16px 80px; }
+  .sheetHead { padding: 18px 16px; }
+  .sheetBody { padding: 0 16px 24px; }
+  .sheetFoot { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); gap: 10px; }
+  .sheetFoot .primary { margin-left: auto; }
+  .sheetFoot > .textBtn { display: none; }
+  .editorTab { padding-inline: 11px; }
+  .machineGrid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+}
+.draftStatus { flex: 1; font-size: 12px; color: var(--ink-3); text-align: right; margin-right: 8px; }
+@media(max-width:600px) { .draftStatus { display: none; } }
+.dialogScrim { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(12, 14, 18, .32); }

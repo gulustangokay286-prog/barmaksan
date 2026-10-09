@@ -89,21 +89,22 @@ export function VersionTag({ no, current = true, label }: { no: number; current?
 // ── Görsel: opaklıkla gelir (filtre yok — büyük yüzeyde blur kasar) ─────────
 
 export function FadeImage({ src, alt = '', className, fit = 'contain', eager = false, style }: { src: string; alt?: string; className?: string; fit?: 'contain' | 'cover'; eager?: boolean; style?: React.CSSProperties }) {
-  const [loaded, setLoaded] = useState(false);
+  const [loadedSrc, setLoadedSrc] = useState('');
   const ref = useCallback((el: HTMLImageElement | null) => {
-    if (el?.complete && el.naturalWidth > 0) setLoaded(true);
-  }, []);
+    if (el?.complete && el.naturalWidth > 0) setLoadedSrc(src);
+  }, [src]);
   return (
     <img
+      key={src}
       ref={ref}
       src={src}
       alt={alt}
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
       draggable={false}
-      onLoad={() => setLoaded(true)}
+      onLoad={() => setLoadedSrc(src)}
       className={[s.fadeImg, className].filter(Boolean).join(' ')}
-      data-loaded={loaded || undefined}
+      data-loaded={loadedSrc === src || undefined}
       style={{ objectFit: fit, ...style }}
     />
   );

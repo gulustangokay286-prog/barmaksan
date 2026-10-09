@@ -11,8 +11,7 @@ import { Link } from '../lib/link';
 import { useI18n } from '../lib/i18n';
 import { useUi } from '../lib/ui';
 import { formatDuration } from '../lib/format';
-import { downloadLink, type Doc } from '../lib/api';
-import { spring } from '../lib/motion';
+import { downloadLink, pdfPageLink, type Doc } from '../lib/api';
 import s from './Lightbox.module.css';
 
 // Apple'ın kaydırma yavaşlama projeksiyonu: bırakılan hızdan varış noktası.
@@ -21,9 +20,9 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
 const slide: Variants = {
-  enter: (d: number) => (d === 0 ? { opacity: 1 } : { opacity: 0, x: d * 80 }),
-  center: { opacity: 1, x: 0 },
-  exit: (d: number) => ({ opacity: 0, x: d * -80, transition: { duration: 0.16 } }),
+  enter: (d: number) => ({ opacity: d === 0 ? 1 : 0, x: d * 80, scale: d === 0 ? 1 : .94, filter: d === 0 ? 'blur(0px)' : 'blur(10px)' }),
+  center: { opacity: 1, x: 0, scale: 1, filter: 'blur(0px)', transition: { duration: .45, ease: [.22, 1, .36, 1] } },
+  exit: (d: number) => ({ opacity: 0, x: -d * 80, scale: 1.04, filter: 'blur(10px)', transition: { duration: .32, ease: [.22, 1, .36, 1] } }),
 };
 
 // Görsel oranını koruyarak sahneye sığan kutu.
@@ -63,13 +62,13 @@ export function Lightbox() {
   const { lightbox, setLightbox } = useUi();
   return (
     <AnimatePresence>
-      {lightbox && <LightboxInner key="viewer" items={lightbox.items} start={lightbox.index} onClose={() => setLightbox(null)} />}
+      {lightbox && <LightboxInner key={`${lightbox.items[lightbox.index]?.id}:${lightbox.index}`} items={lightbox.items} start={lightbox.index} onClose={() => setLightbox(null)} />}
     </AnimatePresence>
   );
 }
 
 function LightboxInner({ items, start, onClose }: { items: Doc[]; start: number; onClose: () => void }) {
-  const { t, pick } = useI18n();
+  const { t, pick, lang } = useI18n();
   const reduce = useReducedMotion();
   const [isPresent, safeToRemove] = usePresence();
   const [index, setIndex] = useState(start);
@@ -191,14 +190,14 @@ function LightboxInner({ items, start, onClose }: { items: Doc[]; start: number;
       <div className={s.stage}>
         <AnimatePresence initial={false} custom={dir} mode="popLayout">
           <motion.div
-            key={doc.id}
+            key={`${doc.id}:${file?.cacheKey}`}
             className={s.mediaWrap}
             custom={dir}
-            variants={slide}
+            variants={reduce ? { enter: { opacity: 0 }, center: { opacity: 1 }, exit: { opacity: 0 } } : slide}
             initial="enter"
             animate="center"
             exit="exit"
-            transition={spring.snappy}
+            transition={{ duration: reduce ? .1 : .45, ease: [.22, 1, .36, 1] }}
           >
             <motion.div
               className={s.dragger}
@@ -214,8 +213,8 @@ function LightboxInner({ items, start, onClose }: { items: Doc[]; start: number;
                   <video ref={videoRef} className={s.video} src={file!.raw} poster={file!.preview ?? undefined} controls autoPlay playsInline />
                 ) : (
                   <>
-                    {file?.thumb && <img className={s.low} src={file.thumb} alt="" draggable={false} />}
-                    {file && <img className={s.full} src={file.preview ?? file.raw} alt={pick(doc.title)} draggable={false} decoding="async" />}
+                    {file?.thumb && <img key={`${file.cacheKey}-thumb`} className={s.low} src={file.thumb} alt="" draggable={false} />}
+                    {file && <img key={file.cacheKey} className={s.full} src={file.kind === 'pdf' ? pdfPageLink(file) : file.preview ?? file.raw} alt={pick(doc.title)} draggable={false} decoding="async" />}
                   </>
                 )}
               </div>
@@ -224,12 +223,12 @@ function LightboxInner({ items, start, onClose }: { items: Doc[]; start: number;
         </AnimatePresence>
 
         {index > 0 && (
-          <button className={s.nav} data-side="left" onClick={() => go(-1)} aria-label="Önceki">
+          <button className={s.nav} data-side="left" onClick={() => go(-1)} aria-label={lang === 'tr' ? 'Önceki' : 'Previous'}>
             <Icon name="chevronLeft" size={22} />
           </button>
         )}
         {index < items.length - 1 && (
-          <button className={s.nav} data-side="right" onClick={() => go(1)} aria-label="Sonraki">
+          <button className={s.nav} data-side="right" onClick={() => go(1)} aria-label={lang === 'tr' ? 'Sonraki' : 'Next'}>
             <Icon name="chevronRight" size={22} />
           </button>
         )}

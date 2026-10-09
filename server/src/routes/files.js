@@ -13,11 +13,18 @@ export const fileRoutes = Router();
 const fileById = db.prepare('SELECT * FROM files WHERE id = ?');
 const IMMUTABLE = 'public, max-age=31536000, immutable';
 
-function sendDerived(res, key) {
+function fileCache(req, file) {
+  return req.query.v === file.sha256 ? IMMUTABLE : 'no-cache, must-revalidate';
+}
+function staleContent(req, res, file) {
+  if (req.query.v && req.query.v !== file.sha256) { res.setHeader('Cache-Control', 'no-store'); res.status(404).end(); return true; }
+  return false;
+}
+function sendDerived(res, key, cache) {
   if (!key) return res.status(404).end();
   const p = storagePath(key);
   if (!fs.existsSync(p)) return res.status(404).end();
-  res.setHeader('Cache-Control', IMMUTABLE);
+  res.setHeader('Cache-Control', cache);
   res.type('image/webp');
   res.sendFile(p);
 }
@@ -41,13 +48,15 @@ function sendOriginal(res, file, { download, name, cache }) {
 fileRoutes.get('/files/:id/thumb.webp', (req, res) => {
   const f = fileById.get(Number(req.params.id));
   if (!f) return res.status(404).end();
-  sendDerived(res, f.thumb_key);
+  if (staleContent(req,res,f)) return;
+  sendDerived(res, f.thumb_key, fileCache(req,f));
 });
 
 fileRoutes.get('/files/:id/preview.webp', (req, res) => {
   const f = fileById.get(Number(req.params.id));
   if (!f) return res.status(404).end();
-  sendDerived(res, f.preview_key ?? f.thumb_key);
+  if (staleContent(req,res,f)) return;
+  sendDerived(res, f.preview_key ?? f.thumb_key, fileCache(req,f));
 });
 
 fileRoutes.get('/files/:id/page/:n.webp', async (req, res, next) => {
@@ -57,8 +66,9 @@ fileRoutes.get('/files/:id/page/:n.webp', async (req, res, next) => {
     return res.status(404).end();
   }
   try {
+    if (staleContent(req,res,f)) return;
     const p = await pdfPagePreview(f, n);
-    res.setHeader('Cache-Control', IMMUTABLE);
+    res.setHeader('Cache-Control', fileCache(req,f));
     res.type('image/webp');
     res.sendFile(p);
   } catch (err) {
@@ -69,7 +79,8 @@ fileRoutes.get('/files/:id/page/:n.webp', async (req, res, next) => {
 fileRoutes.get('/files/:id/raw/:name', (req, res) => {
   const f = fileById.get(Number(req.params.id));
   if (!f) return res.status(404).end();
-  sendOriginal(res, f, { download: req.query.indir !== undefined, cache: IMMUTABLE });
+  if (staleContent(req,res,f)) return;
+  sendOriginal(res, f, { download: req.query.indir !== undefined, cache: fileCache(req,f) });
 });
 
 // ── Kalıcı bağlantılar ──────────────────────────────────────────────────────

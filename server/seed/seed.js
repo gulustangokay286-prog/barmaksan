@@ -76,6 +76,7 @@ cmd.createFolder({ slug: 'medya', nameTr: 'Medya', nameEn: 'Media', sort: 2,
 categories.forEach((c, i) => cmd.createFolder({ parent: 'makineler', kind: 'category', slug: c.slug, nameTr: c.tr, nameEn: c.en, sort: i }));
 
 const collections = [
+  ['kurumsal', 'kurumsal-kimlik', 'Kurumsal Kimlik', 'Brand Identity', 'Logolar, antetli kâğıtlar ve kurumsal kimlik kılavuzu.'],
   ['kurumsal', 'sertifikalar', 'Sertifikalar', 'Certificates', 'CE belgeleri, kalite ve yönetim sistemi sertifikaları.'],
   ['kurumsal', 'kataloglar', 'Kataloglar', 'Catalogues', 'Makine, referans ve yedek parça katalogları.'],
   ['kurumsal', 'sirket-profilleri', 'Şirket Profilleri', 'Company Profiles', 'Türkçe ve İngilizce şirket tanıtım dosyaları.'],
@@ -178,6 +179,8 @@ setSetting('home.slides', [
 ].filter(([f]) => photoIds.has(f)).map(([f, tr, en]) => ({ doc: photoIds.get(f), tr, en })));
 
 // Kurulumun kendisi bir kullanıcı hareketi değildir: tek kayıt bırakılır.
+const { importProductContent } = await import('./import-content.js');
+console.log('Makine bilgileri:', importProductContent());
 db.prepare('DELETE FROM activity').run();
 db.prepare("INSERT INTO activity (action, detail) VALUES ('library.imported', ?)").run(JSON.stringify({ machines: machines.length, documents: docCount }));
 

@@ -10,6 +10,7 @@ import * as cmd from '../commands.js';
 import * as q from '../queries.js';
 import * as auth from '../auth.js';
 import { HttpError } from '../commands.js';
+import { addLanguage, contentHistory, saveMachineContent } from '../content.js';
 
 export const editorRoutes = Router();
 
@@ -68,7 +69,11 @@ editorRoutes.post('/auth/logout', (req, res) => {
   res.status(204).end();
 });
 
-const author = (req) => (typeof req.body?.author === 'string' && req.body.author.trim() ? req.body.author : req.editorUser?.name ?? null);
+const author = (req) => req.editorUser?.name || req.editorUser?.email || (typeof req.body?.author === 'string' && req.body.author.trim() ? req.body.author.trim().slice(0, 80) : null);
+
+editorRoutes.post('/languages', requireEditor, (req, res) => res.status(201).json(addLanguage(req.body, author(req))));
+editorRoutes.put('/machines/:slug/content', requireEditor, (req, res) => res.json(saveMachineContent(req.params.slug, req.body, author(req))));
+editorRoutes.get('/admin/machines/:slug/history', requireEditor, (req, res) => res.json(contentHistory(req.params.slug)));
 
 async function ingestUpload(req) {
   if (!req.file) throw new HttpError(400, 'Dosya gerekli');
@@ -89,7 +94,7 @@ editorRoutes.post('/documents', requireEditor, upload.single('file'), async (req
     });
     res.status(201).json(result);
   } catch (err) {
-    if (req.file?.path) fs.rm(req.file.path, { force: true }, () => {});
+    if (req.file?.path) fs.rm(req.file.path, { force: true }, () => { });
     next(err);
   }
 });
@@ -99,7 +104,7 @@ editorRoutes.post('/documents/:id/versions', requireEditor, upload.single('file'
     const file = await ingestUpload(req);
     res.status(201).json(cmd.addVersion(req.params.id, { fileId: file.id, note: req.body.note, author: author(req) }));
   } catch (err) {
-    if (req.file?.path) fs.rm(req.file.path, { force: true }, () => {});
+    if (req.file?.path) fs.rm(req.file.path, { force: true }, () => { });
     next(err);
   }
 });
@@ -127,9 +132,16 @@ editorRoutes.post('/documents/bulk', requireEditor, async (req, res) => {
   res.json(result);
 });
 
-// Kalıcı silme: yalnızca arşivdeki belge; kullanılmayan dosyalar diskten de temizlenir.
+// Kalıcı silme: kütüphanedeki ya da arşivdeki belge; kullanılmayan dosyalar diskten de temizlenir.
 editorRoutes.delete('/documents/:id/permanent', requireEditor, async (req, res) => {
   const result = cmd.deleteDocument(req.params.id, author(req));
+  await pruneOrphanFiles().catch((err) => console.warn('[prune]', err.message));
+  res.json(result);
+});
+
+// Tek sürümü sil (son sürüm silinemez). Dosya başka yerde kullanılmıyorsa diskten temizlenir.
+editorRoutes.delete('/documents/:id/versions/:no', requireEditor, async (req, res) => {
+  const result = cmd.deleteVersion(req.params.id, req.params.no, author(req));
   await pruneOrphanFiles().catch((err) => console.warn('[prune]', err.message));
   res.json(result);
 });
@@ -153,6 +165,11 @@ editorRoutes.patch('/folders/:ref', requireEditor, (req, res) => {
 editorRoutes.delete('/folders/:ref', requireEditor, (req, res) => {
   res.json(cmd.archiveFolder(req.params.ref, author(req)));
 });
+editorRoutes.delete('/folders/:ref/permanent', requireEditor, async (req, res) => {
+  const result = cmd.deleteFolder(req.params.ref, author(req), req.body?.confirm);
+  await pruneOrphanFiles().catch((err) => console.warn('[prune]', err.message));
+  res.json(result);
+});
 
 // Makine kapağı: görsel yüklenir, orijinali saklanır, kapak olarak bağlanır.
 editorRoutes.post('/folders/:ref/cover', requireEditor, upload.single('file'), async (req, res, next) => {
@@ -160,7 +177,7 @@ editorRoutes.post('/folders/:ref/cover', requireEditor, upload.single('file'), a
     const file = await ingestUpload(req);
     res.json(cmd.updateFolder(req.params.ref, { machine: { coverFileId: file.id } }, author(req)));
   } catch (err) {
-    if (req.file?.path) fs.rm(req.file.path, { force: true }, () => {});
+    if (req.file?.path) fs.rm(req.file.path, { force: true }, () => { });
     next(err);
   }
 });

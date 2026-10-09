@@ -70,6 +70,11 @@
   font-weight: 520;
   color: var(--ink-3);
 }
+/* Ekmek kırıntısı ayırıcısı: "Temizleme ve Tavlama › Çöp Sasörü Cleanmax 4". */
+.trailSep {
+  margin: 0 6px;
+  color: var(--ink-4);
+}
 .context {
   font-size: 13px;
   line-height: 18px;

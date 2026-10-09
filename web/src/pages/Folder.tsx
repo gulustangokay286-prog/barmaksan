@@ -5,19 +5,20 @@ import { Icon } from '../components/Icon';
 import { PageHeader, SectionTitle } from '../components/PageHeader';
 import { DocRow, GroupedDocs, MachineTile, MediaGrid } from '../components/Docs';
 import { Button, FadeImage } from '../components/ui';
+import { BrandKit } from '../components/BrandKit';
 import { FolderSkeleton } from '../components/Skeletons';
 import { useRouteReady } from '../lib/route';
 import { api, type FolderChild } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { useBootstrap, useDocTypes, usePageChrome, useUi } from '../lib/ui';
-import { formatNumber } from '../lib/format';
+import { formatNumber, matchesLanguage } from '../lib/format';
 import { folderQuery, prefetchFolder } from '../lib/query';
 import NotFound from './NotFound';
 import p from './pages.module.css';
 
 export default function Folder() {
   const { slug = '' } = useParams();
-  const { t, pick, lang } = useI18n();
+  const { t, pick, lang, locale } = useI18n();
   const types = useDocTypes();
   const { editor, setUpload } = useUi();
   const { data: boot } = useBootstrap();
@@ -30,8 +31,12 @@ export default function Folder() {
   if (!ready || isLoading || !f) return <FolderSkeleton />;
   if (f.kind === 'machine') return <Navigate to={`/m/${f.slug}`} replace />;
 
-  const media = f.documents.filter((d) => types.get(d.type)?.media !== 'document');
-  const docs = f.documents.filter((d) => types.get(d.type)?.media === 'document');
+  const visible = f.documents.filter((d) => matchesLanguage(d.language, locale));
+  const media = visible.filter((d) => types.get(d.type)?.media !== 'document');
+  // Kurumsal Kimlik: logolar üstte önizlemeli gösterilir; listede tekrar edilmez.
+  const brand = f.slug === 'kurumsal-kimlik';
+  const logos = brand ? visible.filter((d) => d.type === 'logo') : [];
+  const docs = visible.filter((d) => types.get(d.type)?.media === 'document' && !(brand && d.type === 'logo'));
   const machines = f.children.filter((c) => c.kind === 'machine');
   const categories = f.children.filter((c) => c.kind === 'category');
   const collections = f.children.filter((c) => c.kind === 'collection');
@@ -54,6 +59,14 @@ export default function Folder() {
         meta={meta.length ? meta.map((m) => <span key={String(m)}>{m}</span>) : undefined}
         actions={editor && f.kind === 'collection' ? <Button icon="upload" variant="primary" onClick={() => setUpload({ mode: 'new', folder: f.slug })}>{t('upload')}</Button> : undefined}
       />
+
+      {brand && <BrandKit logos={logos} folder={f.slug} />}
+
+      {brand && (docs.length > 0 || editor) && (
+        <section className={p.section}>
+          <GroupedDocs docs={docs} ensureTypes={editor ? ['antetli-kagit', 'kimlik-kilavuzu'] : []} onUpload={editor ? (type) => setUpload({ mode: 'new', folder: f.slug, type }) : undefined} />
+        </section>
+      )}
 
       {categories.length > 0 && (
         <div className={p.categories} style={{ marginTop: 32 }}>
@@ -84,7 +97,7 @@ export default function Folder() {
         </ul>
       )}
 
-      {docs.length > 0 && (
+      {!brand && docs.length > 0 && (
         <section style={{ marginTop: 32 }}>
           {f.kind === 'collection' && new Set(docs.map((d) => d.type)).size === 1 ? (
             <ul className={p.rows}>{docs.map((d) => <DocRow key={d.id} doc={d} />)}</ul>
@@ -101,13 +114,13 @@ export default function Folder() {
         </section>
       )}
 
-      {f.children.length === 0 && f.documents.length === 0 && <p className={p.empty}>{t('emptyFolder')}</p>}
+      {!brand && f.children.length === 0 && f.documents.length === 0 && <p className={p.empty}>{t('emptyFolder')}</p>}
     </div>
   );
 }
 
 const ICONS: Record<string, string> = {
-  sertifikalar: 'seal', kataloglar: 'catalog', 'sirket-profilleri': 'building', 'musteri-dosyalari': 'send',
+  'kurumsal-kimlik': 'palette', sertifikalar: 'seal', kataloglar: 'catalog', 'sirket-profilleri': 'building', 'musteri-dosyalari': 'send',
   'tanitim-videolari': 'video', 'fabrika-fotograflari': 'photo', 'drone-cekimleri': 'images', 'urun-gorselleri': 'photo',
 };
 

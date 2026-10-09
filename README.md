@@ -14,7 +14,7 @@ Canlı: **https://barmaksan.chenki.net**
 web/      React 19 + Vite + Motion — arayüz
 server/   Node.js + Express 5 + SQLite (better-sqlite3) — API, dosyalar, arama
   db/schema.sql   veritabanının tek kaynağı
-  seed/           örnek veri (42 makine, sürüm geçmişleri, kataloglar)
+  seed/           ilk kurulum ve veri aktarımları (42 makine, ürün içerikleri, kataloglar)
 deploy/   Dockerfile, docker-compose, nginx, deploy.sh
 assets/   marka ve ugurpromilling.com görselleri
 docs/     brief, plan, transkript
@@ -26,7 +26,7 @@ Veri tek klasörde: `data/barmaksan.db` + `data/storage/` (orijinaller dokunulma
 
 ```bash
 npm --prefix server install && npm --prefix web install
-npm --prefix server run seed -- --reset      # örnek veri (FFMPEG_PATH gerekirse)
+npm --prefix server run seed                 # yalnızca boş veritabanında ilk kurulum
 EDITOR_KEY=deneme node server/src/index.js   # API :3000
 npm --prefix web run dev                     # arayüz :5180
 ```
@@ -49,6 +49,13 @@ Güncelleme: `deploy/deploy.sh` (veriye dokunmaz). Örnek veriyi sıfırdan kurm
 
 ## Düzenleme
 
-Login sayfası yok (Salih Abi: "şimdilik açık"). Görüntüleme herkese açık; yükleme ve yeni sürüm yayınlama sol alttaki **Düzenleme** düğmesinden, anahtarla açılır. Anahtar sunucuda `/opt/barmaksan/.env` içinde (`EDITOR_KEY`).
+Görüntüleme herkese açık. `/admin` üzerinden e-posta ve şifreyle yönetim girişi yapılır; yükleme, yeni sürüm yayınlama, makine içerikleri ve bakım bilgi bankası buradan düzenlenir. Eski `EDITOR_KEY` desteği de sürer.
 
-Sürümler yalnızca eklenir, asla silinmez. Eski bir sürüme dönmek onu yeni numarayla yeniden yayınlar. Her dokümanın kalıcı bağlantısı (`/d/<id>`) her zaman güncel dosyayı açar.
+Yeni sürüm yayınlamak eski sürümleri korur. Eski bir sürüme dönmek onu yeni numarayla yeniden yayınlar. Her dokümanın kalıcı bağlantısı (`/d/<id>`) her zaman güncel dosyayı açar. Yönetimden belge kalıcı silinirse sürümleri de kaldırılır.
+
+Site dili sağ üstten seçilir; ürün profilleri, belgeler ve bakım konuları bu dili
+izler. Yönetimden yeni içerik dilleri eklenebilir. Arayüz çevirileri TR/EN'dir.
+Makine bilgilerini web sitesi ve kataloglarda kullanmak için [içerik API'si](docs/CONTENT-API.md) vardır.
+
+Mevcut verileri koruyarak resmi ürün bilgilerini ekleme: `npm --prefix server run import:content`.
+Doğrulama: `npm --prefix server test` ve `npm --prefix web run build`.

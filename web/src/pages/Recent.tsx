@@ -11,10 +11,10 @@ import { dayKey, formatDate } from '../lib/format';
 import p from './pages.module.css';
 
 export default function Recent() {
-  const { t, lang } = useI18n();
+  const { t, lang, locale } = useI18n();
   usePageChrome(t('recent'), { to: '/', label: t('home') });
   const ready = useRouteReady();
-  const query = useQuery({ queryKey: ['recent', 50], queryFn: () => api.recent(50) });
+  const query = useQuery({ queryKey: ['recent', 50, locale], queryFn: () => api.recent(50, locale) });
   const data = ready ? query.data : undefined;
 
   const groups: { key: string; label: string; items: Doc[] }[] = [];

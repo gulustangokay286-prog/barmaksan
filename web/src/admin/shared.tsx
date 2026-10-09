@@ -5,10 +5,10 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Icon } from '../components/Icon';
 import { Spinner } from '../components/ui';
+import { DateStamp } from '../components/DateStamp';
 import { Link } from '../lib/link';
 import { useI18n } from '../lib/i18n';
 import { useBootstrap, useUi } from '../lib/ui';
-import { formatRelative } from '../lib/format';
 import type { Activity } from '../lib/api';
 import a from './admin.module.css';
 
@@ -87,6 +87,8 @@ export function ConfirmButton({ label, confirm, onConfirm, busy, className = a.d
 
 const VERBS: Record<string, { tr: string; en: string; icon: string }> = {
   'document.created': { tr: 'Yeni belge eklendi', en: 'Document added', icon: 'plus' },
+  'machine.content.updated': { tr: 'Makine bilgileri güncellendi', en: 'Machine content updated', icon: 'pencil' },
+  'language.created': { tr: 'İçerik dili eklendi', en: 'Content language added', icon: 'translate' },
   'version.published': { tr: 'Yeni sürüm yayınlandı', en: 'New version published', icon: 'upload' },
   'document.updated': { tr: 'Belge düzenlendi', en: 'Document edited', icon: 'pencil' },
   'document.archived': { tr: 'Belge arşivlendi', en: 'Document archived', icon: 'archive' },
@@ -94,6 +96,7 @@ const VERBS: Record<string, { tr: string; en: string; icon: string }> = {
   'document.deleted': { tr: 'Belge kalıcı olarak silindi', en: 'Document deleted', icon: 'trash' },
   'folder.created': { tr: 'Klasör oluşturuldu', en: 'Folder created', icon: 'folder' },
   'folder.updated': { tr: 'Klasör düzenlendi', en: 'Folder edited', icon: 'pencil' },
+  'folder.deleted': { tr: 'Klasör silindi', en: 'Folder deleted', icon: 'trash' },
   'folder.archived': { tr: 'Klasör arşivlendi', en: 'Folder archived', icon: 'archive' },
   'folder.reordered': { tr: 'Sıra değiştirildi', en: 'Order changed', icon: 'grip' },
   'type.created': { tr: 'Belge türü eklendi', en: 'Document type added', icon: 'layers' },
@@ -147,7 +150,7 @@ export function ActivityRow({ item }: { item: Activity }) {
           ].filter(Boolean).join(' · ')}
         </span>
       </span>
-      <time className={a.activityTime} dateTime={item.at}>{formatRelative(item.at, lang)}</time>
+      <DateStamp iso={item.at} className={a.activityTime} />
     </li>
   );
 }
@@ -194,8 +197,8 @@ export function Dialog({ open, onClose, title, children, footer, wide }: { open:
 // ── Yan panel ───────────────────────────────────────────────────────────────
 
 /** Sağdan gelen düzenleme paneli: başlık sabit, gövde kayar, alt şerit sabit. */
-export function Sheet({ open, onClose, title, subtitle, children, footer }: {
-  open: boolean; onClose: () => void; title: ReactNode; subtitle?: ReactNode; children: ReactNode; footer?: ReactNode;
+export function Sheet({ open, onClose, title, subtitle, children, footer, wide }: {
+  open: boolean; onClose: () => void; title: ReactNode; subtitle?: ReactNode; children: ReactNode; footer?: ReactNode; wide?: boolean;
 }) {
   const { lang } = useI18n();
   useEscape(open, onClose);
@@ -206,6 +209,7 @@ export function Sheet({ open, onClose, title, subtitle, children, footer }: {
           <motion.div className={a.dialogScrim} onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} />
           <motion.aside
             className={a.sheet}
+            data-wide={wide || undefined}
             role="dialog"
             aria-modal="true"
             initial={{ x: '100%' }}

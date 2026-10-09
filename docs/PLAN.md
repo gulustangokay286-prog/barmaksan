@@ -4,6 +4,31 @@
 
 Gereksinimler `docs/BRIEF.md`'de (S1–S22 Salih Abi, G1–G7 Gökay). Bu belgedeki her karar bir gereksinime bağlanıyor; bağlanmayan şey yapılmıyor (S21: "olağanüstü kapsamlı düşünme ama iyi olsun").
 
+## 9 Ekim 2026 · Yerel devam durumu
+
+Claude oturumu: `8390aa88-6f7e-4001-8861-ac7e17258335` — "Carousel scroll, sidebar performance, grid redesign". Son iş, 8–9 Ekim geri bildirimlerinin ilk düzeltme turuydu. Aşağıdaki güncel durum, belgenin eski tasarım kararlarından farklı olduğu yerlerde önceliklidir.
+
+- Tam tarih, saat ve yükleyen ipucu hazır. Son güncellenenlerde kategori ve makine yolu gösteriliyor.
+- Sol ağaç sırası Kurumsal → Makineler → Medya. Eksik belge türleri yalnızca düzenleme modunda görünüyor.
+- Kurumsal Kimlik, Kurumsal altındaki gerçek bir klasör. Logo, antetli kâğıt ve kimlik kılavuzu yüklenebilir; logoların önizlemesi ve güncel dosyayı indirme bağlantısı var.
+- Kaydedilenler menüye ve belge eylemlerine bağlandı. Belge kimliği tarayıcıda saklanıyor; listede sunucudan güncel belge ve sürüm okunuyor. Kaydetme, yenileme sonrası kalıcılık ve kaldırma yerelde doğrulandı.
+- Alt bilgi tamamlandı: temel bağlantılar ve marka bilgisi; klavye ipucu şeridi yok.
+- Yerel veritabanı yedeklendi; kurumsal klasör ve türler veri sıfırlanmadan eklendi. API `node --watch` ile çalışıyor. TypeScript ve üretim derlemesi geçiyor.
+
+Devam geliştirmeleri:
+
+- Makine sayfasının sağ tarafında ürün açıklaması, özellikleri ve kullanım alanları var. Teknik tablolar ayrı bölümde; teknik fiş diğer belgelerle aynı listede. Eski sürümler kullanıcı açana kadar kapalı.
+- 42 makine için 84 dil profili ve 122 teknik tablo resmi ürün sayfalarından aktarıldı. Cleanmax 4 ve Vibro açıklamaları ürün bilgilerine dayanarak düzenlendi. Bazı kaynak sayfalardaki bozuk İngilizce tablo başlıkları düzeltildi; sayısal hücreler korunuyor. Kaynakta belirtilmeyen değerler doldurulmadı.
+- Dil, ziyaretçi için yalnızca sağ üstte seçilir. Ürün açıklaması, teknik bilgiler, bakım konuları, belgeler, arama, son güncellenenler ve medya bu seçimi izler. Seçim yenilemede korunur. Yönetimden yeni içerik dilleri eklenebilir; arayüz çevirileri TR/EN, diğer dillerde İngilizce arayüz kullanılır.
+- Dil profilleri ve bakım konularında bağımsız güncelleme tarihi, giriş yapan editörün adı ve değişiklik notu var. Aynı türde farklı dilde belgeler ayrı kayıtlardır; sürüm geçmişleri karışmaz. Eşzamanlı düzenlemelerde revizyon kontrolü var.
+- Bakım bilgi bankası: makine → kategori → konu → açıklama, adımlar, uyarı, video bağlantıları ve video/PDF ekleri. Yönetimden ekleme, düzenleme, sıralama, dil içeriğini kaldırma; ziyaretçi tarafında arama ve açılır kategori/konu düzeni hazır. Gerçek bakım prosedürleri henüz iletilmediğinden uydurulmadı. Başlangıç kategorileri tek düğmeyle eklenebilir.
+- Galeri otomatik geçiş, küçük resimler, ileri/geri, duraklatma ve lightbox içeriyor. Cleanmax 4 ve Vibro için Salih Abi'nin gönderdiği Drive klasörlerinden sekizer 7680×4320 T8 görseli alındı. 16 orijinal dosyanın toplamı yaklaşık 280 MB; orijinaller korunuyor, önizlemeler ayrı. T8 aktarımı yerel `data/` içinde tutulur ve Git'e girmez.
+- Web sitesi/katalog API'si hazır: `/api/catalog/machines` ve `/api/catalog/machines/:slug?language=tr`. Ayrıntılar [CONTENT-API.md](CONTENT-API.md).
+- Mevcut veritabanı ikinci kez yedeklendi (`data/backups/before-machine-content-2026-10-09.db`). Aktarım öncesindeki belge kimlikleri, güncel sürüm kimlikleri ve sürüm sayıları korunuyor. Şema yükseltmesi tekrarlanabilir; içerik aktarımı editörün kayıtlarını ezmez.
+- 10 izole HTTP/veritabanı testi ve TypeScript + üretim derlemesi geçiyor. Dil filtresi sayfalama/limitten önce uygulanıyor. `Cleanmax 4` araması, başka bir modelin kapasite/motor metnindeki 4 ile eşleşmiyor.
+
+Geliştirmeler yerelde; canlıya dağıtım yapılmadı. QR üretimi, 3D model görüntüleyici ve harici web sitesinin bu API'ye bağlanması bu kapsamın dışında.
+
 ---
 
 ## 1. Bilgi mimarisi

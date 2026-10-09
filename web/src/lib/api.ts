@@ -3,6 +3,7 @@ export type Name = { tr: string; en: string | null };
 
 export type FileInfo = {
   id: number;
+  cacheKey: string;
   name: string;
   ext: string;
   mime: string;
@@ -25,7 +26,15 @@ export type Version = {
   file: FileInfo | null;
 };
 
-export type DocLanguage = 'tr' | 'en' | 'tr-en' | 'multi' | 'none';
+export type DocLanguage = string;
+export type ContentLanguage = { code: string; label: string; nativeName: string; direction: 'ltr' | 'rtl' };
+export type TechnicalTable = { title: string; columns: string[]; rows: string[][] };
+export type ContentStamp = { updatedAt?: string; author?: string | null; changeNote: string };
+export type MachineProfile = ContentStamp & { title: string; description: string; features: string[]; specifications: TechnicalTable[]; applications: string[]; productUrl: string };
+export type MaintenanceTranslation = ContentStamp & { title: string; description: string; steps: string[]; warning: string; videos: { title: string; url: string }[]; documents: string[] };
+export type MaintenanceTopic = { id: string; translations: Record<string, MaintenanceTranslation> };
+export type MaintenanceCategory = { id: string; titles: Record<string, string>; topics: MaintenanceTopic[] };
+export type MachineContent = { revision: number; profiles: Record<string, MachineProfile>; gallery: string[] | null; maintenance: MaintenanceCategory[]; updatedAt: string; author: string | null };
 
 export type Doc = {
   id: string;
@@ -70,6 +79,7 @@ export type FolderChild = {
 };
 
 export type Folder = {
+  content: MachineContent | null;
   slug: string;
   kind: FolderKind;
   name: Name;
@@ -100,7 +110,7 @@ export type DocType = {
 export type Stats = { machines: number; documents: number; media: number; versions: number; bytes: number };
 export type HomeSlide = { doc: string; src: string; thumb: string | null; width: number | null; height: number | null; caption: Name };
 export type HomeSettings = { featured: string[]; slides: HomeSlide[] };
-export type Bootstrap = { docTypes: DocType[]; tree: TreeNode[]; stats: Stats; home: HomeSettings; coverageTypes: string[] };
+export type Bootstrap = { docTypes: DocType[]; tree: TreeNode[]; stats: Stats; home: HomeSettings; coverageTypes: string[]; languages: ContentLanguage[] };
 
 export type SearchResult = {
   query: string;
@@ -199,17 +209,21 @@ const adminGet = <T,>(path: string) => request<T>(path, { headers: { 'X-Editor-K
 export const api = {
   bootstrap: () => request<Bootstrap>('/api/bootstrap'),
   folder: (slug: string) => request<Folder>(`/api/folders/${encodeURIComponent(slug)}`),
+  addLanguage: (body: { code: string; label: string; nativeName: string; direction: string }) => request<{ code: string }>('/api/languages', { method: 'POST', ...json(body) }),
+  saveMachineContent: (slug: string, content: MachineContent & { note?: string }) => request<MachineContent>(`/api/machines/${encodeURIComponent(slug)}/content`, { method: 'PUT', ...json(content) }),
+  machineContentHistory: (slug: string) => adminGet<{ revision: number; note: string | null; author: string | null; createdAt: string }[]>(`/api/admin/machines/${encodeURIComponent(slug)}/history`),
   document: (id: string) => request<DocDetail>(`/api/documents/${encodeURIComponent(id)}`),
-  recent: (limit = 12) => request<Doc[]>(`/api/recent?limit=${limit}`),
-  media: (params: { folder?: string; kind?: string; cursor?: string | null }) => {
+  recent: (limit = 12, language?: string) => request<Doc[]>(`/api/recent?limit=${limit}${language ? `&language=${encodeURIComponent(language)}` : ''}`),
+  media: (params: { folder?: string; kind?: string; cursor?: string | null; language?: string }) => {
     const q = new URLSearchParams();
     if (params.folder) q.set('folder', params.folder);
     if (params.kind) q.set('kind', params.kind);
     if (params.cursor) q.set('cursor', params.cursor);
+    if (params.language) q.set('language', params.language);
     return request<MediaPage>(`/api/media?${q}`);
   },
-  search: (q: string, type?: string, signal?: AbortSignal) =>
-    request<SearchResult>(`/api/search?q=${encodeURIComponent(q)}${type ? `&type=${encodeURIComponent(type)}` : ''}`, { signal }),
+  search: (q: string, type?: string, signal?: AbortSignal, language?: string) =>
+    request<SearchResult>(`/api/search?q=${encodeURIComponent(q)}${type ? `&type=${encodeURIComponent(type)}` : ''}${language ? `&language=${encodeURIComponent(language)}` : ''}`, { signal }),
 
   login: (email: string, password: string) =>
     request<{ token: string; user: { email: string; name: string | null } }>('/api/auth/login', { method: 'POST', ...json({ email, password }) }),
@@ -225,12 +239,14 @@ export const api = {
 
   unarchiveDocument: (id: string) => request(`/api/documents/${id}/unarchive`, { method: 'POST' }),
   deleteDocument: (id: string) => request(`/api/documents/${id}/permanent`, { method: 'DELETE' }),
+  deleteVersion: (id: string, no: number) => request<{ deleted: number; current: number | null }>(`/api/documents/${id}/versions/${no}`, { method: 'DELETE' }),
   bulkDocuments: (action: 'archive' | 'unarchive' | 'delete', ids: string[]) =>
     request<{ done: number; failed: { id: string; error: string }[] }>('/api/documents/bulk', { method: 'POST', ...json({ action, ids }) }),
   createFolder: (body: Record<string, unknown>) => request<{ id: number; slug: string }>('/api/folders', { method: 'POST', ...json(body) }),
   reorderFolders: (parent: string | null, slugs: string[]) => request('/api/folders/reorder', { method: 'POST', ...json({ parent, slugs }) }),
   archiveFolder: (slug: string) => request(`/api/folders/${encodeURIComponent(slug)}`, { method: 'DELETE' }),
   uploadCover: (slug: string, form: FormData) => request(`/api/folders/${encodeURIComponent(slug)}/cover`, { method: 'POST', body: form }),
+  deleteFolder: (slug: string) => request(`/api/folders/${encodeURIComponent(slug)}/permanent`, { method: 'DELETE', ...json({ confirm: slug }) }),
   createType: (body: Record<string, unknown>) => request<{ slug: string }>('/api/types', { method: 'POST', ...json(body) }),
   updateType: (slug: string, patch: Record<string, unknown>) => request(`/api/types/${slug}`, { method: 'PATCH', ...json(patch) }),
   deleteType: (slug: string) => request(`/api/types/${slug}`, { method: 'DELETE' }),
@@ -254,3 +270,4 @@ export const api = {
 export const permalink = (id: string) => `${window.location.origin}/d/${id}`;
 export const versionLink = (id: string, no: number) => `/d/${id}/v/${no}`;
 export const downloadLink = (id: string, no?: number) => (no ? `/d/${id}/v/${no}/indir` : `/d/${id}/indir`);
+export const pdfPageLink = (file: FileInfo, page = 1) => `/files/${file.id}/page/${page}.webp?v=${file.cacheKey}`;

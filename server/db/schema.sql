@@ -226,3 +226,58 @@ SELECT * FROM (VALUES
 ) WHERE NOT EXISTS (SELECT 1 FROM doc_types);
 
 INSERT OR IGNORE INTO schema_version (version) VALUES (1);
+
+-- ── Sürüm 2: Kurumsal kimlik ────────────────────────────────────────────────
+-- Kurumsal altında "Kurumsal Kimlik" klasörü ve üç belge türü: logo, antetli kâğıt, kimlik
+-- kılavuzu. Yalnızca bir kez çalışır: yönetimden silinen tür ya da klasör geri gelmez.
+-- (Boş veritabanında klasörü seed.js kurar; burada yalnızca var olan Kurumsal'a eklenir.)
+INSERT OR IGNORE INTO doc_types (slug, name_tr, name_en, short, icon, media_kind, is_versioned, sort)
+SELECT * FROM (VALUES
+  ('logo',            'Logo',                     'Logo',             NULL, 'palette',    'document', 1, 82),
+  ('antetli-kagit',   'Antetli Kâğıt',            'Letterhead',       NULL, 'letterhead', 'document', 1, 84),
+  ('kimlik-kilavuzu', 'Kurumsal Kimlik Kılavuzu', 'Brand Guidelines', NULL, 'book',       'document', 1, 86)
+)
+WHERE NOT EXISTS (SELECT 1 FROM schema_version WHERE version = 2);
+
+INSERT INTO folders (parent_id, kind, slug, name_tr, name_en, description_tr, description_en, sort)
+SELECT id, 'collection', 'kurumsal-kimlik', 'Kurumsal Kimlik', 'Brand Identity',
+       'Logolar, antetli kâğıtlar ve kurumsal kimlik kılavuzu.', 'Logos, letterheads and brand guidelines.', -1
+FROM folders
+WHERE slug = 'kurumsal'
+  AND NOT EXISTS (SELECT 1 FROM schema_version WHERE version = 2)
+  AND NOT EXISTS (SELECT 1 FROM folders WHERE slug = 'kurumsal-kimlik');
+
+INSERT OR IGNORE INTO schema_version (version) VALUES (2);
+
+-- İçerik dilleri ve makine bilgi bankası. Mevcut dosya/sürüm tabloları korunur.
+CREATE TABLE IF NOT EXISTS content_languages (
+  code TEXT PRIMARY KEY,
+  label TEXT NOT NULL,
+  native_name TEXT NOT NULL,
+  direction TEXT NOT NULL DEFAULT 'ltr' CHECK(direction IN ('ltr','rtl')),
+  sort INTEGER NOT NULL DEFAULT 0
+);
+INSERT OR IGNORE INTO content_languages(code,label,native_name,sort) VALUES('tr','Türkçe','Türkçe',0),('en','English','English',1);
+CREATE TABLE IF NOT EXISTS document_languages (
+  document_id INTEGER PRIMARY KEY REFERENCES documents(id) ON DELETE CASCADE,
+  code TEXT NOT NULL REFERENCES content_languages(code)
+);
+CREATE TABLE IF NOT EXISTS machine_content (
+  folder_id INTEGER PRIMARY KEY REFERENCES machines(folder_id) ON DELETE CASCADE,
+  revision INTEGER NOT NULL DEFAULT 0,
+  profiles_json TEXT NOT NULL DEFAULT '{}' CHECK(json_valid(profiles_json)),
+  gallery_json TEXT NOT NULL DEFAULT 'null' CHECK(json_valid(gallery_json)),
+  maintenance_json TEXT NOT NULL DEFAULT '[]' CHECK(json_valid(maintenance_json)),
+  updated_at TEXT NOT NULL,
+  author TEXT
+);
+CREATE TABLE IF NOT EXISTS machine_content_history (
+  folder_id INTEGER NOT NULL REFERENCES machines(folder_id) ON DELETE CASCADE,
+  revision INTEGER NOT NULL,
+  snapshot_json TEXT NOT NULL CHECK(json_valid(snapshot_json)),
+  note TEXT,
+  author TEXT,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY(folder_id,revision)
+);
+INSERT OR IGNORE INTO schema_version(version) VALUES(3);

@@ -8,6 +8,26 @@ export function useBootstrap() {
   return useQuery({ queryKey: ['bootstrap'], queryFn: api.bootstrap, staleTime: 60_000 });
 }
 
+/** Klasörün kökten sonraki yolu (kök — Makineler, Kurumsal, Medya — atlanır):
+ *  cleanmax-4 → [Temizleme ve Tavlama, Çöp Sasörü Cleanmax 4]. */
+export function useFolderTrail() {
+  const { data } = useBootstrap();
+  return useMemo(() => {
+    const tree = data?.tree ?? [];
+    const bySlug = new Map(tree.map((n) => [n.slug, n]));
+    const byId = new Map(tree.map((n) => [n.id, n]));
+    return (slug: string) => {
+      const trail = [];
+      let node = bySlug.get(slug);
+      while (node && node.parentId != null) {
+        trail.unshift(node);
+        node = byId.get(node.parentId);
+      }
+      return trail;
+    };
+  }, [data]);
+}
+
 export function useDocTypes() {
   const { data } = useBootstrap();
   return useMemo(() => new Map((data?.docTypes ?? []).map((t) => [t.slug, t])), [data]);

@@ -12,11 +12,13 @@ const parentChain = db.prepare(`
   ) SELECT name_tr, name_en FROM chain ORDER BY depth DESC`);
 const documentRow = db.prepare(`
   SELECT d.*, t.name_tr AS type_tr, t.name_en AS type_en, t.short AS type_short,
-         fi.original_name, fi.text_content
+         fi.original_name, fi.text_content, cl.label AS language_label, cl.native_name AS language_native
   FROM documents d
   JOIN doc_types t ON t.id = d.doc_type_id
   LEFT JOIN document_versions v ON v.id = d.current_version_id
   LEFT JOIN files fi ON fi.id = v.file_id
+  LEFT JOIN document_languages dl ON dl.document_id = d.id
+  LEFT JOIN content_languages cl ON cl.code = dl.code
   WHERE d.id = ?`);
 
 const del = db.prepare('DELETE FROM search_index WHERE kind = ? AND ref_id = ?');
@@ -40,7 +42,8 @@ export function reindexFolder(id) {
   const chain = parentChain.all(id).slice(0, -1);
   const title = `${f.name_tr} ${f.name_en}`;
   const context = chain.map((c) => `${c.name_tr} ${c.name_en}`).join(' ');
-  const body = [f.description_tr, f.description_en, f.summary_tr, f.summary_en].filter(Boolean).join(' ');
+  const content = db.prepare('SELECT profiles_json,maintenance_json FROM machine_content WHERE folder_id=?').get(id);
+  const body = [f.description_tr, f.description_en, f.summary_tr, f.summary_en, content?.profiles_json, content?.maintenance_json].filter(Boolean).join(' ');
   const codes = codesOf(f);
   ins.run('folder', id, trFold(title), trFold(context), trFold(body), trFold(codes));
   insTri.run('folder', id, trFold(`${title} ${context} ${codes} ${body}`));
@@ -57,6 +60,7 @@ export function reindexDocument(id) {
   const context = [
     ...chain.map((c) => `${c.name_tr} ${c.name_en}`),
     d.type_tr, d.type_en, d.type_short,
+    d.language_label, d.language_native,
     d.language === 'tr-en' ? 'turkce ingilizce' : d.language === 'en' ? 'ingilizce english' : d.language === 'tr' ? 'turkce turkish' : '',
   ].filter(Boolean).join(' ');
   const body = [d.description, d.tags, d.text_content].filter(Boolean).join(' ');
@@ -86,7 +90,7 @@ export function searchIndex(query, limit = 40) {
   const seen = new Map();
 
   // Kısa sayılar tam eşleşir: "cleanmax 2" içindeki "2", 2026 ya da 250 ile eşleşmesin.
-  const ftsQuery = t.map((x) => (/^\d{1,2}$/.test(x) ? quote(x) : `${quote(x)}*`)).join(' ');
+  const ftsQuery = t.map((x) => (/^\d{1,2}$/.test(x) ? `{title codes context}:${quote(x)}` : `${quote(x)}*`)).join(' ');
   const fts = db.prepare(`
     SELECT kind, ref_id, bm25(search_index, 0, 0, 10.0, 3.0, 1.0, 6.0) AS score
     FROM search_index WHERE search_index MATCH ? ORDER BY score LIMIT ?`).all(ftsQuery, limit * 2);

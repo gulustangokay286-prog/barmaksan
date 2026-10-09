@@ -1,5 +1,5 @@
 import { QueryClient, queryOptions } from '@tanstack/react-query';
-import { api } from './api';
+import { api, pdfPageLink } from './api';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,7 +15,7 @@ export const queryClient = new QueryClient({
 export const bootstrapQuery = () => queryOptions({ queryKey: ['bootstrap'], queryFn: api.bootstrap, staleTime: 5 * 60_000 });
 export const folderQuery = (slug: string) => queryOptions({ queryKey: ['folder', slug], queryFn: () => api.folder(slug) });
 export const docQuery = (id: string) => queryOptions({ queryKey: ['doc', id], queryFn: () => api.document(id) });
-export const recentQuery = (limit: number) => queryOptions({ queryKey: ['recent', limit], queryFn: () => api.recent(limit) });
+export const recentQuery = (limit: number, language?: string) => queryOptions({ queryKey: ['recent', limit, language], queryFn: () => api.recent(limit, language) });
 
 /** Veriyi bekler (yalnızca açılış perdesi için). Hata sayfaya bırakılır. */
 export async function ensure(opts: object) {
@@ -43,14 +43,16 @@ export function prefetchFolder(slug: string) {
 }
 
 const warmed = new Set<string>();
-export function prefetchDoc(id: string, fileId?: number, kind?: string) {
-  void queryClient.prefetchQuery(docQuery(id));
-  if (fileId && kind === 'pdf' && !warmed.has(id)) {
-    warmed.add(id);
+export function prefetchDoc(id: string, _fileId?: number, _kind?: string) {
+  void queryClient.fetchQuery(docQuery(id)).then((doc) => {
+    const file = doc.current?.file;
+    const key = `${id}:${file?.cacheKey}`;
+    if (!file || file.kind !== 'pdf' || warmed.has(key)) return;
+    warmed.add(key);
     const img = new Image();
     img.decoding = 'async';
-    img.src = `/files/${fileId}/page/1.webp`;
-  }
+    img.src = pdfPageLink(file);
+  }).catch(() => {});
 }
 
 /**

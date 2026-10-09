@@ -167,12 +167,15 @@ function FolderDialog({ editing, all, onClose, onMachine }: { editing: Editing; 
       footer={form && (
         <>
           {folder && (
+            <>
             <ConfirmButton
               label={tr ? 'Arşivle' : 'Archive'}
               confirm={tr ? 'Arşivlemeyi onayla' : 'Confirm archive'}
               busy={busy === 'archive'}
               onConfirm={async () => { if (await run('archive', () => api.archiveFolder(folder.slug), tr ? 'Klasör arşivlendi' : 'Folder archived')) onClose(); }}
             />
+            {folder.kind !== 'section' && <ConfirmButton label={tr ? 'Sil' : 'Delete'} confirm={tr ? 'Klasörü ve belgelerini sil' : 'Delete folder and files'} icon="trash" busy={!!busy} onConfirm={async () => { if (await run('delete', () => api.deleteFolder(folder.slug), tr ? 'Klasör silindi' : 'Folder deleted')) onClose(); }} />}
+            </>
           )}
           <span style={{ flex: 1 }} />
           <button className={a.secondary} onClick={onClose}>{tr ? 'Vazgeç' : 'Cancel'}</button>

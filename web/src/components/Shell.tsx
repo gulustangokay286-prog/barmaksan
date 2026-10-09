@@ -256,13 +256,14 @@ function PrimaryNav({ onNavigate }: { onNavigate?: () => void }) {
   const items = [
     { to: '/', icon: 'library', label: t('home'), end: true },
     { to: '/son', icon: 'clock', label: t('recent') },
+    { to: '/kaydedilenler', icon: 'bookmark', label: t('saved') },
     { to: '/medya', icon: 'images', label: t('mediaLibrary') },
   ];
   return (
     <ul className={s.primary}>
       {items.map((i) => (
         <li key={i.to}>
-          <NavLink to={i.to} end={i.end} className={s.primaryLink} onClick={onNavigate}>
+          <NavLink to={i.to} end={'end' in i ? i.end : undefined} className={s.primaryLink} onClick={onNavigate}>
             <Icon name={i.icon} size={18} />
             <span>{i.label}</span>
           </NavLink>
@@ -274,9 +275,10 @@ function PrimaryNav({ onNavigate }: { onNavigate?: () => void }) {
 
 // ── Kontroller (üst bar ve mobil sayfa) ─────────────────────────────────────
 
-/** Dil: tek bir çeviri ikonu; basınca küçük bir menü (Türkçe / English). */
+/** Site genelinde arayüzü ve içerikleri yöneten tek dil seçimi. */
 function LangMenu({ placement = 'down' }: { placement?: 'down' | 'up' }) {
-  const { lang, setLang } = useI18n();
+  const { lang, locale, setLang } = useI18n();
+  const { data: boot } = useBootstrap();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -290,11 +292,11 @@ function LangMenu({ placement = 'down' }: { placement?: 'down' | 'up' }) {
       window.removeEventListener('keydown', onKey);
     };
   }, [open]);
-  const options = [{ value: 'tr' as const, label: 'Türkçe' }, { value: 'en' as const, label: 'English' }];
+  const options = (boot?.languages ?? [{ code: 'tr', nativeName: 'Türkçe' }, { code: 'en', nativeName: 'English' }]).map((l) => ({ value: l.code, label: l.nativeName }));
   return (
     <div ref={ref} className={s.langWrap}>
       <button
-        className={s.iconBtn}
+        className={`${s.iconBtn} ${s.langButton}`}
         data-open={open || undefined}
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
@@ -303,6 +305,7 @@ function LangMenu({ placement = 'down' }: { placement?: 'down' | 'up' }) {
         title={lang === 'tr' ? 'Dil' : 'Language'}
       >
         <Icon name="translate" size={19} strokeWidth={1.5} />
+        <span className={s.langCode}>{locale.toUpperCase()}</span>
       </button>
       <AnimatePresence>
         {open && (
@@ -316,9 +319,9 @@ function LangMenu({ placement = 'down' }: { placement?: 'down' | 'up' }) {
             transition={{ type: 'spring', bounce: 0.18, duration: 0.3 }}
           >
             {options.map((o) => (
-              <button key={o.value} role="menuitemradio" aria-checked={lang === o.value} className={s.langItem} onClick={() => { setLang(o.value); setOpen(false); }}>
+              <button key={o.value} role="menuitemradio" aria-checked={locale === o.value} className={s.langItem} onClick={() => { setLang(o.value); setOpen(false); }}>
                 <span>{o.label}</span>
-                {lang === o.value && <Icon name="check" size={15} strokeWidth={1.8} />}
+                {locale === o.value && <Icon name="check" size={15} strokeWidth={1.8} />}
               </button>
             ))}
           </motion.div>
@@ -366,9 +369,18 @@ function SheetControls() {
 function SidebarFoot() {
   const { t, lang } = useI18n();
   const { data } = useBootstrap();
-  const { editor } = useUi();
+  const { editor, setUpload } = useUi();
+  const { pathname } = useLocation();
+  const folderSlug = activeSlugOf(pathname);
   return (
     <div className={s.foot}>
+      {editor && (
+        <button className={s.footUpload} onClick={() => setUpload({ mode: 'new', folder: folderSlug ?? '' })}>
+          <Icon name="upload" size={16} strokeWidth={1.7} />
+          <span>{t('upload')}</span>
+          {folderSlug && <span className={s.footUploadHint}>{lang === 'tr' ? 'bu klasöre' : 'to this folder'}</span>}
+        </button>
+      )}
       {data ? (
         <p className={s.footStats}>
           <span className="tabular">{formatNumber(data.stats.machines, lang)} {t('machine')}</span>
@@ -388,24 +400,21 @@ function SidebarFoot() {
   );
 }
 
-/** Kenar çubuğu açılıp kapanırken panel ve içerik aynı yayla, birlikte kayar (yalnız transform). */
-// Panel ve içerik tek bir değerden sürülür (0 kapalı → 1 açık): panel kayarken içeriğin sol
-// boşluğu aynı eğriyle açılır/kapanır. İçerik yerinde genişler, hiçbir an savrulmaz.
-const SIDEBAR_EASE = { duration: 0.42, ease: [0.32, 0.72, 0, 1] } as const;
+// Panel sadece transform ile kayar; içerik genişliği tıklama anında bir kez değişir.
+const SIDEBAR_EASE = { duration: 0.22, ease: [0.22, 1, 0.36, 1] } as const;
 
 const Sidebar = memo(function Sidebar({ open, hidden }: { open: MotionValue<number>; hidden: boolean }) {
   const x = useTransform(open, (v) => `${(v - 1) * 100}%`);
   const visibility = useTransform(open, (v) => (v <= 0.001 ? 'hidden' : 'visible'));
-  const opacity = useTransform(open, [0.35, 1], [0, 1]);
   return (
     <motion.aside id="desktop-sidebar" className={s.sidebar} style={{ x, visibility }} inert={hidden}>
-      <motion.div className={s.sidebarInner} style={{ opacity }}>
+      <div className={s.sidebarInner}>
         <div className={s.sidebarScroll}>
           <PrimaryNav />
           <Tree />
         </div>
         <SidebarFoot />
-      </motion.div>
+      </div>
     </motion.aside>
   );
 });
@@ -519,18 +528,17 @@ function Crumbs() {
 }
 
 function Topbar({ expanded, onToggle, desktop }: { expanded: boolean; onToggle: () => void; desktop: boolean }) {
-  const { editor, setUpload, openSearch } = useUi();
+  const { openSearch } = useUi();
   const [played, setPlayed] = useState(false);
   const { t, lang } = useI18n();
   const { pathname } = useLocation();
-  const folderSlug = activeSlugOf(pathname);
 
   return (
     <header className={s.topbar} data-home={pathname === '/' || undefined}>
       <div className={s.brandArea}>
-          <button className={`${s.iconBtn} ${s.sidebarToggle}`} onClick={() => { setPlayed(true); onToggle(); }} aria-expanded={expanded} aria-controls={desktop ? 'desktop-sidebar' : 'mobile-sidebar'} aria-label={lang === 'tr' ? (expanded ? 'Kenar çubuğunu kapat' : 'Kenar çubuğunu aç') : (expanded ? 'Close sidebar' : 'Open sidebar')} title={lang === 'tr' ? (expanded ? 'Kenar çubuğunu kapat' : 'Kenar çubuğunu aç') : (expanded ? 'Close sidebar' : 'Open sidebar')}>
-            <MenuGlyph open={expanded} played={played} />
-          </button>
+        <button className={`${s.iconBtn} ${s.sidebarToggle}`} onClick={() => { setPlayed(true); onToggle(); }} aria-expanded={expanded} aria-controls={desktop ? 'desktop-sidebar' : 'mobile-sidebar'} aria-label={lang === 'tr' ? (expanded ? 'Kenar çubuğunu kapat' : 'Kenar çubuğunu aç') : (expanded ? 'Close sidebar' : 'Open sidebar')} title={lang === 'tr' ? (expanded ? 'Kenar çubuğunu kapat' : 'Kenar çubuğunu aç') : (expanded ? 'Close sidebar' : 'Open sidebar')}>
+          <MenuGlyph open={expanded} played={played} />
+        </button>
         <Link to="/" className={s.brand} aria-label={t('library')}>
           <BrandLockup compact />
         </Link>
@@ -542,11 +550,6 @@ function Topbar({ expanded, onToggle, desktop }: { expanded: boolean; onToggle: 
           <Crumbs />
         </div>
         <div className={s.topRight}>
-          {editor && (
-            <Button size="sm" variant="primary" className={s.uploadBtn} icon="upload" onClick={() => setUpload({ mode: 'new', folder: folderSlug ?? '' })}>
-              <span className={s.hideSm}>{t('upload')}</span>
-            </Button>
-          )}
           <div className={s.searchSlot}><SearchField /></div>
           <button className={s.searchMobile} data-search-trigger="mobile" onClick={(e) => openSearch('', e.currentTarget)} aria-label={t('search')}>
             <Icon name="search" size={20} />
@@ -562,32 +565,31 @@ function Topbar({ expanded, onToggle, desktop }: { expanded: boolean; onToggle: 
 // ── Mobil ───────────────────────────────────────────────────────────────────
 
 function TabBar() {
-  const { t } = useI18n();
-  const { openSearch, setNavOpen, navOpen } = useUi();
+  const { t, lang } = useI18n();
+  const { openSearch, setNavOpen, navOpen, editor, setUpload } = useUi();
   const { pathname } = useLocation();
   const tabs = [
-    { key: 'home', icon: 'library', label: t('home'), to: '/', active: pathname === '/' && !navOpen },
-    { key: 'folders', icon: 'folder', label: t('folders'), onClick: () => setNavOpen(true), active: navOpen || /^\/(k|m|dokuman)\//.test(pathname) },
+    { key: 'home', icon: 'home', label: t('home'), to: '/', active: pathname === '/' && !navOpen },
+    { key: 'folders', icon: 'folder', label: t('folders'), onClick: () => setNavOpen(!navOpen), active: navOpen || /^\/(k|m|dokuman)\//.test(pathname) },
     { key: 'media', icon: 'images', label: t('media'), to: '/medya', active: pathname.startsWith('/medya') && !navOpen },
-    { key: 'search', icon: 'search', label: t('search'), onClick: () => openSearch(), active: false },
+    { key: 'saved', icon: 'bookmark', label: t('saved'), to: '/kaydedilenler', active: pathname.startsWith('/kaydedilenler') && !navOpen },
   ];
-  return (
-    <nav className={s.tabbar} aria-label="Sekmeler">
+  const add = () => {
+    setNavOpen(false);
+    if (editor) setUpload({ mode: 'new', folder: activeSlugOf(pathname) ?? '' });
+    else openSearch();
+  };
+  return <nav className={s.tabbar} aria-label={lang === 'tr' ? 'Ana gezinme' : 'Main navigation'}>
+    <div className={s.tabGroup}>
       {tabs.map((tab) => {
-        const inner = (
-          <>
-            <Icon name={tab.icon} size={22} strokeWidth={tab.active ? 1.75 : 1.5} />
-            <span>{tab.label}</span>
-          </>
-        );
-        return tab.to ? (
-          <Link key={tab.key} to={tab.to} className={s.tab} data-active={tab.active || undefined} onClick={() => setNavOpen(false)}>{inner}</Link>
-        ) : (
-          <button key={tab.key} className={s.tab} data-active={tab.active || undefined} onClick={tab.onClick}>{inner}</button>
-        );
+        const inner = <><Icon name={tab.icon} size={23} strokeWidth={tab.active ? 1.9 : 1.6} /><span>{tab.label}</span></>;
+        return tab.to
+          ? <Link key={tab.key} to={tab.to} className={s.tab} data-active={tab.active || undefined} aria-label={tab.label} aria-current={tab.active ? 'page' : undefined} onClick={() => setNavOpen(false)}>{inner}</Link>
+          : <button key={tab.key} className={s.tab} data-active={tab.active || undefined} aria-label={tab.label} aria-expanded={navOpen} aria-controls="mobile-sidebar" onClick={tab.onClick}>{inner}</button>;
       })}
-    </nav>
-  );
+    </div>
+    <button className={s.tabAdd} onClick={add} aria-label={editor ? t('upload') : t('search')}><Icon name="plus" size={30} strokeWidth={1.4} /></button>
+  </nav>;
 }
 
 function NavSheet() {
@@ -720,10 +722,7 @@ export function Shell({ children, overlays }: { children: ReactNode; overlays?: 
   });
   const reduced = useReducedMotion();
   const open = useMotionValue(collapsed ? 0 : 1);
-  // Sol boşluk doğrudan padding'e yazılır: kalıtılan bir CSS değişkeni, her karede bütün
-  // içeriğin stilini yeniden hesaplatıyordu (kasma). Mobilde CSS bunu sıfırlar.
   const sideW = useMemo(() => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-w')) || 264, []);
-  const padLeft = useTransform(open, (v) => v * sideW);
   const toggleSidebar = () => {
     if (!desktop) { setNavOpen(!navOpen); return; }
     const next = !collapsed;
@@ -735,13 +734,13 @@ export function Shell({ children, overlays }: { children: ReactNode; overlays?: 
   return (
     <div className={s.shell} data-sidebar-closed={collapsed || !desktop || undefined}>
       <Topbar expanded={desktop ? !collapsed : navOpen} onToggle={toggleSidebar} desktop={desktop} />
-      <motion.div className={s.body} style={{ paddingLeft: padLeft }}>
+      <div className={s.body} style={{ paddingLeft: desktop && !collapsed ? sideW : 0 }}>
         {desktop && <Sidebar open={open} hidden={collapsed} />}
         <main className={s.content}>
           <RouteCurtain />
           {children}
         </main>
-      </motion.div>
+      </div>
       <TabBar />
       <NavSheet />
       <Toast />

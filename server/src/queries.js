@@ -4,6 +4,7 @@ import { fileKind } from './media.js';
 import { searchIndex, excerpt } from './search.js';
 import { trFold } from './text.js';
 import { DEFAULT_COVERAGE_TYPES, DEFAULT_FEATURED, getSetting } from './settings.js';
+import { machineContent } from './content.js';
 
 // ── Şekiller ────────────────────────────────────────────────────────────────
 
@@ -13,6 +14,7 @@ export function fileDto(f) {
   const name = encodeURIComponent(f.original_name);
   return {
     id: f.id,
+    cacheKey: f.sha256,
     name: f.original_name,
     ext: f.ext,
     mime: f.mime,
@@ -22,20 +24,20 @@ export function fileDto(f) {
     height: f.height,
     durationMs: f.duration_ms,
     pages: f.page_count,
-    thumb: f.thumb_key ? `/files/${f.id}/thumb.webp` : null,
-    preview: f.preview_key ? `/files/${f.id}/preview.webp` : null,
-    raw: `/files/${f.id}/raw/${name}`,
+    thumb: f.thumb_key ? `/files/${f.id}/thumb.webp?v=${f.sha256}` : null,
+    preview: f.preview_key ? `/files/${f.id}/preview.webp?v=${f.sha256}` : null,
+    raw: `/files/${f.id}/raw/${name}?v=${f.sha256}`,
   };
 }
 
-const FILE_COLS = `fi.id AS f_id, fi.original_name AS f_original_name, fi.ext AS f_ext, fi.mime AS f_mime,
+const FILE_COLS = `fi.id AS f_id, fi.sha256 AS f_sha256, fi.original_name AS f_original_name, fi.ext AS f_ext, fi.mime AS f_mime,
   fi.size_bytes AS f_size_bytes, fi.width AS f_width, fi.height AS f_height, fi.duration_ms AS f_duration_ms,
   fi.page_count AS f_page_count, fi.thumb_key AS f_thumb_key, fi.preview_key AS f_preview_key`;
 
 function pickFile(row, prefix = 'f_') {
   if (row[`${prefix}id`] == null) return null;
   const f = {};
-  for (const k of ['id', 'original_name', 'ext', 'mime', 'size_bytes', 'width', 'height', 'duration_ms', 'page_count', 'thumb_key', 'preview_key']) {
+  for (const k of ['id', 'sha256', 'original_name', 'ext', 'mime', 'size_bytes', 'width', 'height', 'duration_ms', 'page_count', 'thumb_key', 'preview_key']) {
     f[k] = row[`${prefix}${k}`];
   }
   return fileDto(f);
@@ -46,7 +48,7 @@ function documentDto(r) {
     id: r.public_id,
     title: { tr: r.title_tr, en: r.title_en },
     type: r.type_slug,
-    language: r.language,
+    language: r.content_language ?? r.language,
     description: r.description,
     tags: r.tags ? r.tags.split(/\s+/).filter(Boolean) : [],
     versionCount: r.version_count,
@@ -61,13 +63,14 @@ function documentDto(r) {
 }
 
 const DOC_SELECT = `
-  SELECT d.*, t.slug AS type_slug,
+  SELECT d.*, t.slug AS type_slug, dl.code AS content_language,
          fo.slug AS folder_slug, fo.kind AS folder_kind, fo.name_tr AS folder_name_tr, fo.name_en AS folder_name_en,
          v.version_no AS v_no, v.note AS v_note, v.author AS v_author, v.created_at AS v_created_at,
          ${FILE_COLS}
   FROM documents d
   JOIN doc_types t ON t.id = d.doc_type_id
   JOIN folders fo ON fo.id = d.folder_id
+  LEFT JOIN document_languages dl ON dl.document_id = d.id
   LEFT JOIN document_versions v ON v.id = d.current_version_id
   LEFT JOIN files fi ON fi.id = v.file_id`;
 
@@ -169,6 +172,7 @@ export function folder(slug) {
     machineCount,
     children,
     documents,
+    content: f.kind === 'machine' ? machineContent(f.slug) : null,
   };
 }
 
@@ -183,14 +187,18 @@ export function documentDetail(publicId, { includeArchived = false } = {}) {
   return { ...documentDto(r), crumbs: crumbs(r.folder_id), versions };
 }
 
-export function recent(limit = 12) {
+const languageFilter = `(coalesce((SELECT code FROM document_languages WHERE document_id=d.id),d.language) IN (?,'none','multi') OR (d.language='tr-en' AND ? IN ('tr','en')))`;
+const matchesLanguage = (code, locale) => !locale || code === locale || ['none','multi'].includes(code) || (code === 'tr-en' && ['tr','en'].includes(locale));
+
+export function recent(limit = 12, language) {
   return db.prepare(`${DOC_SELECT} WHERE d.archived_at IS NULL AND d.version_count > 0 AND t.media_kind = 'document'
-    ORDER BY v.created_at DESC, d.id DESC LIMIT ?`).all(limit).map(documentDto);
+    ${language ? `AND ${languageFilter}` : ''} ORDER BY v.created_at DESC, d.id DESC LIMIT ?`).all(...(language ? [language,language] : []),limit).map(documentDto);
 }
 
-export function media({ folderSlug, kind, cursor, limit = 48 }) {
+export function media({ folderSlug, kind, cursor, limit = 48, language }) {
   const where = ["d.archived_at IS NULL", "t.media_kind IN ('image', 'video')"];
   const params = [];
+  if (language) { where.push(languageFilter); params.push(language,language); }
   if (kind === 'image' || kind === 'video') { where.push('t.media_kind = ?'); params.push(kind); }
   if (folderSlug) {
     const f = db.prepare('SELECT id FROM folders WHERE slug = ?').get(folderSlug);
@@ -217,7 +225,7 @@ export function stats() {
   };
 }
 
-export function search(q, { type, limit = 30 } = {}) {
+export function search(q, { type, limit = 30, language } = {}) {
   const { terms, hits } = searchIndex(q, 80);
   const folders = [];
   const documents = [];
@@ -283,6 +291,7 @@ export function search(q, { type, limit = 30 } = {}) {
       const r = dStmt.get(h.id);
       if (!r || (type && r.type_slug !== type)) continue;
       const dto = documentDto(r);
+      if (!matchesLanguage(dto.language, language)) continue;
       const text = r.current_version_id ? textStmt.get(r.current_version_id)?.text_content : null;
       dto.excerpt = excerpt(text, terms);
       documents.push(dto);

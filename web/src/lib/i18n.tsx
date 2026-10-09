@@ -89,29 +89,78 @@ const strings = {
   published: { tr: 'Yayınlandı', en: 'Published' },
   uploading: { tr: 'Yükleniyor', en: 'Uploading' },
   emptyFolder: { tr: 'Bu klasör henüz boş', en: 'This folder is empty' },
+  delete: { tr: 'Sil', en: 'Delete' },
+  deleteConfirm: { tr: 'Silmeyi onayla', en: 'Confirm delete' },
+  deleted: { tr: 'Silindi', en: 'Deleted' },
+
+  // Kurumsal kimlik
+  brand: { tr: 'Kurumsal kimlik', en: 'Brand identity' },
+  brandLead: {
+    tr: 'Barmaksan ve Uğur Promilling’in renkleri, logoları ve yazı karakteri. Her şey tek yerden, kopyalanmaya hazır.',
+    en: 'The colours, logos and typeface of Barmaksan and Uğur Promilling. Everything in one place, ready to copy.',
+  },
+  palette: { tr: 'Renk paleti', en: 'Colour palette' },
+  paletteSite: { tr: 'Web sitesi paleti', en: 'Website palette' },
+  paletteSiteLead: {
+    tr: 'ugurpromilling.com üzerindeki stil dosyasından çıkarılan ortalama renkler. Altın birincil vurgu; geri kalanı nötr zemin ve metin.',
+    en: 'Average colours extracted from the stylesheet of ugurpromilling.com. Gold is the primary accent; the rest are neutral grounds and text.',
+  },
+  paletteImage: { tr: 'Görsel paleti', en: 'Image palette' },
+  paletteImageLead: {
+    tr: 'Türkiye Projelerimiz bannerından ölçülen baskın tonlar. Fotoğraf ve harita zeminleri için.',
+    en: 'Dominant tones measured from the Türkiye Projects banner. For photo and map backgrounds.',
+  },
+  logos: { tr: 'Logolar', en: 'Logos' },
+  logosLead: { tr: 'Açık ve koyu zemin için. Oranı bozmayın, etrafında yüksekliğinin yarısı kadar boşluk bırakın.', en: 'For light and dark grounds. Keep the proportions; leave clear space equal to half the height.' },
+  typography: { tr: 'Yazı karakteri', en: 'Typeface' },
+  typographyLead: { tr: 'Web sitesinde Montserrat; bu kütüphanede sistem yazı tipi (SF Pro / Segoe UI).', en: 'Montserrat on the website; the system typeface (SF Pro / Segoe UI) in this library.' },
+  copyHex: { tr: 'Kopyalamak için dokunun', en: 'Tap to copy' },
+  copied: { tr: 'Kopyalandı', en: 'Copied' },
+  usage: { tr: 'Kullanım', en: 'Usage' },
+  brandVisual: { tr: 'Kurumsal görsel', en: 'Brand visual' },
+
+  // Kaydedilenler
+  saved: { tr: 'Kaydedilenler', en: 'Saved' },
+  save: { tr: 'Kaydet', en: 'Save' },
+  unsave: { tr: 'Kaydedilenlerden çıkar', en: 'Remove from saved' },
+  savedLead: { tr: 'Sık açtığınız belgeleri burada toplayın. Liste yalnızca bu tarayıcıda saklanır.', en: 'Collect the documents you open often. The list is stored only in this browser.' },
+  savedEmpty: { tr: 'Henüz kaydedilmiş belge yok', en: 'No saved documents yet' },
+  savedEmptyHint: { tr: 'Bir belgenin sayfasında “Kaydet”e dokunun; buraya düşer.', en: 'Tap “Save” on any document page and it will appear here.' },
+  clearAll: { tr: 'Hepsini kaldır', en: 'Clear all' },
+
+  // Alt bilgi
+  footerAbout: { tr: 'Barmaksan ve markası Uğur Promilling’in teknik ve kurumsal dosyaları, her zaman en güncel hâliyle.', en: 'Technical and corporate files from Barmaksan and its brand Uğur Promilling, always up to date.' },
+  footerLibrary: { tr: 'Kütüphane', en: 'Library' },
+  footerCompany: { tr: 'Şirket', en: 'Company' },
+  website: { tr: 'Web sitesi', en: 'Website' },
+  shortcuts: { tr: 'Kısayollar', en: 'Shortcuts' },
+  backToTop: { tr: 'Başa dön', en: 'Back to top' },
 } satisfies Record<string, Record<Lang, string>>;
 
 export type StringKey = keyof typeof strings;
 
-type Ctx = { lang: Lang; setLang: (l: Lang) => void; t: (k: StringKey) => string; pick: (n: Name | { tr: string | null; en: string | null } | null | undefined) => string };
+type Ctx = { lang: Lang; locale: string; setLang: (l: string) => void; t: (k: StringKey) => string; pick: (n: Name | { tr: string | null; en: string | null } | null | undefined) => string };
 const I18n = createContext<Ctx | null>(null);
 
 const STORE = 'bk.lang';
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(() => {
+  const [locale, setLangState] = useState<string>(() => {
     try {
       const saved = localStorage.getItem(STORE);
-      if (saved === 'tr' || saved === 'en') return saved;
+      if (saved && /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/.test(saved)) { Intl.getCanonicalLocales(saved); return saved; }
     } catch {
       /* yoksay */
     }
     return navigator.language?.toLowerCase().startsWith('tr') ? 'tr' : navigator.language ? 'en' : 'tr';
   });
+  // Navigation copy is currently available in TR/EN. Product content uses the
+  // selected locale, including any additional language registered by editors.
+  const lang: Lang = locale === 'tr' ? 'tr' : 'en';
   useEffect(() => {
-    document.documentElement.lang = lang;
-  }, [lang]);
-  const setLang = useCallback((l: Lang) => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+  const setLang = useCallback((l: string) => {
     setLangState(l);
     try {
       localStorage.setItem(STORE, l);
@@ -121,10 +170,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
   const value = useMemo<Ctx>(() => ({
     lang,
+    locale,
     setLang,
     t: (k) => strings[k][lang],
     pick: (n) => (n ? (lang === 'en' ? n.en || n.tr : n.tr || n.en) ?? '' : ''),
-  }), [lang, setLang]);
+  }), [lang, locale, setLang]);
   return <I18n.Provider value={value}>{children}</I18n.Provider>;
 }
 

@@ -9,15 +9,16 @@ import { useQuery } from '@tanstack/react-query';
 import { Icon } from '../components/Icon';
 import { DocThumb } from '../components/Docs';
 import { Spinner } from '../components/ui';
+import { DateStamp } from '../components/DateStamp';
 import { Link } from '../lib/link';
 import { api, downloadLink, type DocDetail, type DocLanguage, type TreeNode } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { useBootstrap, useDocTypes, useUi } from '../lib/ui';
-import { formatDate, formatRelative, formatSize, languageLabel } from '../lib/format';
+import { formatDate, formatSize, languageLabel } from '../lib/format';
 import { ConfirmButton, PageHead, Section, Sheet, useRun } from './shared';
+import { LanguageOptions } from '../components/LanguageOptions';
 import a from './admin.module.css';
 
-const LANGS: DocLanguage[] = ['tr', 'en', 'tr-en', 'multi', 'none'];
 const fold = (s: string) => s.toLocaleLowerCase('tr').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i');
 
 export default function AdminDocuments() {
@@ -163,7 +164,7 @@ export default function AdminDocuments() {
               <span className={a.dim} role="cell">{languageLabel(d.language) || '—'}</span>
               <span className={a.dim} role="cell">{tp?.versioned && v ? `v${v.no}` : '—'}</span>
               <span className={a.dim} role="cell">
-                {d.archivedAt ? formatRelative(d.archivedAt, lang) : v ? formatRelative(v.createdAt, lang) : '—'}
+                {d.archivedAt ? <DateStamp iso={d.archivedAt} /> : v ? <DateStamp iso={v.createdAt} author={v.author} /> : '—'}
                 {!d.archivedAt && v?.author ? <span className={a.author}>{v.author}</span> : null}
               </span>
               <span className={a.rowActions} role="cell">
@@ -198,22 +199,10 @@ export default function AdminDocuments() {
             transition={{ type: 'spring', bounce: 0.12, duration: 0.4 }}
           >
             <span className={a.bulkCount}>{lang === 'tr' ? `${chosen.length} belge seçildi` : `${chosen.length} selected`}</span>
-            {status === 'active' ? (
-              <button className={a.bulkBtn} onClick={() => bulk('archive')} disabled={busy === 'bulk'}>
-                {busy === 'bulk' ? <Spinner size={14} /> : null}{lang === 'tr' ? 'Arşivle' : 'Archive'}
-              </button>
-            ) : (
-              <>
-                <button className={a.bulkBtn} onClick={() => bulk('unarchive')} disabled={busy === 'bulk'}>{lang === 'tr' ? 'Arşivden çıkar' : 'Restore'}</button>
-                <ConfirmButton
-                  className={a.bulkDanger}
-                  label={lang === 'tr' ? 'Kalıcı olarak sil' : 'Delete permanently'}
-                  confirm={lang === 'tr' ? `${chosen.length} belgeyi kalıcı sil — emin misiniz?` : `Delete ${chosen.length} permanently — sure?`}
-                  onConfirm={() => bulk('delete')}
-                  busy={busy === 'bulk'}
-                />
-              </>
-            )}
+            <button className={a.bulkBtn} onClick={() => bulk(status === 'active' ? 'archive' : 'unarchive')} disabled={busy === 'bulk'}>
+              {busy === 'bulk' ? <Spinner size={14} /> : null}{status === 'active' ? (lang === 'tr' ? 'Arşivle' : 'Archive') : (lang === 'tr' ? 'Arşivden çıkar' : 'Restore')}
+            </button>
+            <ConfirmButton className={a.bulkDanger} label={lang === 'tr' ? 'Sil' : 'Delete'} confirm={lang === 'tr' ? `${chosen.length} belgeyi ve sürümlerini sil` : `Delete ${chosen.length} files and versions`} onConfirm={() => bulk('delete')} busy={busy === 'bulk'} />
             <button className={a.bulkClear} onClick={() => setSelected(new Set())}>{lang === 'tr' ? 'Seçimi kaldır' : 'Clear'}</button>
           </motion.div>
         )}
@@ -308,6 +297,7 @@ function DocumentSheet({ id, onClose }: { id: string | null; onClose: () => void
               />
             </>
           ) : (
+            <>
             <ConfirmButton
               label={tr ? 'Arşivle' : 'Archive'}
               confirm={tr ? 'Arşivlemeyi onayla' : 'Confirm archive'}
@@ -315,6 +305,8 @@ function DocumentSheet({ id, onClose }: { id: string | null; onClose: () => void
               busy={busy === 'archive'}
               onConfirm={() => run('archive', () => api.archiveDocument(d.id), tr ? 'Belge arşivlendi' : 'Document archived')}
             />
+            <ConfirmButton label={tr ? 'Sil' : 'Delete'} confirm={tr ? 'Belge ve sürümlerini sil' : 'Delete document and versions'} icon="trash" busy={!!busy} onConfirm={async () => { if (await run('delete', () => api.deleteDocument(d.id), tr ? 'Belge silindi' : 'Document deleted')) onClose(); }} />
+            </>
           )}
           <span style={{ flex: 1 }} />
           {!archived && (
@@ -377,7 +369,7 @@ function DocumentSheet({ id, onClose }: { id: string | null; onClose: () => void
                 <label className={a.field}>
                   <span>{tr ? 'Dil' : 'Language'}</span>
                   <select value={form.language} onChange={(e) => setForm({ ...form, language: e.target.value as DocLanguage })}>
-                    {LANGS.map((l) => <option key={l} value={l}>{languageLabel(l) || (tr ? 'Dil yok' : 'None')}</option>)}
+                    <LanguageOptions />
                   </select>
                 </label>
               </div>

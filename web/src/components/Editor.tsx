@@ -3,7 +3,8 @@ import { useGo } from '../lib/link';
 import { AnimatePresence, motion, useAnimate } from 'motion/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Icon } from './Icon';
-import { Button, Segmented, Spinner } from './ui';
+import { Button, Spinner } from './ui';
+import { LanguageOptions } from './LanguageOptions';
 import { api, editorKey, type DocLanguage } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { useBootstrap, useUi, type UploadTarget } from '../lib/ui';
@@ -129,7 +130,7 @@ export function UploadSheet() {
 }
 
 function UploadForm({ target, onDone }: { target: UploadTarget; onDone: () => void }) {
-  const { t, pick } = useI18n();
+  const { t, pick, locale } = useI18n();
   const { notify } = useUi();
   const { data: boot } = useBootstrap();
   const qc = useQueryClient();
@@ -145,7 +146,7 @@ function UploadForm({ target, onDone }: { target: UploadTarget; onDone: () => vo
   const [type, setType] = useState(target.mode === 'new' ? target.type ?? '' : '');
   const [titleTr, setTitleTr] = useState('');
   const [titleEn, setTitleEn] = useState('');
-  const [language, setLanguage] = useState<DocLanguage>('tr');
+  const [language, setLanguage] = useState<DocLanguage>(locale);
   const [note, setNote] = useState('');
 
   // Klasör + tür seçilince başlığı öner.
@@ -247,7 +248,7 @@ function UploadForm({ target, onDone }: { target: UploadTarget; onDone: () => vo
           </label>
           <div className={`${s.field} ${s.span2}`}>
             <span>{t('language')}</span>
-            <Segmented id="upload-lang" value={language} onChange={setLanguage} options={[{ value: 'tr', label: 'TR' }, { value: 'en', label: 'EN' }, { value: 'tr-en', label: 'TR / EN' }, { value: 'none', label: '—' }]} />
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} aria-label={t('language')}><LanguageOptions /></select>
           </div>
         </div>
       )}

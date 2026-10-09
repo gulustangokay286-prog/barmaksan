@@ -17,7 +17,7 @@ import p from './pages.module.css';
 import md from './media.module.css';
 
 export default function Media() {
-  const { t, pick, lang } = useI18n();
+  const { t, pick, lang, locale } = useI18n();
   const [params, setParams] = useSearchParams();
   const kind = (params.get('tur') ?? '') as '' | 'image' | 'video';
   const folder = params.get('klasor') ?? '';
@@ -27,8 +27,8 @@ export default function Media() {
   usePageChrome(t('mediaLibrary'), { to: '/', label: t('home') });
 
   const q = useInfiniteQuery({
-    queryKey: ['media', kind, folder],
-    queryFn: ({ pageParam }) => api.media({ kind: kind || undefined, folder: folder || undefined, cursor: pageParam }),
+    queryKey: ['media', kind, folder, locale],
+    queryFn: ({ pageParam }) => api.media({ kind: kind || undefined, folder: folder || undefined, cursor: pageParam, language: locale }),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.next,
   });

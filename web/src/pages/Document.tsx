@@ -1,18 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'motion/react';
 import { Icon } from '../components/Icon';
 import { DocumentSkeleton } from '../components/Skeletons';
 import { DocActions } from '../components/Docs';
+import { DateStamp } from '../components/DateStamp';
 import { useRouteReady } from '../lib/route';
-import { FadeImage } from '../components/ui';
-import { api, downloadLink, permalink, versionLink, type DocDetail, type FileInfo, type Version } from '../lib/api';
+import { Button, FadeImage } from '../components/ui';
+import { api, downloadLink, pdfPageLink, permalink, versionLink, type DocDetail, type FileInfo, type Version } from '../lib/api';
 import { Link } from '../lib/link';
 import { useI18n } from '../lib/i18n';
 import { useDocTypes, usePageChrome, useUi } from '../lib/ui';
 import { docQuery } from '../lib/query';
-import { formatDate, formatDateTime, formatDuration, languageLabel } from '../lib/format';
+import { useBookmarks } from '../lib/bookmarks';
+import { formatDateTime, formatDuration, languageLabel, shortTitle } from '../lib/format';
 import { useLargeTitle } from '../lib/useLargeTitle';
 import NotFound from './NotFound';
 import p from './pages.module.css';
@@ -21,11 +23,6 @@ import dc from './document.module.css';
 const MAX_PAGES = 60;
 
 /** "Klasör Adı — Teknik Fiş" → "Teknik Fiş": konum zaten üstte yazıyor. */
-function shortTitle(title: string, folder: string) {
-  const parts = title.split(/\s+[—–-]\s+/);
-  if (folder && parts.length > 1 && parts[0].trim().toLocaleLowerCase('tr') === folder.trim().toLocaleLowerCase('tr')) return parts.slice(1).join(' — ');
-  return title;
-}
 
 export default function DocumentPage() {
   const { id = '' } = useParams();
@@ -62,7 +59,7 @@ export default function DocumentPage() {
     <div className={`${p.page} fade-in`}>
       <div className={p.docLayout}>
         <div className={p.viewer}>
-          {viewing?.file && <StableViewer file={viewing.file} doc={d} />}
+          {viewing?.file && <StableViewer key={d.id} file={viewing.file} doc={d} />}
         </div>
 
         <aside className={p.panel}>
@@ -78,10 +75,10 @@ export default function DocumentPage() {
               <p className={dc.meta}>
                 {[
                   type?.versioned ? `v${viewing.no}` : null,
-                  formatDate(viewing.createdAt, lang, { day: 'numeric', month: 'long', year: 'numeric' }),
+                  <DateStamp key="date" iso={viewing.createdAt} author={viewing.author} format="long" />,
                   viewing.file?.ext.toUpperCase(),
                   languageLabel(d.language),
-                ].filter(Boolean).join(' · ')}
+                ].filter(Boolean).map((part, i) => <Fragment key={i}>{i > 0 && ' · '}{part}</Fragment>)}
               </p>
             )}
           </div>
@@ -115,6 +112,8 @@ export default function DocumentPage() {
 function PanelActions({ d, viewing, isCurrent }: { d: DocDetail; viewing?: Version; isCurrent: boolean }) {
   const { t, pick } = useI18n();
   const { editor, setUpload } = useUi();
+  const { has, toggle } = useBookmarks();
+  const saved = has(d.id);
   const openHref = isCurrent || !viewing ? `/d/${d.id}` : versionLink(d.id, viewing.no);
   const dlHref = isCurrent || !viewing ? downloadLink(d.id) : downloadLink(d.id, viewing.no);
   return (
@@ -123,7 +122,12 @@ function PanelActions({ d, viewing, isCurrent }: { d: DocDetail; viewing?: Versi
         openHref={openHref}
         downloadHref={dlHref}
         copyHref={permalink(d.id)}
-        extra={editor ? <button className={dc.action} onClick={() => setUpload({ mode: 'version', docId: d.id, title: pick(d.title) })}>{t('newVersion')}</button> : undefined}
+        extra={<>
+          <Button icon="bookmark" onClick={() => toggle(d)} aria-pressed={saved}>
+            {saved ? t('unsave') : t('save')}
+          </Button>
+          {editor && <button className={dc.action} onClick={() => setUpload({ mode: 'version', docId: d.id, title: pick(d.title) })}>{t('newVersion')}</button>}
+        </>}
       />
       <p className={dc.hint}>{t('permalinkHint')}</p>
     </div>
@@ -147,7 +151,7 @@ function Timeline({ d, viewing }: { d: DocDetail; viewing?: number }) {
         <span className={dc.vNo}>v{v.no}</span>
         <span className={dc.vBody}>
           <span className={dc.vNote}>{v.note || (lang === 'tr' ? 'İlk yayın' : 'First release')}</span>
-          <span className={dc.vMeta}>{formatDate(v.createdAt, lang)}{v.author ? ` · ${v.author}` : ''}</span>
+          <span className={dc.vMeta}><DateStamp iso={v.createdAt} author={v.author} format="short" />{v.author ? ` · ${v.author}` : ''}</span>
           <span className={dc.vLinks}>
             {v.no !== viewing && <Link to={current ? `/dokuman/${d.id}` : `/dokuman/${d.id}?v=${v.no}`} preventScrollReset replace>{lang === 'tr' ? 'Görüntüle' : 'View'}</Link>}
             <a href={current ? downloadLink(d.id) : downloadLink(d.id, v.no)}>{t('download')}</a>
@@ -228,9 +232,9 @@ function Facts({ d, file, version }: { d: DocDetail; file: FileInfo | null; vers
 function StableViewer({ file, doc }: { file: FileInfo; doc: DocDetail }) {
   const [shown, setShown] = useState(file);
   useEffect(() => {
-    if (file.id === shown.id) return;
+    if (file.id === shown.id && file.cacheKey === shown.cacheKey) return;
     let cancelled = false;
-    const src = file.kind === 'pdf' ? `/files/${file.id}/page/1.webp` : file.preview ?? file.thumb;
+    const src = file.kind === 'pdf' ? pdfPageLink(file) : file.preview ?? file.thumb;
     if (!src) {
       setShown(file);
       return;
@@ -239,8 +243,8 @@ function StableViewer({ file, doc }: { file: FileInfo; doc: DocDetail }) {
     img.src = src;
     img.decode().catch(() => {}).finally(() => { if (!cancelled) setShown(file); });
     return () => { cancelled = true; };
-  }, [file, shown.id]);
-  return <div key={shown.id} className="fade-in"><Viewer file={shown} doc={doc} /></div>;
+  }, [file, shown.id, shown.cacheKey]);
+  return <div key={`${shown.id}:${shown.cacheKey}`} className={`${p.viewerStack} fade-in`}><Viewer file={shown} doc={doc} /></div>;
 }
 
 function Viewer({ file, doc }: { file: FileInfo; doc: DocDetail }) {
@@ -254,8 +258,8 @@ function Viewer({ file, doc }: { file: FileInfo; doc: DocDetail }) {
       <>
         {Array.from({ length: shown }, (_, i) => i + 1).map((n) => (
           <PdfPage
-            key={`${file.id}-${n}`}
-            src={`/files/${file.id}/page/${n}.webp`}
+            key={`${file.id}:${file.cacheKey}:${n}`}
+            src={pdfPageLink(file, n)}
             under={n === 1 ? file.thumb : null}
             n={n}
             total={file.pages!}

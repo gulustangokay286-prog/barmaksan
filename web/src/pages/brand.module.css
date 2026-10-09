@@ -1,0 +1,496 @@
+/*
+ * Kurumsal kimlik. Kurallar tokens.css ile aynı: gradient yok, glow yok, pill yok.
+ * Her bölüm: solda başlık (yapışık), sağda içerik. Dar ekranda tek sütun.
+ */
+
+/* ── Görsel ─────────────────────────────────────────────────────────────── */
+
+.visual {
+  margin: 36px 0 0;
+}
+.visualFrame {
+  position: relative;
+  aspect-ratio: 1920 / 540;
+  overflow: hidden;
+  border-radius: var(--r-xl);
+}
+.visualFrame picture,
+.visualFrame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.visualFrame picture {
+  position: absolute;
+  inset: -4% 0;
+  height: 108%;
+}
+.visualFrame img {
+  object-fit: cover;
+}
+/* Ton şeridi: görseldeki baskın renkler, kapladıkları alan oranında. */
+.tones {
+  display: flex;
+  gap: 3px;
+  height: 6px;
+  margin-top: 10px;
+  padding: 0 2px;
+}
+.tones span {
+  display: block;
+  flex-basis: 0;
+  border-radius: 2px;
+  transform-origin: 50% 100%;
+}
+.visualCaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 10px;
+  padding: 0 2px;
+  font-size: 12.5px;
+  line-height: 16px;
+  color: var(--ink-3);
+}
+.visualCaption a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink-2);
+  border-radius: 4px;
+  transition: color var(--t-fast);
+}
+.visualCaption a:hover {
+  color: var(--ink);
+}
+
+/* ── Bölüm ──────────────────────────────────────────────────────────────── */
+
+.block {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  align-items: start;
+  margin-top: var(--section-gap);
+  padding-top: var(--section-gap);
+  border-top: 1px solid var(--line);
+  scroll-margin-top: calc(var(--bar-h) + 16px);
+}
+.blockHead {
+  grid-column: 1 / span 4;
+  position: sticky;
+  top: calc(var(--bar-h) + 28px);
+}
+.blockTitle {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 32px;
+  font-weight: 680;
+  letter-spacing: -0.024em;
+}
+.blockLead {
+  margin-top: 10px;
+  max-width: 34ch;
+  font-size: 14.5px;
+  line-height: 22px;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.blockBody {
+  grid-column: 5 / span 8;
+  min-width: 0;
+}
+
+/* ── Palet ──────────────────────────────────────────────────────────────── */
+
+.paletteBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-bottom: 20px;
+}
+.paletteHint {
+  display: none;
+}
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--grid-gap);
+}
+.swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.swatchChip {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  aspect-ratio: 1 / 0.82;
+  padding: 12px 14px;
+  border-radius: var(--r-lg);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  color: #fff;
+  text-align: left;
+  transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out);
+}
+.swatch[data-light] .swatchChip {
+  color: var(--ink);
+}
+.swatchChip:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+.swatchChip:active {
+  transform: translateY(0) scale(0.985);
+  transition-duration: 90ms;
+}
+.swatchHexOn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 18px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 560;
+  letter-spacing: 0.02em;
+  opacity: 0.92;
+}
+/* Kullanım ağırlığı: çipin üst kenarında ince çizgi (çipin kendi renginden açılmış). */
+.swatchWeight {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+.swatch[data-light] .swatchWeight {
+  background: rgba(0, 0, 0, 0.08);
+}
+.swatchWeight span {
+  display: block;
+  height: 100%;
+  background: currentColor;
+  opacity: 0.85;
+  transform-origin: left center;
+  transition: transform 700ms var(--ease-out);
+}
+.swatchBody {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 2px;
+}
+.swatchName {
+  font-size: 15.5px;
+  line-height: 20px;
+  font-weight: 640;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.swatchRole {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.swatchCodes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-3);
+}
+.swatchCodes button {
+  padding: 2px 6px;
+  margin: 0 -6px;
+  border-radius: 5px;
+  color: var(--ink-3);
+  transition: background-color var(--t-fast), color var(--t-fast);
+}
+.swatchCodes button:hover {
+  color: var(--ink);
+  background: var(--fill-hover);
+}
+.swatchCodes button[data-on] {
+  color: var(--gold-ink);
+}
+.swatchUnit {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-4);
+}
+
+/* ── Logolar ────────────────────────────────────────────────────────────── */
+
+.logos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--grid-gap);
+}
+.logo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.logoStage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 16 / 9;
+  padding: 14%;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: box-shadow var(--t-base) var(--ease-out);
+}
+.logo[data-ground='dark'] .logoStage {
+  background: #222222;
+  box-shadow: none;
+}
+.logo:hover .logoStage {
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+.logo[data-ground='dark']:hover .logoStage {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+.logoStage img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 500ms var(--ease-out);
+}
+.logo:hover .logoStage img {
+  transform: scale(1.03);
+}
+.logoFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px;
+}
+.logoName {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 14.5px;
+  line-height: 19px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.logoGround {
+  font-size: 12.5px;
+  line-height: 16px;
+  font-weight: 450;
+  color: var(--ink-3);
+}
+.logoDl {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+  background: var(--fill-hover);
+  transition: background-color var(--t-fast), color var(--t-fast);
+}
+.logoDl:hover {
+  color: var(--ink);
+  background: var(--fill-press);
+}
+
+/* ── Yazı ───────────────────────────────────────────────────────────────── */
+
+.type {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.typeSpecimen {
+  display: flex;
+  flex-direction: column;
+  padding: 36px 32px 32px;
+  border-radius: var(--r-xl);
+  background: var(--fill);
+  font-family: var(--font-display);
+  font-size: clamp(44px, 6vw, 84px);
+  line-height: 0.98;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+}
+.typeSpecimen span {
+  margin-top: 10px;
+  font-size: 0.42em;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ink-2);
+}
+.typeScale {
+  display: flex;
+  flex-direction: column;
+}
+.typeRow {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 20px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.typeRow:first-child {
+  border-top: 1px solid var(--line);
+}
+.typeLabel {
+  font-size: 12.5px;
+  line-height: 16px;
+  font-weight: 560;
+  color: var(--ink-3);
+}
+.typeSample {
+  min-width: 0;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.typeMeta {
+  font-size: 11.5px;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+.typeAlphabet {
+  font-size: 15px;
+  line-height: 26px;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Kurallar ───────────────────────────────────────────────────────────── */
+
+.rules {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px var(--grid-gap);
+}
+.rule {
+  display: flex;
+  gap: 14px;
+  padding: 18px 18px 20px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.ruleN {
+  flex: none;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--gold-ink);
+}
+.ruleBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ruleTitle {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.ruleText {
+  font-size: 13.5px;
+  line-height: 19px;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+/* ── Duyarlı ────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1279px) {
+  .swatches {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1023px) {
+  .blockHead,
+  .blockBody {
+    grid-column: 1 / -1;
+  }
+  .blockHead {
+    position: static;
+    margin-bottom: 24px;
+  }
+  .blockLead {
+    max-width: 60ch;
+  }
+  .swatches {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .visual {
+    margin-top: 24px;
+  }
+  .visualFrame {
+    aspect-ratio: 600 / 169;
+    border-radius: var(--r-lg);
+  }
+  .visualCaption {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .blockTitle {
+    font-size: 24px;
+    line-height: 28px;
+  }
+  .swatches {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 12px;
+  }
+  .swatchChip {
+    aspect-ratio: 1 / 0.72;
+    padding: 10px 12px;
+  }
+  .swatchRole {
+    display: none;
+  }
+  .logos {
+    grid-template-columns: 1fr;
+  }
+  .typeSpecimen {
+    padding: 28px 22px 24px;
+  }
+  .typeRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4px 12px;
+  }
+  .typeLabel {
+    grid-column: 1 / -1;
+  }
+  .rules {
+    grid-template-columns: 1fr;
+  }
+}

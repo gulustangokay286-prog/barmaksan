@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { motion, useMotionValueEvent, useTransform, type MotionValue, type Variants } from 'motion/react';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { Icon } from '../components/Icon';
-import { DocThumb, MachineTile, docHref } from '../components/Docs';
+import { DocThumb, FolderTrail, MachineTile, docHref } from '../components/Docs';
 import { Hero, type Phases } from '../components/Hero';
 import { SearchTrigger } from '../components/SearchTrigger';
 import { VersionTag } from '../components/ui';
@@ -14,7 +14,8 @@ import { useBootstrap, useChromeActions, useDocTypes, usePageChrome } from '../l
 import { folderQuery, prefetchDoc, prefetchFolder, recentQuery } from '../lib/query';
 import { useSectionSettle } from '../lib/settle';
 import { markMorph } from '../lib/morph';
-import { formatNumber, formatRelative } from '../lib/format';
+import { formatNumber, shortTitle } from '../lib/format';
+import { DateStamp } from '../components/DateStamp';
 import h from './home.module.css';
 import p from './pages.module.css';
 
@@ -155,8 +156,8 @@ const rowIn: Variants = {
 };
 
 function RecentSection() {
-  const { t, lang } = useI18n();
-  const recent = useQuery(recentQuery(6));
+  const { t, lang, locale } = useI18n();
+  const recent = useQuery(recentQuery(6, locale));
   const week = useMemo(() => {
     const now = Date.now();
     return (recent.data ?? []).filter((d) => d.current && now - Date.parse(d.current.createdAt) < 7 * 86_400_000).length;
@@ -182,9 +183,9 @@ function RecentSection() {
         </div>
         {recent.data ? (
           <motion.ol className={h.recentList} variants={listIn} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
-            {recent.data.map((d, i) => (
+            {recent.data.map((d) => (
               <motion.li key={d.id} variants={rowIn}>
-                <RecentRow doc={d} n={i + 1} />
+                <RecentRow doc={d} />
               </motion.li>
             ))}
           </motion.ol>
@@ -206,8 +207,8 @@ function RecentSection() {
   );
 }
 
-function RecentRow({ doc, n }: { doc: Doc; n: number }) {
-  const { pick, lang } = useI18n();
+function RecentRow({ doc }: { doc: Doc }) {
+  const { pick } = useI18n();
   const types = useDocTypes();
   const v = doc.current;
   const type = types.get(doc.type);
@@ -220,19 +221,15 @@ function RecentRow({ doc, n }: { doc: Doc; n: number }) {
       onFocus={() => prefetchDoc(doc.id, v?.file?.id, v?.file?.kind)}
       onClick={(e) => markMorph(e.currentTarget.querySelector('[data-morph]'), 'doc-page')}
     >
-      <span className={h.recentN}>{String(n).padStart(2, '0')}</span>
       <DocThumb doc={doc} />
       <span className={h.recentBody}>
-        <span className={h.recentTitle}>{pick(doc.title)}</span>
-        <span className={h.recentMeta}>
-          {type && <span>{pick(type.name)}</span>}
-          <span>{pick(doc.folder.name)}</span>
-        </span>
+        <span className={h.recentTitle}>{shortTitle(pick(doc.title), pick(doc.folder.name))}</span>
+        <span className={h.recentMeta}><FolderTrail slug={doc.folder.slug} name={doc.folder.name} /></span>
       </span>
       {v && (
         <span className={h.recentSide}>
           {type?.versioned ? <VersionTag no={v.no} /> : <span>{v.file?.ext.toUpperCase()}</span>}
-          <span className={h.recentDate}>{formatRelative(v.createdAt, lang)}</span>
+          <DateStamp iso={v.createdAt} author={v.author} className={h.recentDate} />
         </span>
       )}
       <span className={h.recentArrow}><Icon name="arrowRight" size={16} /></span>

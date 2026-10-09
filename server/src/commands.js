@@ -4,6 +4,7 @@ import { db, now } from './db.js';
 import { newPublicId, slugify } from './text.js';
 import { reindexDocument, reindexFolder } from './search.js';
 import { DEFAULT_COVERAGE_TYPES, getSetting, setSetting } from './settings.js';
+import { checkLanguage, legacyLanguages } from './content.js';
 
 export class HttpError extends Error {
   constructor(status, message) {
@@ -12,7 +13,6 @@ export class HttpError extends Error {
   }
 }
 
-const LANGS = new Set(['tr', 'en', 'tr-en', 'multi', 'none']);
 const FOLDER_KINDS = new Set(['category', 'machine', 'collection']);
 
 const typeBySlug = db.prepare('SELECT * FROM doc_types WHERE slug = ?');
@@ -44,7 +44,7 @@ function resolveFolder(ref) {
 }
 
 function uniquePublicId() {
-  for (;;) {
+  for (; ;) {
     const id = newPublicId();
     if (!db.prepare('SELECT 1 FROM documents WHERE public_id = ?').get(id)) return id;
   }
@@ -65,7 +65,7 @@ export function createDocument(input) {
   if (!type) throw new HttpError(400, 'Geçersiz doküman türü');
   const titleTr = clean(input.titleTr, 200);
   if (!titleTr) throw new HttpError(400, 'Başlık gerekli');
-  const language = LANGS.has(input.language) ? input.language : 'tr';
+  const language = checkLanguage(input.language || 'tr');
   const at = input.at ?? now();
 
   return db.transaction(() => {
@@ -73,10 +73,11 @@ export function createDocument(input) {
     const info = db.prepare(`
       INSERT INTO documents (public_id, folder_id, doc_type_id, title_tr, title_en, language, description, tags, sort, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-      publicId, folder.id, type.id, titleTr, clean(input.titleEn, 200), language,
+      publicId, folder.id, type.id, titleTr, clean(input.titleEn, 200), legacyLanguages.has(language) ? language : 'none',
       clean(input.description, 2000), clean(input.tags, 500) ?? '', input.sort ?? 0, at, at,
     );
     const documentId = Number(info.lastInsertRowid);
+    if (!legacyLanguages.has(language)) db.prepare('INSERT INTO document_languages(document_id,code) VALUES(?,?)').run(documentId, language);
     log('document.created', { folderId: folder.id, documentId, actor: input.author });
     const version = insertVersion(documentId, input.fileId, input.note ?? 'İlk sürüm', input.author, at);
     touchFolder(folder.id, at);
@@ -132,8 +133,8 @@ export function updateDocument(publicId, patch, author) {
   if (patch.description !== undefined) fields.description = clean(patch.description, 2000);
   if (patch.tags !== undefined) fields.tags = clean(patch.tags, 500) ?? '';
   if (patch.language !== undefined) {
-    if (!LANGS.has(patch.language)) throw new HttpError(400, 'Geçersiz dil');
-    fields.language = patch.language;
+    checkLanguage(patch.language);
+    fields.language = legacyLanguages.has(patch.language) ? patch.language : 'none';
   }
   if (patch.type !== undefined) {
     const type = typeBySlug.get(patch.type);
@@ -145,6 +146,10 @@ export function updateDocument(publicId, patch, author) {
   const at = now();
   fields.updated_at = at;
   return db.transaction(() => {
+    if (patch.language !== undefined) {
+      db.prepare('DELETE FROM document_languages WHERE document_id=?').run(doc.id);
+      if (!legacyLanguages.has(patch.language)) db.prepare('INSERT INTO document_languages(document_id,code) VALUES(?,?)').run(doc.id, patch.language);
+    }
     const sets = Object.keys(fields).map((k) => `${k} = @${k}`).join(', ');
     db.prepare(`UPDATE documents SET ${sets} WHERE id = @id`).run({ ...fields, id: doc.id });
     log('document.updated', { documentId: doc.id, folderId: fields.folder_id ?? doc.folder_id, actor: author, detail: Object.keys(fields) });
@@ -180,20 +185,52 @@ export function unarchiveDocument(publicId, author) {
 }
 
 /**
- * Kalıcı siler: yalnızca arşivdeki belge. Sürümleri de gider; başka yerde kullanılmayan
- * dosyalar sonra diskten temizlenir (media.pruneOrphanFiles).
+ * Kalıcı siler: kütüphanedeki ya da arşivdeki belge. Sürümleri de gider; başka yerde
+ * kullanılmayan dosyalar sonra diskten temizlenir (media.pruneOrphanFiles).
+ * Arşiv isteğe bağlı bir ara duraktır; yönetici doğrudan da silebilir.
  */
 export function deleteDocument(publicId, author) {
   const doc = anyDocByPublicId.get(publicId);
   if (!doc) throw new HttpError(404, 'Doküman bulunamadı');
-  if (!doc.archived_at) throw new HttpError(409, 'Yalnızca arşivdeki belgeler kalıcı olarak silinebilir.');
   db.transaction(() => {
-    log('document.deleted', { folderId: doc.folder_id, actor: author, detail: { title: doc.title_tr, versions: doc.version_count } });
+    log('document.deleted', { folderId: doc.folder_id, actor: author, detail: { title: doc.title_tr, versions: doc.version_count, archived: !!doc.archived_at } });
     db.prepare('UPDATE documents SET current_version_id = NULL WHERE id = ?').run(doc.id);
     db.prepare('DELETE FROM documents WHERE id = ?').run(doc.id);
+    // Ana sayfa fotoğraflarından da düşer.
+    const slides = getSetting('home.slides', []);
+    if (slides.some((s) => s.doc === doc.public_id)) setSetting('home.slides', slides.filter((s) => s.doc !== doc.public_id));
     reindexDocument(doc.id);
+    touchFolder(doc.folder_id, now());
   })();
   return { publicId };
+}
+
+/**
+ * Tek bir sürümü siler. Son kalan sürüm silinemez (belgenin dosyası kalmaz; onun yerine belge
+ * silinir). Güncel sürüm silinirse en yeni kalan sürüm güncel olur. Numaralar yeniden
+ * dağıtılmaz: eski bağlantılar (/d/<id>/v/<no>) ya aynı dosyayı açar ya da 404 verir.
+ */
+export function deleteVersion(publicId, versionNo, author) {
+  const doc = anyDocByPublicId.get(publicId);
+  if (!doc) throw new HttpError(404, 'Doküman bulunamadı');
+  const no = Number(versionNo);
+  const v = db.prepare('SELECT * FROM document_versions WHERE document_id = ? AND version_no = ?').get(doc.id, no);
+  if (!v) throw new HttpError(404, 'Sürüm bulunamadı');
+  const total = db.prepare('SELECT count(*) AS n FROM document_versions WHERE document_id = ?').get(doc.id).n;
+  if (total <= 1) throw new HttpError(409, 'Belgenin tek sürümü silinemez. Bunun yerine belgeyi silin.');
+  const at = now();
+  return db.transaction(() => {
+    const wasCurrent = doc.current_version_id === v.id;
+    db.prepare('DELETE FROM document_versions WHERE id = ?').run(v.id);
+    const latest = db.prepare('SELECT id, version_no FROM document_versions WHERE document_id = ? ORDER BY version_no DESC LIMIT 1').get(doc.id);
+    const remaining = db.prepare('SELECT count(*) AS n FROM document_versions WHERE document_id = ?').get(doc.id).n;
+    db.prepare('UPDATE documents SET current_version_id = ?, version_count = ?, updated_at = ? WHERE id = ?')
+      .run(wasCurrent ? latest.id : doc.current_version_id, remaining, at, doc.id);
+    log('version.deleted', { documentId: doc.id, folderId: doc.folder_id, actor: author, detail: { no, wasCurrent, nowCurrent: wasCurrent ? latest.version_no : null } });
+    touchFolder(doc.folder_id, at);
+    reindexDocument(doc.id);
+    return { publicId, deleted: no, current: wasCurrent ? latest.version_no : null };
+  })();
 }
 
 /**
@@ -374,6 +411,25 @@ export function archiveFolder(ref, author) {
     reindexFolder(f.id);
   })();
   return { slug: f.slug };
+}
+
+/** Direct deletion of a machine or collection, including its own documents. */
+export function deleteFolder(ref, author, confirmation) {
+  const f = db.prepare("SELECT * FROM folders WHERE slug=? OR id=?").get(String(ref), /^\d+$/.test(String(ref)) ? Number(ref) : -1);
+  if (!f) throw new HttpError(404, 'Klasör bulunamadı');
+  if (f.kind === 'section') throw new HttpError(409, 'Ana bölümler silinemez');
+  if (confirmation !== f.slug) throw new HttpError(400, 'Silme onayı gerekli');
+  if (db.prepare('SELECT 1 FROM folders WHERE parent_id=? LIMIT 1').get(f.id)) throw new HttpError(409, 'Önce alt klasörleri taşıyın ya da silin');
+  const docs = db.prepare('SELECT public_id FROM documents WHERE folder_id=?').all(f.id);
+  db.transaction(() => {
+    for (const d of docs) deleteDocument(d.public_id, author);
+    log('folder.deleted', { folderId: f.id, actor: author, detail: { slug: f.slug, name: f.name_tr, documents: docs.length } });
+    db.prepare('DELETE FROM folders WHERE id=?').run(f.id);
+    const featured = getSetting('home.featured', []);
+    if (featured.includes(f.slug)) setSetting('home.featured', featured.filter((s) => s !== f.slug));
+    reindexFolder(f.id);
+  })();
+  return { slug: f.slug, documents: docs.length };
 }
 
 // ── Belge türleri ───────────────────────────────────────────────────────────

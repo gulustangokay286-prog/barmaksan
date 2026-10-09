@@ -602,7 +602,7 @@
   }
   .panel {
     position: static;
-    order: -1;
+    order: 1;
   }
 }
 
@@ -647,3 +647,5 @@
     width: 96px;
   }
 }
+
+.viewerStack { display: flex; flex-direction: column; gap: 18px; }

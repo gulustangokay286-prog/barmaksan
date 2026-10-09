@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Outlet, ScrollRestoration, useLocation, useNavigationType } from 'react-router';
 import { MotionConfig } from 'motion/react';
 import { Shell } from './components/Shell';
+import { SiteFooter } from './components/SiteFooter';
 import { SearchPalette } from './components/SearchPalette';
 import { Lightbox } from './components/Lightbox';
 import { EditorKeySheet, UploadSheet } from './components/Editor';
@@ -35,6 +36,7 @@ export default function Root() {
       >
         <div key={pathname} className="page-enter" data-history-return={navigationType === 'POP' || undefined}>
           <Outlet />
+          <SiteFooter />
         </div>
       </Shell>
       </RouteGate>
