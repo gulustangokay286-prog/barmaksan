@@ -53,24 +53,14 @@
   top: 0;
   left: 0;
   right: 0;
-  height: calc(var(--bar-h) + 28px);
+  height: var(--bar-h);
   z-index: -1;
   pointer-events: none;
-  /* Üstte belirgin koyu, eğri boyunca (ease-out) azalır ve çubuğun hemen altında biter: sayfa başlığı
-   * ve kenar çubuğu aydınlığını korur. Bulanıklık ve maske yok — geçişte kenar oluşturuyorlardı. */
-  background: linear-gradient(
-    180deg,
-    rgba(12, 12, 14, 0.64) 0%,
-    rgba(12, 12, 14, 0.6) 15%,
-    rgba(12, 12, 14, 0.52) 30%,
-    rgba(12, 12, 14, 0.42) 45%,
-    rgba(12, 12, 14, 0.32) 58%,
-    rgba(12, 12, 14, 0.22) 70%,
-    rgba(12, 12, 14, 0.13) 80%,
-    rgba(12, 12, 14, 0.07) 88%,
-    rgba(12, 12, 14, 0.025) 95%,
-    rgba(12, 12, 14, 0) 100%
-  );
+  /* Düz koyu katman, yukarıdan aşağı sönen maskeyle kesilir: karartma yalnızca çubuğun kendi
+   * yüksekliğinde, alt kenarında tamamen biter; sayfaya taşmaz. */
+  background: rgba(12, 12, 14, 0.86);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 30%, rgba(0, 0, 0, 0.78) 50%, rgba(0, 0, 0, 0.45) 72%, rgba(0, 0, 0, 0.16) 88%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 30%, rgba(0, 0, 0, 0.78) 50%, rgba(0, 0, 0, 0.45) 72%, rgba(0, 0, 0, 0.16) 88%, transparent 100%);
 }
 /* Karartma hafif olduğundan beyaz yazı, ikon ve logoya yumuşak bir gölge: açık zeminde de okunur. */
 .barRow {
@@ -81,7 +71,7 @@
   filter: drop-shadow(0 1px 5px rgba(0, 0, 0, 0.3));
 }
 @media (prefers-reduced-transparency: reduce) {
-  .topbar::before { background: #1f1f22; height: var(--bar-h); }
+  .topbar::before { background: #1f1f22; -webkit-mask-image: none; mask-image: none; }
 }
 .barRow {
   display: flex;
