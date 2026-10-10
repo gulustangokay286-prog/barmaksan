@@ -1,18 +1,41 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { Link } from '../lib/link';
+import { Link, useGoBack } from '../lib/link';
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import { Icon } from './Icon';
-import { useChromeActions } from '../lib/ui';
+import { useChromeActions, useChromeState } from '../lib/ui';
 import { useI18n } from '../lib/i18n';
 import type { Crumb } from '../lib/api';
 import s from './PageHeader.module.css';
 
 const hrefOf = (c: Crumb) => (c.kind === 'machine' ? `/m/${c.slug}` : `/k/${c.slug}`);
 
+/**
+ * Sayfanın geri düğmesi: başlığın hemen üstünde, okumanın başladığı yerde; yazılı ("‹ Geri") ve
+ * düğme olduğu belli. Uygulama içinde geçmiş varsa bir önceki ekrana, yoksa sayfanın üstüne gider.
+ * Varken üst bardaki geri düğmesi yalnızca sayfa kaydırılınca (bu düğme ekrandan çıkınca) görünür.
+ */
+export function PageBack() {
+  const { back } = useChromeState();
+  const { setInlineBack } = useChromeActions();
+  const { t } = useI18n();
+  const goBack = useGoBack(back?.to ?? '/');
+  useEffect(() => {
+    setInlineBack(true);
+    return () => setInlineBack(false);
+  }, [setInlineBack]);
+  return (
+    <button type="button" className={s.back} onClick={goBack} aria-label={back?.label ? `${t('back')}: ${back.label}` : t('back')} title={back?.label || undefined}>
+      <Icon name="chevronLeft" size={16} strokeWidth={1.9} />
+      <span>{t('back')}</span>
+    </button>
+  );
+}
+
 export function Crumbs({ items }: { items: Crumb[] }) {
   const { pick, t } = useI18n();
   return (
     <nav className={s.crumbs} aria-label="Konum">
+      <PageBack />
       <Link to="/">{t('home')}</Link>
       {items.map((c) => (
         <span key={c.slug} className={s.crumb}>
@@ -51,7 +74,7 @@ export function PageHeader({ crumbs, kicker, title, lead, meta, actions, childre
 
   return (
     <header className={s.header}>
-      {crumbs && <Crumbs items={crumbs} />}
+      {crumbs ? <Crumbs items={crumbs} /> : <div className={s.crumbs}><PageBack /></div>}
       {kicker && <span className={s.kicker}>{kicker}</span>}
       <motion.h1 ref={ref} className={`t-large ${s.title}`} style={{ opacity, y }}>
         {title}

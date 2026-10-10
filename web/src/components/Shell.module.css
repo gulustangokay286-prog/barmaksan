@@ -254,11 +254,10 @@
   .topRight > .themeCell {
     grid-column: 3;
   }
+  /* Hesap düğmesi sütunu doldurmaz: kendi genişliğinde, alttaki sayılarla aynı eksende ortalı. */
   .topRight > :last-child {
     grid-column: 4;
-    justify-self: stretch;
-    display: flex;
-    justify-content: center;
+    justify-self: center;
   }
   /* Dil ile tema arasında ince ayraç: sütun aralığının tam ortasında. */
   .themeCell {
@@ -366,6 +365,17 @@
   flex: none;
   align-items: center;
   margin-right: 8px;
+  transition: opacity 200ms var(--ease-out), transform 360ms var(--ease-out), visibility 0s;
+}
+.backDesk[data-hidden] {
+  opacity: 0;
+  transform: translateX(-6px);
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out), visibility 0s linear 160ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .backDesk, .backDesk[data-hidden] { transform: none; }
 }
 .backBtn {
   position: relative;
@@ -390,24 +400,6 @@
   content: '';
   position: absolute;
   inset: -5px;
-}
-/* Ana sayfa başlığı: hero'daki büyük başlık kaybolunca barın tam ortasında belirir (iOS büyük başlık). */
-.homeTitle {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  font-size: 14.5px;
-  font-weight: 540;
-  letter-spacing: -0.01em;
-  color: var(--on-bar);
-  white-space: nowrap;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  transition: opacity 260ms var(--ease-out), transform 520ms var(--ease-spring);
-}
-.homeTitle[data-hidden] {
-  opacity: 0;
-  transform: translate(-50%, -20%);
 }
 
 /* Dil menüsü */
@@ -1227,8 +1219,7 @@
   .searchSlot,
   .topSearch,
   .hideSm,
-  .sep,
-  .homeTitle {
+  .sep {
     display: none;
   }
   .searchMobile {

@@ -127,10 +127,12 @@ export function useUi() {
 // yeniden çizilmez; yalnızca üst bar durumu dinler.
 
 export type Trail = { label: string; to?: string }[];
-type ChromeState = { title: string | null; titleVisible: boolean; back: { to: string; label: string } | null; trail: Trail | null };
+type ChromeState = { title: string | null; titleVisible: boolean; back: { to: string; label: string } | null; trail: Trail | null; inlineBack: boolean };
 type ChromeActions = {
   set: (p: { title: string | null; back?: { to: string; label: string } | null; trail?: Trail | null }) => void;
   setTitleVisible: (v: boolean) => void;
+  /** Sayfanın kendi (başlık üstündeki) geri düğmesi var mı: varsa üst bardaki yalnızca kaydırınca görünür. */
+  setInlineBack: (v: boolean) => void;
 };
 const ChromeStateCtx = createContext<ChromeState | null>(null);
 const ChromeActionsCtx = createContext<ChromeActions | null>(null);
@@ -140,6 +142,7 @@ export function ChromeProvider({ children }: { children: ReactNode }) {
   const [back, setBack] = useState<ChromeState['back']>(null);
   const [titleVisible, setTitleVisible] = useState(true);
   const [trail, setTrail] = useState<Trail | null>(null);
+  const [inlineBack, setInlineBack] = useState(false);
   const actions = useMemo<ChromeActions>(() => ({
     set: (p) => {
       setTitle(p.title);
@@ -147,8 +150,9 @@ export function ChromeProvider({ children }: { children: ReactNode }) {
       setTrail(p.trail ?? null);
     },
     setTitleVisible,
+    setInlineBack,
   }), []);
-  const state = useMemo(() => ({ title, back, titleVisible, trail }), [title, back, titleVisible, trail]);
+  const state = useMemo(() => ({ title, back, titleVisible, trail, inlineBack }), [title, back, titleVisible, trail, inlineBack]);
   return (
     <ChromeActionsCtx.Provider value={actions}>
       <ChromeStateCtx.Provider value={state}>{children}</ChromeStateCtx.Provider>

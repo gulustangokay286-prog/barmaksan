@@ -15,7 +15,7 @@ import { folderQuery, prefetchDoc, prefetchFolder, recentQuery } from '../lib/qu
 import { useSectionSettle } from '../lib/settle';
 import { useMediaQuery } from '../lib/viewport';
 import { markMorph } from '../lib/morph';
-import { formatNumber, formatRelative, shortTitle, versionLabel } from '../lib/format';
+import { formatNumber, shortTitle } from '../lib/format';
 import { DateStamp } from '../components/DateStamp';
 import h from './home.module.css';
 import p from './pages.module.css';
@@ -212,7 +212,6 @@ function RecentTicker() {
               >
                 {pick(doc.title)}
               </Link>
-              {v && <span className={h.tickerMeta}>{versionLabel(v.no, lang)} · {formatRelative(v.createdAt, lang)}</span>}
             </motion.span>
           )}
         </AnimatePresence>

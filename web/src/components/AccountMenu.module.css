@@ -3,9 +3,9 @@
 .signIn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   height: 34px;
-  padding: 0 14px 0 11px;
+  padding: 0 13px 0 10px;
   border-radius: 999px;
   background: var(--bar-fill);
   color: var(--on-bar);

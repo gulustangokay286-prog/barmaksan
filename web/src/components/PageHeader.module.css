@@ -18,6 +18,37 @@
   color: var(--ink-3);
 }
 /* Uzun ya da boşluksuz adlar satıra sarar; yol hiçbir dilde taşmaz, kesilmez. */
+/* Geri: yolun başında, dolgulu hap; yazılı, 32px boy (dokunmatikte 40px). */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+  margin: 0 14px 4px 0;
+  padding: 0 14px 0 8px;
+  vertical-align: middle;
+  border-radius: 999px;
+  background: var(--fill);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 540;
+  transition: background-color var(--t-fast), transform 120ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .back:hover { background: var(--fill-hover); }
+}
+.back:active { transform: scale(0.97); }
+.back svg { margin-left: -1px; transition: transform 240ms var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
+  .back:hover svg { transform: translateX(-2px); }
+}
+@media (pointer: coarse) {
+  .back { height: 40px; padding-right: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .back, .back svg { transition: background-color var(--t-fast); }
+  .back:active, .back:hover svg { transform: none; }
+}
 .crumbs a {
   padding-block: 3px;
   border-radius: 4px;

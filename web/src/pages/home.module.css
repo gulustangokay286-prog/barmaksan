@@ -84,11 +84,6 @@
   outline-offset: 2px;
   border-radius: 3px;
 }
-.tickerMeta {
-  flex: none;
-  color: rgba(255, 255, 255, 0.55);
-  font-variant-numeric: tabular-nums;
-}
 .heroTitle {
   margin-top: 0;
   font-family: var(--font-display);
@@ -176,8 +171,7 @@
     align-self: start;
     margin-top: 36px;
   }
-  .ticker,
-  .tickerMeta {
+  .ticker {
     display: none;
   }
   .heroLead {

@@ -19,3 +19,13 @@ export function useGo() {
     return navigate(to, opts);
   }, [navigate]);
 }
+
+/** Geri: uygulama içinde geçmiş varsa bir önceki ekran, yoksa verilen üst sayfa (doğrudan açılan bağlantıda). */
+export function useGoBack(fallback: string) {
+  const go = useGo();
+  return useCallback(() => {
+    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
+    if (idx > 0) go(-1);
+    else go(fallback);
+  }, [go, fallback]);
+}

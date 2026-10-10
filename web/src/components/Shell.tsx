@@ -6,7 +6,7 @@ import { AccountMenu } from './AccountMenu';
 import { BrandLockup, Button } from './ui';
 import { SearchTrigger } from './SearchTrigger';
 import { topSearchReveal } from '../lib/reveal';
-import { Link, NavLink, useGo } from '../lib/link';
+import { Link, NavLink, useGoBack } from '../lib/link';
 import { useBootstrap, useChromeState, useUi } from '../lib/ui';
 import { useI18n } from '../lib/i18n';
 import { useTheme } from '../lib/theme';
@@ -491,25 +491,12 @@ function useCrumbs(): Crumb[] {
   }, [pathname, title, back, trail, t, pick, bySlug, byId]);
 }
 
-/** Ana sayfa başlığı: barın ortasında; hero başlığı ekrandan çıkınca belirir. */
-function HomeTitle() {
-  const { titleVisible } = useChromeState();
-  const { t } = useI18n();
-  // Hero'daki büyük başlık görünürken gizli; kaydırınca barın ortasında yükselerek belirir.
-  return <span className={s.homeTitle} data-hidden={titleVisible || undefined} aria-hidden={titleVisible || undefined}>{t('library')}</span>;
-}
-
 /** Geri: uygulama içinde geçmiş varsa bir önceki ekran, yoksa bir üst klasör. */
 function BackButton() {
   const crumbs = useCrumbs();
-  const navigate = useGo();
   const { t } = useI18n();
   const parent = crumbs.length > 1 ? crumbs[crumbs.length - 2].to ?? '/' : '/';
-  const onBack = () => {
-    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
-    if (idx > 0) navigate(-1);
-    else navigate(parent);
-  };
+  const onBack = useGoBack(parent);
   return (
     <button className={s.backBtn} onClick={onBack} aria-label={t('back')} title={t('back')}>
       <Icon name="chevronLeft" size={18} strokeWidth={1.8} />
@@ -522,6 +509,16 @@ function BackButton() {
  * başlık barın altına girince sayfanın adı belirir. Tam konum yolu sayfanın içinde durur ve satıra
  * sarar; barda yol olmadığı için uzun dillerde de taşmaz, kesilmez.
  */
+/**
+ * Üst bardaki geri: sayfanın kendi geri düğmesi (başlığın üstünde) görünürken saklanır; sayfa
+ * kaydırılıp o düğme ekrandan çıkınca başlıkla birlikte belirir. Aynı anda tek geri düğmesi görünür.
+ */
+function BarBack() {
+  const { titleVisible, inlineBack } = useChromeState();
+  const hidden = inlineBack && titleVisible;
+  return <span className={s.backDesk} data-hidden={hidden || undefined} aria-hidden={hidden || undefined}><BackButton /></span>;
+}
+
 function BarTitle() {
   const { title, titleVisible } = useChromeState();
   const { pathname } = useLocation();
@@ -549,7 +546,7 @@ function Topbar({ expanded, onToggle, desktop }: { expanded: boolean; onToggle: 
       <div className={s.topbarInner}>
         <div className={s.topLeft}>
 
-          {pathname !== '/' && <span className={s.backDesk}><BackButton /></span>}
+          {pathname !== '/' && <BarBack />}
           <BarTitle />
         </div>
         {/* Sağda tek sıra, hepsi 34px: arama · dil · tema · hesap. */}
@@ -563,8 +560,6 @@ function Topbar({ expanded, onToggle, desktop }: { expanded: boolean; onToggle: 
           <AccountMenu />
         </div>
       </div>
-      {/* Barın tamamına göre (ekranın tam ortası) konumlanır, içerik sütununa göre değil. */}
-      {pathname === '/' && <HomeTitle />}
     </header>
   );
 }
