@@ -63,13 +63,7 @@ export default function Folder() {
         actions={editor && f.kind === 'collection' ? <Button icon="upload" variant="primary" onClick={() => setUpload({ mode: 'new', folder: f.slug })}>{t('upload')}</Button> : undefined}
       />
 
-      {brand && <BrandKit logos={logos} folder={f.slug} />}
-
-      {brand && (docs.length > 0 || editor) && (
-        <section className={p.section}>
-          <GroupedDocs docs={docs} ensureTypes={editor ? ['antetli-kagit', 'kimlik-kilavuzu'] : []} onUpload={editor ? (type) => setUpload({ mode: 'new', folder: f.slug, type }) : undefined} />
-        </section>
-      )}
+      {brand && <BrandKit logos={logos} docs={docs} folder={f.slug} />}
 
       {categories.length > 0 && (
         <div className={p.categories} style={{ marginTop: 32 }}>

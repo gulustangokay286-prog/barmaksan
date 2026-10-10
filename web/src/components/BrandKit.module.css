@@ -1,9 +1,114 @@
-/* Kurumsal Kimlik: logolar, renkler, yazı karakteri. Sade; kutu değil, içeriğin kendisi. */
+/*
+ * Kurumsal Kimlik, görsel kılavuzun dilinde: bölümler "01 —" numarası ve ince çizgiyle açılır;
+ * renkler kılavuzdaki üç renk; desen pervane. Kutu yalnızca içeriğin kendisi gerektirdiğinde.
+ */
 .section {
-  margin-top: 48px;
+  margin-top: 64px;
+}
+.head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 4px 20px;
+  margin-bottom: 22px;
+}
+.num {
+  position: relative;
+  padding-bottom: 10px;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.num::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 44px;
+  height: 1px;
+  background: var(--ink);
+}
+.headText h2 {
+  font-size: 22px;
+  line-height: 26px;
+  font-weight: 560;
+  letter-spacing: -0.018em;
+  color: var(--ink);
+}
+.headText p {
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-3);
 }
 
-/* ── Logolar ── */
+/* ── Kapak (kılavuz s.1) ── */
+.cover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-height: 280px;
+  margin-top: 28px;
+  padding: 48px 24px;
+  overflow: hidden;
+  border-radius: 20px;
+  background:
+    radial-gradient(120% 90% at 50% 120%, rgba(217, 182, 37, 0.28), transparent 60%),
+    #121212;
+  color: #fff;
+  isolation: isolate;
+}
+/* Saydamlık SVG'nin bütününde: çıtaların kesiştiği yer koyulaşmaz, kanat tek ton kalır. */
+.coverSail,
+.coverSail2 {
+  position: absolute;
+  z-index: -1;
+  color: #fff;
+  opacity: 0.07;
+  pointer-events: none;
+}
+.coverSail {
+  left: -40px;
+  top: -70px;
+  width: 150px;
+  transform: rotate(40deg);
+}
+.coverSail2 {
+  right: -30px;
+  bottom: -120px;
+  width: 170px;
+  transform: rotate(-40deg);
+  color: #d9b625;
+  opacity: 0.16;
+}
+.coverLogo {
+  width: min(260px, 64%);
+  height: auto;
+  user-select: none;
+}
+.coverLine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 460;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.86);
+}
+.coverSince {
+  font-size: 13px;
+  color: rgba(217, 182, 37, 0.9);
+}
+
+/* ── 01 Logo ── */
 .logos {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -23,12 +128,8 @@
   background: var(--fill);
   overflow: hidden;
 }
-.stage[data-ground='dark'] {
-  background: #1c1c1e;
-}
-.stage[data-ground='light'] {
-  background: #fff;
-}
+.stage[data-ground='dark'] { background: #121212; }
+.stage[data-ground='light'] { background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
 .stage img {
   max-width: 64%;
   max-height: 46%;
@@ -61,83 +162,232 @@
   display: grid;
   place-items: center;
   flex: none;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   color: var(--ink-2);
   transition: background-color var(--t-fast), color var(--t-fast);
 }
-.download:hover {
-  background: var(--fill-hover);
-  color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .download:hover { background: var(--fill-hover); color: var(--ink); }
 }
 
-/* ── Renkler: dokununca kod kopyalanır ── */
-.colours {
+/* ── 02 Renk paleti (kılavuz s.5): üç büyük renk, değerleri altında ── */
+.palette {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
-  gap: 16px 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
 }
-.colour {
+.swatch {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  width: 100%;
-  padding: 0;
-  text-align: left;
-  border-radius: 12px;
+  min-width: 0;
 }
 .chip {
+  display: flex;
+  align-items: flex-end;
+  height: 150px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 560;
+}
+.chip[data-key='gold'] { background: #d9b625; color: #000; }
+.chip[data-key='black'] { background: #000; color: #fff; }
+.chip[data-key='white'] { background: #fff; color: #000; box-shadow: inset 0 0 0 1px var(--line-strong); }
+.values {
+  display: grid;
+  margin-top: 8px;
+}
+.values > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+  border-bottom: 1px solid var(--line);
+}
+.values dt {
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.values dd button {
+  padding: 4px 6px;
+  margin-right: -6px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  transition: background-color var(--t-fast);
+}
+@media (hover: hover) and (pointer: fine) {
+  .values dd button:hover { background: var(--fill); }
+}
+
+/* ── 03 Tipografi (kılavuz s.7) ── */
+/* Kurumsal yazı Helvetica Now Display; kurulu değilse ağırlıkların farkı görünsün diye değişken Geist. */
+.type {
+  font-family: 'Helvetica Now Display', 'Helvetica Now Text', 'Geist Variable', var(--font-display);
+}
+.typeHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.typeName {
+  font-size: clamp(26px, 4vw, 44px);
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.typeAa {
+  font-size: clamp(56px, 9vw, 112px);
+  line-height: 0.8;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #d9b625;
+}
+.weights li {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+.weightName {
+  font-size: 13.5px;
+}
+.weightSample {
+  overflow: hidden;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ── 04 Desen ── */
+.patterns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.patternTile {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 100%;
-  height: 72px;
-  margin-bottom: 8px;
-  border-radius: 12px;
-  color: #fff;
-  transition: transform 160ms var(--ease-out);
+  aspect-ratio: 4 / 3;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 14px;
 }
-.chip[data-light] {
-  color: var(--ink);
+.patternTile[data-tone='gold'] { background: #d9b625; color: #fff; }
+.patternTile[data-tone='dark'] { background: #121212; color: #d9b625; }
+.patternArt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.28;
+}
+/* Boş alandaki kullanımı gibi: büyük, köşeden taşan. */
+.patternSail {
+  position: absolute;
+  right: -4%;
+  top: -34%;
+  width: 24%;
+  transform: rotate(40deg);
+}
+.patternTile figcaption {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.patternTile[data-tone='gold'] figcaption { color: #000; }
+.patternTile[data-tone='dark'] figcaption { color: rgba(255, 255, 255, 0.82); }
+
+/* ── 05 Kurumsal dosyalar: kart ya da yer tutucu ── */
+.files {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.file {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--surface);
   box-shadow: inset 0 0 0 1px var(--line);
 }
-.colour:hover .chip {
-  transform: translateY(-2px);
+.fileMain {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
 }
-.colour:active .chip {
-  transform: scale(0.98);
+.fileText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 }
-.colourName {
-  font-size: 13.5px;
-  line-height: 18px;
-  font-weight: 500;
+.fileTitle {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 540;
   color: var(--ink);
 }
-.hex {
+.fileMeta {
   font-size: 12.5px;
   line-height: 17px;
   color: var(--ink-3);
-  font-variant-numeric: tabular-nums;
 }
-
-/* ── Yazı karakteri ── */
-.type {
-  max-width: 62ch;
+.slot {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 2px 14px;
+  min-height: 92px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px dashed var(--line-strong);
+  color: var(--ink-3);
+}
+.slot > svg { grid-row: 1 / span 2; }
+.slotName {
   font-size: 15px;
-  line-height: 23px;
-  color: var(--ink-2);
+  font-weight: 540;
+  color: var(--ink);
+}
+.slotNote {
+  grid-column: 2;
+  font-size: 13px;
+}
+.slot > button { grid-column: 3; grid-row: 1 / span 2; }
+.otherFiles {
+  margin-top: 20px;
 }
 
 @media (max-width: 767px) {
-  .section {
-    margin-top: 36px;
-  }
-  .logos {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 14px;
-  }
-  .colours {
-    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  }
+  .section { margin-top: 44px; }
+  .cover { min-height: 220px; border-radius: 16px; }
+  .logos { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+  .palette { grid-template-columns: minmax(0, 1fr); }
+  .chip { height: 96px; }
+  .patterns { grid-template-columns: minmax(0, 1fr); }
+  .weights li { grid-template-columns: 92px minmax(0, 1fr); }
+  .weightSample { font-size: 15px; }
+  .files { grid-template-columns: minmax(0, 1fr); }
 }
