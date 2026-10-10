@@ -230,9 +230,29 @@ export function ProductOverview({ profile }: { profile?: MachineProfile }) {
   return <section id="genel-bakis" className={s.overview}>
     <h2>{tr ? 'Genel bakış' : 'Overview'}</h2>
     {profile?.description ? <div className={s.description}>{profile.description.split(/\n\s*\n/).map((p, i) => <p key={i}>{p}</p>)}</div> : <p className={s.empty}>{tr ? 'Bu dilde ürün açıklaması eklenmemiş.' : 'A product description has not been added in this language.'}</p>}
-    {!!profile?.features.length && <div className={s.part}><h3>{tr ? 'Ürün özellikleri' : 'Product features'}</h3><ul className={s.features}>{profile.features.map((f, i) => <li key={i}>{f}</li>)}</ul></div>}
-    {!!profile?.applications.length && <div className={s.part}><h3>{tr ? 'Kullanım alanları' : 'Applications'}</h3><ul className={s.applications}>{profile.applications.map((f, i) => <li key={i}>{f}</li>)}</ul></div>}
   </section>;
+}
+
+/**
+ * Ürün özellikleri ve kullanım alanları: galerinin altında, ince çizgili sakin bir döküm.
+ * Masaüstünde sol sütunu doldurur; açıklama ve belgeler sağda yukarı çıkar.
+ */
+export function ProductSummary({ profile, className, dir, lang: code }: { profile?: MachineProfile; className?: string; dir?: string; lang?: string }) {
+  const { lang } = useI18n();
+  const tr = lang === 'tr';
+  const features = profile?.features.filter((f) => f.trim()) ?? [];
+  const applications = profile?.applications.filter((a) => a.trim()) ?? [];
+  if (!features.length && !applications.length) return null;
+  return <div className={`${s.summary} ${className ?? ''}`} dir={dir} lang={code}>
+    {!!features.length && <section className={s.summaryPart} aria-labelledby="urun-ozellikleri">
+      <h2 id="urun-ozellikleri">{tr ? 'Ürün özellikleri' : 'Product features'}</h2>
+      <ul className={s.features}>{features.map((f, i) => <li key={i}>{f}</li>)}</ul>
+    </section>}
+    {!!applications.length && <section className={s.summaryPart} aria-labelledby="kullanim-alanlari">
+      <h2 id="kullanim-alanlari">{tr ? 'Kullanım alanları' : 'Applications'}</h2>
+      <ul className={s.applications}>{applications.map((a, i) => <li key={i}>{a}</li>)}</ul>
+    </section>}
+  </div>;
 }
 
 export function MaintenanceBank({ categories, code, documents }: { categories: MaintenanceCategory[]; code: string; documents: Doc[] }) {

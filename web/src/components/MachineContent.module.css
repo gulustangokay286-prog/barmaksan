@@ -68,9 +68,19 @@
 .description p + p { margin-top: 14px; }
 .part { margin-top: 28px; }
 .part h3 { font-size: 16px; font-weight: 540; margin-bottom: 12px; }
-.features { padding-left: 18px; font-size: 14px; line-height: 1.6; color: var(--ink-2); list-style: disc; }
-.features li + li { margin-top: 7px; }
-.applications { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px 20px; font-size: 14px; color: var(--ink-2); }
+/*
+ * Özet (galerinin altı): başlık + ince çizgili satırlar. Süs ikonu, madde işareti, kutu yok;
+ * satırlar okunabilir aralıkla, uzun metin satıra sarar.
+ */
+.summary { margin-top: 40px; }
+.summaryPart + .summaryPart { margin-top: 36px; }
+.summaryPart > h2 { font-size: 17px; line-height: 24px; font-weight: 560; letter-spacing: -.012em; color: var(--ink); margin-bottom: 8px; }
+.features, .applications { font-size: 14.5px; line-height: 1.5; color: var(--ink-2); overflow-wrap: anywhere; }
+.features li { padding: 11px 0; border-top: 1px solid var(--line); }
+.features li:last-child { border-bottom: 1px solid var(--line); }
+.applications { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+.applications li { padding: 10px 0; border-top: 1px solid var(--line); }
+@media (max-width: 479px) { .applications { grid-template-columns: minmax(0, 1fr); } }
 .source { display: inline-flex; align-items: center; gap: 6px; margin-top: 24px; font-size: 13px; color: var(--ink-3); }
 .source:hover { color: var(--ink); text-decoration: underline; }
 .maintenance { margin-top: 44px; }

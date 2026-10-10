@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'motion/react';
 import { Icon } from '../components/Icon';
 import { DateStamp } from '../components/DateStamp';
 import { MediaGrid, DocThumb, docHref } from '../components/Docs';
-import { MachineGallery, MaintenanceBank, ProductOverview } from '../components/MachineContent';
+import { MachineGallery, MaintenanceBank, ProductOverview, ProductSummary } from '../components/MachineContent';
 import { MachineSkeleton } from '../components/Skeletons';
 import { Crumbs } from '../components/PageHeader';
 import { api, downloadLink, type Doc, type MachineContent, type MachineLink } from '../lib/api';
@@ -18,6 +18,7 @@ import { useRouteReady } from '../lib/route';
 import { markMorph } from '../lib/morph';
 import { languageLabel, matchesLanguage, shortTitle } from '../lib/format';
 import { useLargeTitle } from '../lib/useLargeTitle';
+import { useMediaQuery } from '../lib/viewport';
 import NotFound from './NotFound';
 import p from './pages.module.css';
 import m from './machine.module.css';
@@ -29,9 +30,30 @@ const TECHNICAL = ['teknik-fis', 'teknik-cizim'];
 const VISIBLE_CARDS = 4;
 
 /**
- * Makine sayfası. Solda galeri (yapışık), sağda üstte makinenin adı ve en çok kullanılan iki
- * belgeye tek dokunuşla erişim; altında yapışık bölüm menüsü (kaydırdıkça etkin bölüm işaretlenir)
- * ve içerik. Mobilde sıra: ad, galeri, menü, içerik.
+ * Sol sütun iki yönlü yapışır: ekrana sığıyorsa üstte durur; uzunsa önce sayfayla kayar, dibi
+ * görününce orada kalır. Böylece galerinin altındaki özet hiçbir ekranda kesik kalmaz.
+ */
+function useStickyAside(ref: RefObject<HTMLElement | null>, deps: unknown[]) {
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      const bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 56;
+      el.style.top = `${Math.min(bar + 24, window.innerHeight - el.offsetHeight - 24)}px`;
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener('resize', update);
+    return () => { ro.disconnect(); window.removeEventListener('resize', update); el.style.top = ''; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+}
+
+/**
+ * Makine sayfası. Solda galeri ve altında ürün özeti (özellikler, kullanım alanları); sağda ad,
+ * yapışık bölüm menüsü, açıklama ve hemen ardından belgeler — belgeler ilk ekranda görünür.
+ * Mobilde sıra: ad, galeri, menü, açıklama, özet, belgeler, bakım, medya.
  */
 export default function Machine() {
   const { slug = '' } = useParams();
@@ -40,10 +62,14 @@ export default function Machine() {
   const types = useDocTypes();
   const ready = useRouteReady();
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const asideRef = useRef<HTMLElement>(null);
+  // Özet tek yerde çizilir: geniş ekranda galerinin altında, dar ekranda açıklamanın altında.
+  const wide = useMediaQuery('(min-width: 1100px)');
   const { data: f, isLoading, error } = useQuery(folderQuery(slug));
   const parent = f?.crumbs.at(-2);
   usePageChrome(f ? f.content?.profiles[code]?.title || pick(f.name) : null, parent ? { to: `/k/${parent.slug}`, label: pick(parent.name) } : null);
   useLargeTitle(titleRef, [f?.slug, ready]);
+  useStickyAside(asideRef, [f?.slug, ready, !!f, code, wide]);
   const tr = lang === 'tr';
   if (error) return <NotFound />;
   if (!ready || isLoading || !f) return <MachineSkeleton />;
@@ -78,8 +104,9 @@ export default function Machine() {
           {profile?.updatedAt && <span>{tr ? 'Güncellendi' : 'Updated'} <DateStamp iso={profile.updatedAt} author={profile.author} format="short" action="update" /></span>}
         </p>}
       </header>
-      <aside className={m.aside}>
+      <aside ref={asideRef} className={m.aside}>
         <MachineGallery photos={selected} cover={mc?.cover ?? null} name={name} />
+        {wide && <ProductSummary profile={profile} dir={direction} lang={code} />}
       </aside>
       <div className={m.main} dir={direction} lang={code}>
         <div className={m.toolbar}>
@@ -90,6 +117,7 @@ export default function Machine() {
           </div>
         </div>
         <ProductOverview profile={profile} />
+        {!wide && <ProductSummary profile={profile} />}
         <section id="belgeler" className={m.block}>
           <h2 className={m.h2}>{tr ? 'Belgeler' : 'Documents'}</h2>
           <DocCards key={code} docs={docs} machine={name} slug={f.slug} content={f.content} all={f.documents} />
