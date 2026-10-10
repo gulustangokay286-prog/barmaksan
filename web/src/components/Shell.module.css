@@ -47,22 +47,35 @@
   height: var(--bar-h);
   color: var(--on-bar);
 }
-.topbar::before {
-  content: '';
-  position: absolute;
+/*
+ * Karartma ayrı, sabit bir katman (.topShade, Shell.tsx) — çubuğun içinde değil: çarpma (multiply)
+ * karışımı ancak sayfayla aynı katmandayken altındakini koyulaştırabilir. Sıcak kahve-siyah ton
+ * sayfanın kendi rengini koyulaştırır (gölge gibi); nötr siyah film gibi gri bant bırakmaz.
+ * Koyuluk üst kenarda toplanır, eğri boyunca azalıp çubuğun hemen altında biter.
+ */
+.topShade {
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: var(--bar-h);
-  z-index: -1;
+  z-index: 29;
+  height: calc(var(--bar-h) + 20px);
   pointer-events: none;
-  /* Düz koyu katman, yukarıdan aşağı sönen maskeyle kesilir: karartma yalnızca çubuğun kendi
-   * yüksekliğinde, alt kenarında tamamen biter; sayfaya taşmaz. */
-  background: rgba(12, 12, 14, 0.86);
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 30%, rgba(0, 0, 0, 0.78) 50%, rgba(0, 0, 0, 0.45) 72%, rgba(0, 0, 0, 0.16) 88%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 30%, rgba(0, 0, 0, 0.78) 50%, rgba(0, 0, 0, 0.45) 72%, rgba(0, 0, 0, 0.16) 88%, transparent 100%);
+  mix-blend-mode: multiply;
+  background: linear-gradient(
+    180deg,
+    rgba(22, 18, 8, 0.8) 0%,
+    rgba(22, 18, 8, 0.72) 16%,
+    rgba(22, 18, 8, 0.6) 32%,
+    rgba(22, 18, 8, 0.46) 47%,
+    rgba(22, 18, 8, 0.32) 61%,
+    rgba(22, 18, 8, 0.19) 74%,
+    rgba(22, 18, 8, 0.09) 86%,
+    rgba(22, 18, 8, 0.03) 94%,
+    rgba(22, 18, 8, 0) 100%
+  );
 }
-/* Karartma hafif olduğundan beyaz yazı, ikon ve logoya yumuşak bir gölge: açık zeminde de okunur. */
+/* Beyaz yazı, ikon ve logoya yumuşak bir gölge: karartmanın açık kalan alt kısmında da okunur. */
 .barRow {
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.32);
 }
@@ -71,7 +84,7 @@
   filter: drop-shadow(0 1px 5px rgba(0, 0, 0, 0.3));
 }
 @media (prefers-reduced-transparency: reduce) {
-  .topbar::before { background: #1f1f22; -webkit-mask-image: none; mask-image: none; }
+  .topShade { mix-blend-mode: normal; height: var(--bar-h); background: #1f1f22; }
 }
 .barRow {
   display: flex;

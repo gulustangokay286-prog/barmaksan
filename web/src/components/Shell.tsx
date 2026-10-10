@@ -944,6 +944,7 @@ export function Shell({ children, overlays }: { children: ReactNode; overlays?: 
   const section = desktop && root && /^\/(k|m|medya)(\/|$)/.test(pathname) ? root : null;
   return (
     <div className={s.shell} data-sidebar-closed={!section || undefined}>
+      <div className={s.topShade} aria-hidden="true" />
       <Topbar desktop={desktop} />
       <div className={s.body}>
         {pathname !== '/' && <PageWash />}
