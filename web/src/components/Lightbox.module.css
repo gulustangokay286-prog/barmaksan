@@ -31,12 +31,15 @@
   height: 60px;
   padding: calc(env(safe-area-inset-top)) 16px 0 24px;
 }
-.bar :global(button),
-.bar :global(a) {
+/* Yalnızca bardaki düğmeler (indirme paneli kendi renklerini taşır). */
+.barActions > :global(button),
+.barActions > :global(a),
+.barActions > * > :global(button) {
   color: rgba(242, 242, 239, 0.86) !important;
 }
-.bar :global(button):hover,
-.bar :global(a):hover {
+.barActions > :global(button):hover,
+.barActions > :global(a):hover,
+.barActions > * > :global(button):hover {
   background: rgba(255, 255, 255, 0.1) !important;
   color: #fff !important;
 }

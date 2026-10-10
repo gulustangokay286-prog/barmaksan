@@ -238,6 +238,29 @@ export async function writeImageDerivatives(src, derivedDir, suffix = '') {
   return { thumb, preview, region };
 }
 
+/** İndirme boyutları (uzun kenar, px; null = tam boyut) ve biçimleri. */
+export const EXPORT_SIZES = { kucuk: 1280, orta: 2560, buyuk: 4096, tam: null };
+export const EXPORT_FORMATS = { jpg: 'image/jpeg', png: 'image/png' };
+
+/**
+ * Bir görselin istenen boyut/biçimdeki kopyası. İlk istekte üretilir, diskte içerik adresiyle
+ * saklanır (aynı dosya + seçenek her zaman aynı kopya); orijinal asla değişmez, büyütülmez.
+ */
+export async function imageExport(file, size, format) {
+  const key = `exports/${file.sha256}/${size}.${format}`;
+  const dest = storagePath(key);
+  if (fs.existsSync(dest)) return dest;
+  await fsp.mkdir(path.dirname(dest), { recursive: true });
+  let img = sharp(storagePath(file.storage_key), { failOn: 'none' }).autoOrient();
+  const edge = EXPORT_SIZES[size];
+  if (edge) img = img.resize({ width: edge, height: edge, fit: 'inside', withoutEnlargement: true });
+  img = format === 'jpg' ? img.flatten({ background: '#ffffff' }).jpeg({ quality: 88, mozjpeg: true }) : img.png({ compressionLevel: 9 });
+  const tmp = `${dest}.${process.pid}.${Date.now()}.tmp`;
+  await img.toFile(tmp);
+  await fsp.rename(tmp, dest);
+  return dest;
+}
+
 /**
  * Geçici bir dosyayı kütüphaneye alır. Aynı içerik daha önce yüklendiyse mevcut kaydı döner.
  * @param {string} tmpPath  taşınacak geçici dosya (çağrı sonrası artık yoktur)

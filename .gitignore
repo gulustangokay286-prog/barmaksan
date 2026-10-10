@@ -24,3 +24,6 @@ data/storage/originals/f4/f458cf8a595985548591e6e8928b7ecdfc722c6d52df8c286dcbdf
 # Kullanıcı veritabanı: kişisel veri ve şifre özetleri — asla depoya girmez
 data/users.db
 data/users.db-*
+
+# İndirme kopyaları (boyut/biçim): istek geldikçe üretilir, orijinalden yeniden yazılabilir
+data/storage/exports/

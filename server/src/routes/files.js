@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import { Router } from 'express';
 import { db } from '../db.js';
 import { config } from '../config.js';
-import { isInlineSafe, pdfPagePreview, storagePath } from '../media.js';
+import { EXPORT_FORMATS, EXPORT_SIZES, fileKind, imageExport, isInlineSafe, pdfPagePreview, storagePath } from '../media.js';
 import { safeFileName } from '../text.js';
 import { isMember, viewerOf } from '../accounts.js';
 
@@ -44,14 +44,18 @@ function sendDerived(res, key, cache) {
   res.sendFile(p);
 }
 
+function attachmentHeader(res, filename, inline) {
+  const encoded = encodeURIComponent(filename);
+  const ascii = filename.normalize('NFKD').replace(/[^\x20-\x7e]/g, '').replace(/"/g, '') || 'dosya';
+  res.setHeader('Content-Disposition', `${inline ? 'inline' : 'attachment'}; filename="${ascii}"; filename*=UTF-8''${encoded}`);
+}
+
 function sendOriginal(res, file, { download, name, cache }) {
   const p = storagePath(file.storage_key);
   if (!fs.existsSync(p)) return res.status(404).json({ error: 'Dosya diskte bulunamadı' });
   const filename = safeFileName(name ?? file.original_name);
   const inline = !download && isInlineSafe(file.mime);
-  const encoded = encodeURIComponent(filename);
-  const ascii = filename.normalize('NFKD').replace(/[^\x20-\x7e]/g, '').replace(/"/g, '') || 'dosya';
-  res.setHeader('Content-Disposition', `${inline ? 'inline' : 'attachment'}; filename="${ascii}"; filename*=UTF-8''${encoded}`);
+  attachmentHeader(res, filename, inline);
   res.setHeader('Content-Type', file.mime);
   // Satır içi yalnızca güvenli türler açılır (PDF, görsel, video). Geri kalanı her
   // zaman indirilir ve yalıtılır: yüklenen içerik bu alan adında betik çalıştıramaz.
@@ -111,7 +115,9 @@ const docVersion = db.prepare(`
   JOIN files fi ON fi.id = v.file_id
   WHERE d.public_id = ? AND d.archived_at IS NULL`);
 
-function permalink(req, res, { download }) {
+const EXPORT_LABELS = { kucuk: 'küçük', orta: 'orta', buyuk: 'büyük', tam: 'tam boyut' };
+
+async function permalink(req, res, next, { download }) {
   const vn = req.params.n === undefined ? null : Number(req.params.n);
   const row = docVersion.get(vn, vn, req.params.pid);
   if (!row) return res.status(404).json({ error: 'Doküman ya da sürüm bulunamadı' });
@@ -130,10 +136,27 @@ function permalink(req, res, { download }) {
   // Güncel sürüm bağlantısı her istekte yeniden doğrulanır; sabit sürüm değişmez.
   const cache = vn === null ? 'no-cache, must-revalidate' : (row.media_kind === 'document' ? PRIVATE_IMMUTABLE : IMMUTABLE);
   res.setHeader('X-Document-Version', String(row.version_no));
+  // Görseller istenen boyut ve biçimde de indirilebilir: ?boyut=kucuk|orta|buyuk|tam&bicim=jpg|png
+  if (download && (req.query.boyut !== undefined || req.query.bicim !== undefined)) {
+    const size = String(req.query.boyut ?? 'tam');
+    const format = String(req.query.bicim ?? 'jpg');
+    if (fileKind(row.ext) !== 'image' || !Object.hasOwn(EXPORT_SIZES, size) || !Object.hasOwn(EXPORT_FORMATS, format)) {
+      return res.status(400).json({ error: 'Bu dosya için geçersiz boyut ya da biçim' });
+    }
+    try {
+      const p = await imageExport(row, size, format);
+      attachmentHeader(res, safeFileName(`${row.title_tr} (${EXPORT_LABELS[size]}).${format}`), false);
+      res.setHeader('Cache-Control', cache);
+      res.type(EXPORT_FORMATS[format]);
+      return res.sendFile(p);
+    } catch (err) {
+      return next(err);
+    }
+  }
   sendOriginal(res, row, { download, name, cache });
 }
 
-fileRoutes.get('/d/:pid', (req, res) => permalink(req, res, { download: false }));
-fileRoutes.get('/d/:pid/indir', (req, res) => permalink(req, res, { download: true }));
-fileRoutes.get('/d/:pid/v/:n', (req, res) => permalink(req, res, { download: false }));
-fileRoutes.get('/d/:pid/v/:n/indir', (req, res) => permalink(req, res, { download: true }));
+fileRoutes.get('/d/:pid', (req, res, next) => permalink(req, res, next, { download: false }));
+fileRoutes.get('/d/:pid/indir', (req, res, next) => permalink(req, res, next, { download: true }));
+fileRoutes.get('/d/:pid/v/:n', (req, res, next) => permalink(req, res, next, { download: false }));
+fileRoutes.get('/d/:pid/v/:n/indir', (req, res, next) => permalink(req, res, next, { download: true }));

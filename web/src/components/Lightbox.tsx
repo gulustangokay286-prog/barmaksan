@@ -6,12 +6,13 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, animate, motion, useMotionValue, useMotionValueEvent, usePresence, useReducedMotion, type PanInfo, type Variants } from 'motion/react';
 import { Icon } from './Icon';
-import { Button, LinkButton } from './ui';
+import { Button } from './ui';
+import { DownloadMenu } from './DownloadMenu';
 import { Link } from '../lib/link';
 import { useI18n } from '../lib/i18n';
 import { useUi } from '../lib/ui';
 import { formatDuration } from '../lib/format';
-import { downloadLink, pdfPageLink, type Doc } from '../lib/api';
+import { pdfPageLink, type Doc } from '../lib/api';
 import s from './Lightbox.module.css';
 
 // Apple'ın kaydırma yavaşlama projeksiyonu: bırakılan hızdan varış noktası.
@@ -182,7 +183,7 @@ function LightboxInner({ items, start, onClose }: { items: Doc[]; start: number;
       <div className={s.bar}>
         <span className={s.counter}>{index + 1} / {items.length}</span>
         <div className={s.barActions}>
-          <LinkButton href={downloadLink(doc.id)} variant="ghost" icon="download" size="md">{t('downloadOriginal')}</LinkButton>
+          <DownloadMenu key={doc.id} doc={doc} />
           <Button variant="ghost" icon="close" aria-label={t('close')} onClick={close} />
         </div>
       </div>
@@ -238,7 +239,6 @@ function LightboxInner({ items, start, onClose }: { items: Doc[]; start: number;
         <span className={s.capTitle}>{pick(doc.title)}</span>
         <span className={s.capMeta}>
           <Link to={doc.folder.kind === 'machine' ? `/m/${doc.folder.slug}` : `/k/${doc.folder.slug}`} onClick={close}>{pick(doc.folder.name)}</Link>
-          {file?.width && file?.height ? <span> · {file.width}×{file.height}</span> : null}
           {file?.durationMs ? <span> · {formatDuration(file.durationMs)}</span> : null}
         </span>
       </div>

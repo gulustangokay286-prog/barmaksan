@@ -1,0 +1,120 @@
+/*
+ * İndirme paneli (görüntüleyicinin koyu zemininde). Düğmenin sağ üstünden doğar; satırlar 48px,
+ * dokunmaya uygun. Süs yok: ad + kısa ipucu solda, ölçü sağda, tek indirme simgesi.
+ */
+.wrap {
+  position: relative;
+}
+.panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 2;
+  width: min(340px, calc(100vw - 32px));
+  padding: 8px;
+  border-radius: 16px;
+  background: rgba(30, 30, 32, 0.96);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 18px 48px rgba(0, 0, 0, 0.45);
+  color: #f2f2ef;
+  transform-origin: top right;
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  /* Kapalı: görünmez, tıklanmaz, sekme sırasında yok. Kapanış (120ms) açılıştan (180ms) hızlı. */
+  opacity: 0;
+  transform: translateY(-4px) scale(0.97);
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 120ms var(--ease-out), transform 120ms var(--ease-out), visibility 0s linear 120ms;
+}
+.panel[data-open] {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out), visibility 0s;
+}
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 8px 10px;
+  font-size: 13px;
+  color: rgba(242, 242, 239, 0.6);
+}
+.list {
+  display: grid;
+  gap: 2px;
+}
+.row,
+.original {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 10px;
+  color: rgba(242, 242, 239, 0.92);
+  transition: background-color var(--t-fast), transform 120ms var(--ease-out);
+}
+.row {
+  min-height: 52px;
+  padding: 8px 10px;
+}
+.row:active,
+.original:active {
+  transform: scale(0.98);
+}
+@media (hover: hover) and (pointer: fine) {
+  .row:hover,
+  .original:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+.name {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 14.5px;
+  font-weight: 540;
+  line-height: 20px;
+}
+.name small {
+  font-size: 12.5px;
+  font-weight: 450;
+  line-height: 17px;
+  color: rgba(242, 242, 239, 0.55);
+}
+.dims {
+  flex: none;
+  font-size: 13px;
+  color: rgba(242, 242, 239, 0.6);
+  font-variant-numeric: tabular-nums;
+}
+.row > svg,
+.original > svg {
+  flex: none;
+  color: rgba(242, 242, 239, 0.6);
+}
+.original {
+  justify-content: space-between;
+  margin-top: 6px;
+  padding: 12px 10px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0 0 10px 10px;
+  font-size: 13px;
+  color: rgba(242, 242, 239, 0.7);
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .panel[data-open] {
+    transform: none;
+  }
+  .row,
+  .original {
+    transition: background-color var(--t-fast);
+  }
+  .row:active,
+  .original:active {
+    transform: none;
+  }
+}
