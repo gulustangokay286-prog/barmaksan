@@ -1,18 +1,5 @@
 /* Doküman paneli: tek ses — büyük harf etiketi yok, monospace yok, süs çizgisi yok. */
 
-.parent {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 14px;
-  font-weight: 460;
-  color: var(--ink-3);
-  border-radius: 4px;
-  transition: color var(--t-fast);
-}
-.parent:hover {
-  color: var(--ink);
-}
 .title {
   margin-top: 6px;
   font-family: var(--font-display);

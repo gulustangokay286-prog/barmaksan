@@ -334,85 +334,48 @@
   background: var(--bar-line);
 }
 
-/* Konum izi */
-.crumbs {
+/* Barın başlığı: büyük başlık barın altına girince yükselerek belirir; tek satır, sığmazsa "…". */
+.barTitle {
   min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-  overscroll-behavior-x: contain;
-}
-.crumbs::-webkit-scrollbar { display: none; }
-.crumbs ol {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  min-width: 0;
-}
-.crumbs li {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  min-width: 0;
-  font-size: 13.5px;
-  line-height: 20px;
-  white-space: nowrap;
-}
-.crumbs li svg {
-  flex: none;
-  color: var(--on-bar-3);
-}
-.crumbs li:not([data-last]) {
-  flex: none;
-}
-.crumbs li[data-last] {
-  min-width: 0;
-  flex: none;
-}
-.crumbLink {
-  padding: 4px 6px;
-  border-radius: 6px;
-  color: var(--on-bar-2);
-  transition: color var(--t-fast), background-color var(--t-fast);
-}
-.crumbLink:hover {
-  color: var(--on-bar);
-  background: var(--bar-fill);
-}
-.crumbCurrent {
-  padding: 4px 6px;
-  font-weight: 540;
-  color: var(--on-bar);
   overflow: hidden;
+  font-size: 14px;
+  font-weight: 540;
+  line-height: 20px;
+  letter-spacing: -0.01em;
+  color: var(--on-bar);
+  white-space: nowrap;
   text-overflow: ellipsis;
+  transition: opacity 240ms var(--ease-out), transform 420ms var(--ease-spring);
 }
-/* Dar ekranda ara halkalar kısalır, son halka okunur kalır. */
-@media (max-width: 1279px) {
-  .crumbs li:not([data-last]):not(:first-child) .crumbLink {
-    max-width: 14ch;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+.barTitle[data-hidden] {
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .barTitle { transition: opacity 160ms linear; }
+  .barTitle[data-hidden] { transform: none; }
 }
 
 .mobileNav {
   display: none;
 }
-/* Geri: konum izinin solunda, ince bir ayraçla. */
+/* Geri: yalnızca simge, yuvarlak; dokunma alanı 44px. Başlık belirince hemen sağında durur. */
 .backDesk {
   display: flex;
+  flex: none;
   align-items: center;
-  margin-right: 10px;
-  padding-right: 10px;
-  border-right: 1px solid var(--bar-line);
+  margin-right: 8px;
 }
 .backBtn {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   margin-left: -6px;
-  border-radius: 8px;
+  border-radius: 50%;
   color: var(--on-bar-2);
   transition: color var(--t-fast), background-color var(--t-fast), transform 120ms var(--ease-out);
 }
@@ -422,6 +385,11 @@
 }
 .backBtn:active {
   transform: scale(0.92);
+}
+.backBtn::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
 }
 /* Ana sayfa başlığı: hero'daki büyük başlık kaybolunca barın tam ortasında belirir (iOS büyük başlık). */
 .homeTitle {
@@ -440,10 +408,6 @@
 .homeTitle[data-hidden] {
   opacity: 0;
   transform: translate(-50%, -20%);
-}
-.crumbCurrent[data-quiet] {
-  font-weight: 460;
-  color: var(--on-bar-2);
 }
 
 /* Dil menüsü */
@@ -1175,7 +1139,7 @@
   .topbar:not([data-home]) .brand { display: none; }
   .topbarInner { padding-left: 0; }
   .mobileNav, .topCenter { display: none; }
-  .backDesk { display: flex; flex: none; margin-right: 6px; padding-right: 6px; }
+  .backDesk { margin-right: 4px; }
 }
 
 @media (max-width: 767px) {
@@ -1209,7 +1173,6 @@
   .topSearch,
   .hideSm,
   .sep,
-  .topbar[data-home] .crumbs,
   .homeTitle {
     display: none;
   }
@@ -1231,8 +1194,6 @@
     min-width: 0;
     max-width: none;
   }
-  .crumbs li { font-size: 12.5px; }
-  .crumbLink, .crumbCurrent { padding-inline: 4px; }
   .topbar:not(:has(.back)) .topCenter {
     visibility: hidden;
   }

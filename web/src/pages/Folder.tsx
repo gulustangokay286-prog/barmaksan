@@ -54,6 +54,7 @@ export default function Folder() {
   return (
     <div className={`${p.page} fade-in`}>
       <PageHeader
+        crumbs={f.crumbs.slice(0, -1)}
         title={pick(f.name)}
         lead={description || undefined}
         meta={meta.length ? meta.map((m) => <span key={String(m)}>{m}</span>) : undefined}

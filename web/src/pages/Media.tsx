@@ -13,6 +13,7 @@ import { useBootstrap, usePageChrome, useUi } from '../lib/ui';
 import { folderQuery } from '../lib/query';
 import { useRouteReady } from '../lib/route';
 import { formatDuration, formatNumber } from '../lib/format';
+import { useLargeTitle } from '../lib/useLargeTitle';
 import p from './pages.module.css';
 import md from './media.module.css';
 
@@ -25,6 +26,8 @@ export default function Media() {
   const { setLightbox } = useUi();
   const ready = useRouteReady();
   usePageChrome(t('mediaLibrary'), { to: '/', label: t('home') });
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  useLargeTitle(titleRef, [ready]);
 
   const q = useInfiniteQuery({
     queryKey: ['media', kind, folder, locale],
@@ -94,7 +97,7 @@ export default function Media() {
   return (
     <div className={p.page}>
       <header className={md.header}>
-        <h1 className={md.title}>{t('mediaLibrary')}</h1>
+        <h1 ref={titleRef} className={md.title}>{t('mediaLibrary')}</h1>
         <p className={md.lead}>
           {lang === 'tr'
             ? 'Tesisten, montajdan ve makinelerden fotoğraflar ve filmler. Hepsi orijinal çözünürlükte; indirdiğiniz dosya çekilen dosyadır.'

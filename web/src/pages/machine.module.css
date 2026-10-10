@@ -20,19 +20,6 @@
   min-width: 0;
   padding-left: 24px;
 }
-.category {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 14px;
-  font-weight: 540;
-  color: var(--ink-3);
-  border-radius: 4px;
-  transition: color var(--t-fast);
-}
-.category:hover { color: var(--ink); }
-.category svg { transition: transform 420ms var(--ease-spring); }
-.category:hover svg { transform: translateX(3px); }
 .title {
   margin-top: 8px;
   font-family: var(--font-display);

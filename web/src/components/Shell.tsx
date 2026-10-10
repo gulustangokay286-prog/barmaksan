@@ -500,27 +500,16 @@ function BackButton() {
   );
 }
 
-function Crumbs() {
-  const crumbs = useCrumbs();
+/**
+ * İç sayfalarda barın başlığı (iOS gezinme çubuğu): sayfanın büyük başlığı görünürken boş kalır,
+ * başlık barın altına girince sayfanın adı belirir. Tam konum yolu sayfanın içinde durur ve satıra
+ * sarar; barda yol olmadığı için uzun dillerde de taşmaz, kesilmez.
+ */
+function BarTitle() {
+  const { title, titleVisible } = useChromeState();
   const { pathname } = useLocation();
-  const ref = useRef<HTMLElement>(null);
-  useEffect(() => { if (ref.current) ref.current.scrollLeft = ref.current.scrollWidth; }, [pathname, crumbs]);
-  if (pathname === '/') return null;
-  return (
-    <nav ref={ref} className={s.crumbs} aria-label="Konum">
-      <ol>
-        {crumbs.map((c, i) => {
-          const last = i === crumbs.length - 1;
-          return (
-            <li key={`${i}-${c.label}`} data-last={last || undefined}>
-              {i > 0 && <Icon name="chevronRight" size={12} strokeWidth={1.8} />}
-              {c.to && !last ? <Link to={c.to} className={s.crumbLink} title={c.label}>{c.label}</Link> : <span className={s.crumbCurrent} title={c.label} aria-current={last ? 'page' : undefined}>{c.label}</span>}
-            </li>
-          );
-        })}
-      </ol>
-    </nav>
-  );
+  if (pathname === '/' || !title) return null;
+  return <span className={s.barTitle} data-hidden={titleVisible || undefined} aria-hidden={titleVisible || undefined} title={title}>{title}</span>;
 }
 
 function Topbar({ expanded, onToggle, desktop }: { expanded: boolean; onToggle: () => void; desktop: boolean }) {
@@ -544,7 +533,7 @@ function Topbar({ expanded, onToggle, desktop }: { expanded: boolean; onToggle: 
         <div className={s.topLeft}>
 
           {pathname !== '/' && <span className={s.backDesk}><BackButton /></span>}
-          <Crumbs />
+          <BarTitle />
         </div>
         {/* Sağda tek sıra, hepsi 34px: arama · dil · tema · hesap. */}
         <div className={s.topRight}>

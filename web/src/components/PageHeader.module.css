@@ -9,27 +9,31 @@
   font-weight: 580;
   color: var(--gold-ink);
 }
+/* Yol bir cümle gibi akar: uzun adlar alt alta liste olmaz, satır sonunda kırılıp devam eder. */
 .crumbs {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
+  display: block;
   margin-bottom: 10px;
   font-size: 13px;
   line-height: 18px;
   color: var(--ink-3);
 }
+/* Uzun ya da boşluksuz adlar satıra sarar; yol hiçbir dilde taşmaz, kesilmez. */
 .crumbs a {
+  padding-block: 3px;
   border-radius: 4px;
+  overflow-wrap: anywhere;
   transition: color var(--t-fast);
 }
 .crumbs a:hover {
   color: var(--ink);
 }
 .crumb {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  display: inline;
+}
+.crumb svg {
+  display: inline-block;
+  margin: 0 4px;
+  vertical-align: -1px;
 }
 .crumb svg {
   color: var(--ink-4);

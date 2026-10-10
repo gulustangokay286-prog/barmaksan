@@ -7,6 +7,7 @@ import { DateStamp } from '../components/DateStamp';
 import { MediaGrid, DocThumb, docHref } from '../components/Docs';
 import { MachineGallery, MaintenanceBank, ProductOverview } from '../components/MachineContent';
 import { MachineSkeleton } from '../components/Skeletons';
+import { Crumbs } from '../components/PageHeader';
 import { api, downloadLink, type Doc, type MachineContent, type MachineLink } from '../lib/api';
 import { VideoLinkEditor, VideoLinkRow, type NewVideoLink } from '../components/VideoLinks';
 import { Link } from '../lib/link';
@@ -70,7 +71,7 @@ export default function Machine() {
   return <div className={`${p.page} fade-in`}>
     <div className={m.layout}>
       <header className={m.head}>
-        {parent && <Link to={`/k/${parent.slug}`} className={m.category}>{pick(parent.name)}<Icon name="chevronRight" size={13} /></Link>}
+        <Crumbs items={f.crumbs.slice(0, -1)} />
         <h1 ref={titleRef} className={m.title}>{name}</h1>
         {(models.length > 0 || profile?.updatedAt) && <p className={m.meta}>
           {models.length > 0 && <span>{models.join(' · ')}</span>}

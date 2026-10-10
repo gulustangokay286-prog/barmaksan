@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'motion/react';
 import { Icon } from '../components/Icon';
 import { DocumentSkeleton } from '../components/Skeletons';
+import { Crumbs } from '../components/PageHeader';
 import { DocActions } from '../components/Docs';
 import { DateStamp } from '../components/DateStamp';
 import { useRouteReady } from '../lib/route';
@@ -68,12 +69,7 @@ export default function DocumentPage() {
 
         <aside className={p.panel}>
           <div>
-            {back && (
-              <Link to={back.kind === 'machine' ? `/m/${back.slug}` : `/k/${back.slug}`} className={dc.parent}>
-                {pick(back.name)}
-                <Icon name="chevronRight" size={13} strokeWidth={1.8} />
-              </Link>
-            )}
+            <Crumbs items={d.crumbs} />
             <h1 ref={titleRef} className={dc.title}>{shortTitle(pick(d.title), back ? pick(back.name) : '')}</h1>
             {viewing && (
               <p className={dc.meta}>
