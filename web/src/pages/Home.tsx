@@ -115,26 +115,6 @@ function HeroContent({ progress, phases }: { progress: MotionValue<number>; phas
     return () => ro.disconnect();
   }, [lang, boot]);
 
-  // Üst bardaki dil, tema ve hesap düğmeleri bu sayıların sütunlarına oturur (Shell.module.css .topRight).
-  const statsRef = useRef<HTMLDListElement>(null);
-  useLayoutEffect(() => {
-    const dl = statsRef.current;
-    if (!dl) return;
-    const root = document.documentElement.style;
-    const measure = () => {
-      const [a, b, c, d] = [...dl.children] as HTMLElement[];
-      if (!d) return;
-      root.setProperty('--st-w1', `${a.offsetWidth}px`);
-      root.setProperty('--st-w2', `${b.offsetWidth}px`);
-      root.setProperty('--st-w3', `${d.offsetLeft + d.offsetWidth - c.offsetLeft}px`);
-      root.setProperty('--st-gap', `${b.offsetLeft - a.offsetLeft - a.offsetWidth}px`);
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(dl);
-    return () => ro.disconnect();
-  }, [boot]);
-
   const machines = boot ? formatNumber(boot.stats.machines, lang) : '42';
   const lead = lang === 'tr'
     ? <>Barmaksan Uğur Promilling’in <b>{machines} makinesine</b> ve şirketine ait bütün dosyalar tek yerde: teknik fiş, çizim, yedek parça listesi, kılavuz, sertifika, katalog, fotoğraf ve video. Her dosya <b>her zaman en güncel sürümüyle</b> açılır; paylaştığınız bağlantı hep doğru dosyayı gösterir.</>
@@ -146,7 +126,7 @@ function HeroContent({ progress, phases }: { progress: MotionValue<number>; phas
       <motion.div className={h.heroTop} style={{ pointerEvents }}>
         <RecentTicker />
         {boot && (
-          <dl ref={statsRef} className={h.heroStats}>
+          <dl className={h.heroStats}>
             <div><dt>{t('machine')}</dt><dd>{formatNumber(boot.stats.machines, lang)}</dd></div>
             <div><dt>{t('documents')}</dt><dd>{formatNumber(boot.stats.documents, lang)}</dd></div>
             <div><dt>{t('versions')}</dt><dd>{formatNumber(boot.stats.versions, lang)}</dd></div>

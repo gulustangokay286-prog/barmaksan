@@ -2,15 +2,21 @@
   /* Yükseklik = sabit alan + bekleme (4vh) + geçiş (55vh) + kilit (makine başına --per-card)
    * + son makinede bekleme (24vh) + bırakma (sabit alan kadar: içerik sayfası bu mesafede yükselip üstüne kapanır).
    * Hero.tsx'teki PRE / MOVE / HOLD / perCard ile aynı formül. Kısa tutulur: içeriğe ulaşmak zahmetsiz olsun. */
-  --stick: calc(100dvh - var(--bar-h) - var(--tabbar-h));
+  /* Sahne üst çubuğun altına kadar uzanır (çubuk en üstte saydam, fotoğraf altından görünür);
+   * metin ve carousel çubuğun altındaki alanda kalır (.sticky padding-top). */
+  --stick: calc(100dvh - var(--tabbar-h));
   --per-card: 14vh;
   position: relative;
+  margin-top: calc(-1 * var(--bar-h));
   height: calc(var(--stick) * 2 + 4vh + 55vh + 24vh + var(--scrub-span, 8) * var(--per-card));
 }
 /* Sahnenin bütün katmanları: bırakmada birlikte geriye çekilir. */
+/* padding-top: metin ve carousel üst çubuğun altında başlar; fotoğraf (.stage, mutlak) çubuğun
+ * arkasına kadar uzanır. */
 .recede {
   position: absolute;
   inset: 0;
+  padding-top: var(--bar-h);
   display: flex;
   align-items: center;
   transform-origin: 50% 0;
@@ -24,8 +30,8 @@
 }
 .sticky {
   position: sticky;
-  top: var(--bar-h);
-  height: calc(100dvh - var(--bar-h) - var(--tabbar-h));
+  top: 0;
+  height: calc(100dvh - var(--tabbar-h));
   overflow: hidden;
   isolation: isolate;
   display: flex;
@@ -75,10 +81,11 @@
 /* ── Sahne: carousel + kilit başlığı. Sticky alanın tam ortasına yerleşir;
  *    dinlenmedeki konumu ve ölçeği JS'ten (yuvanın ölçüsü) gelir. ───────────── */
 
+/* Görünen alanın (çubuğun altı) ortası. */
 .scene {
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: calc(50% + var(--bar-h) / 2);
   z-index: 2;
   translate: -50% -50%;
   transform-origin: 50% 50%;
@@ -218,6 +225,32 @@
   inset: 0;
   background: #0b0b0d;
 }
+/* Altın örtü, üç katman; hepsi sol alttan (başlığın durduğu yer) sağa ve yukarı doğru söner:
+ * 1) renk: fotoğraf o bölgede altın tonuna döner (parlaklığı korunur, çamurlaşmaz),
+ * 2) ışık: hafif altın parıltı, 3) pervane deseni. Beyaz başlık her katmanın üstünde okunur. */
+.gild,
+.gildGlow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.gild {
+  background: radial-gradient(95% 125% at 0% 100%, #d9b625 0%, rgba(217, 182, 37, 0.7) 35%, transparent 72%);
+  mix-blend-mode: color;
+}
+.gildGlow {
+  background: radial-gradient(80% 100% at 0% 100%, rgba(217, 182, 37, 0.3) 0%, rgba(217, 182, 37, 0.1) 45%, transparent 70%);
+}
+.gildPattern {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: #d9b625;
+  opacity: 0.32;
+  -webkit-mask-image: radial-gradient(70% 90% at 0% 100%, #000 0%, rgba(0, 0, 0, 0.45) 45%, transparent 80%);
+  mask-image: radial-gradient(70% 90% at 0% 100%, #000 0%, rgba(0, 0, 0, 0.45) 45%, transparent 80%);
+}
 
 /* Tablet ve telefon: aynı düzen, daha az alt boşluk. */
 @media (max-width: 1023px) {
@@ -233,6 +266,7 @@
 
 @media (max-width: 767px) {
   .mobileHero {
+    margin-top: calc(-1 * var(--bar-h));
     background: #111113;
     color: #fff;
     overflow: clip;
@@ -241,8 +275,8 @@
     position: relative;
     isolation: isolate;
     display: flex;
-    min-height: calc(100svh - var(--bar-h));
-    padding: 24px var(--gutter) calc(104px + env(safe-area-inset-bottom));
+    min-height: 100svh;
+    padding: calc(24px + var(--bar-h)) var(--gutter) calc(104px + env(safe-area-inset-bottom));
   }
   .mobileBackdrop {
     position: absolute;

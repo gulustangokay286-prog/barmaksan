@@ -6,324 +6,195 @@
 .shell {
   min-height: 100dvh;
 }
-/* Kenar çubuğu sabit konumlu bir panel; içerik onun genişliği kadar içeriden başlar.
- * Panel ve bu boşluk tek değerden sürülür (Shell.tsx): içerik yerinde daralır/genişler.
- * overflow-x: clip — kayarken taşan içerik yatay kaydırma çubuğu açmasın (sticky'yi bozmaz). */
-/* Kenar çubuğu açıkken içerik onun genişliği kadar içeriden başlar. Aç/kapa animasyonu View
- * Transition ile (styles/motion.css): içerik bir kez dizilir, hareket ekran kartında oynar. */
+/* Bölüm sayfalarında kenar çubuğu sütunu + içerik; diğer sayfalarda içerik tam genişlik.
+ * overflow-x: clip — taşan içerik yatay kaydırma çubuğu açmasın (sticky'yi bozmaz). */
 .body {
   min-height: calc(100dvh - var(--bar-h));
   overflow-x: clip;
 }
 @media (min-width: 1024px) {
-  /* Kenar çubuğu sütunu + içerik sütunu. Yalnızca ilk sütunun genişliği geçiş yapar. */
   .body {
     display: grid;
     grid-template-columns: 0px minmax(0, 1fr);
-    transition: grid-template-columns 380ms cubic-bezier(0.25, 1, 0.3, 1);
   }
   .shell:not([data-sidebar-closed]) .body {
     grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
-    transition-duration: 440ms;
   }
   .body > main { grid-column: 2; min-width: 0; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .body { transition: none !important; }
-}
 
-.sidebarToggle { flex: none; }
-
-/* Üç çizgi. Açılırken çizgiler sağdan, kapanırken soldan kısa bir dalga yapar (sırayla). */
-.burger {
-  position: relative;
-  display: block;
-  width: 18px;
-  height: 12px;
-}
-.burger > span {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 1.5px;
-  border-radius: 1px;
-  background: currentColor;
-  transform-origin: 0 50%;
-}
-.burger > span:nth-child(1) { top: 0; }
-.burger > span:nth-child(2) { top: 5.25px; --d: 45ms; }
-.burger > span:nth-child(3) { top: 10.5px; --d: 90ms; }
-.burger[data-state='open'] > span { transform-origin: 100% 50%; }
-.burger[data-played][data-state='open'] > span { animation: burger-open 520ms var(--ease-out) var(--d, 0ms) both; }
-.burger[data-played][data-state='closed'] > span { animation: burger-close 520ms var(--ease-out) var(--d, 0ms) both; }
-@keyframes burger-open {
-  0% { transform: scaleX(1); }
-  38% { transform: scaleX(0.42); }
-  100% { transform: scaleX(1); }
-}
-@keyframes burger-close {
-  0% { transform: scaleX(1); }
-  38% { transform: scaleX(0.42); }
-  100% { transform: scaleX(1); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .burger > span { animation: none !important; }
-}
-
-/* ── Üst bar: koyu, tam genişlik, yapışık ─────────────────────────────────── */
-
+/* ── Üst çubuk ───────────────────────────────────────────────────────────────
+ * Masaüstünde sitenin ana gezinmesi (72px): solda logo ve bölümler, sağda arama, kaydedilenler,
+ * dil, tema ve hesap. Tam genişlik ve her sayfada aynı yerde; sayfa değişince hiçbir öğe kaymaz.
+ *
+ * Malzeme ayrı bir plaka (::before): dikdörtgen değil, alt köşeleri kavisli. Saydamlığı sayfanın
+ * durumuyla değişir (Shell.tsx Topbar): ana sayfanın en üstünde hiç yok (fotoğraf altından görünür),
+ * diğer sayfaların en üstünde yarı saydam, kaydırınca yoğun buzlu cam olup kenarlardan içeri
+ * çekilir ve gölgelenir. Yalnızca inset, renk, gölge ve bulanıklık geçiş yapar; yükseklik sabit,
+ * içerik zıplamaz. Plakanın kendi bulanıklığı olsun diye çubuğun kendisinde filtre yok.
+ */
 .topbar {
+  --plate-inset: 0px;
+  --plate-r: 22px;
+  --plate-a: var(--plate-top);
+  --plate-blur: 16px;
+  --plate-shadow: 0 0.5px 0 var(--bar-line);
   position: sticky;
   top: 0;
   z-index: 30;
-  display: grid;
-  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
   height: var(--bar-h);
-  background-color: var(--bar-bg);
-  /* Değirmen dokusu: üst bar ve kenar çubuğunda tek parça. "fixed" değil: Safari'de her karede
-   * yeniden çizdiriyor, panel kayınca da desen yerinden sıçrıyordu. Kenar çubuğu deseni üst
-   * barın kaldığı yerden sürdürür (bkz. .sidebar). */
-  background-image: var(--chrome-texture);
-  background-size: 420px 420px;
-  -webkit-backdrop-filter: var(--blur-bar);
-  backdrop-filter: var(--blur-bar);
-  border-bottom: 1px solid var(--bar-line);
   color: var(--on-bar);
 }
-.brandArea {
+.topbar::before {
+  content: '';
+  position: absolute;
+  inset: 0 var(--plate-inset);
+  z-index: -1;
+  border-radius: 0 0 var(--plate-r) var(--plate-r);
+  background-color: color-mix(in srgb, var(--bar-bg-solid) var(--plate-a), transparent);
+  background-image: var(--chrome-texture);
+  background-size: 420px 420px;
+  -webkit-backdrop-filter: blur(var(--plate-blur)) saturate(170%);
+  backdrop-filter: blur(var(--plate-blur)) saturate(170%);
+  box-shadow: var(--plate-shadow);
+  transition:
+    inset 560ms var(--ease-out),
+    border-radius 560ms var(--ease-out),
+    background-color 360ms var(--ease-out),
+    box-shadow 360ms var(--ease-out),
+    -webkit-backdrop-filter 360ms var(--ease-out),
+    backdrop-filter 360ms var(--ease-out);
+}
+.topbar[data-scrolled] {
+  --plate-inset: 10px;
+  --plate-r: 24px;
+  --plate-a: var(--plate-scrolled);
+  --plate-blur: 26px;
+  --plate-shadow: 0 0 0 0.5px var(--bar-line), 0 12px 32px -12px rgba(0, 0, 0, 0.32);
+}
+/* Ana sayfanın en üstü: plaka saydam, yalnızca yazıların okunması için yukarıdan hafif gölge;
+ * çubuktaki her şey koyu fotoğrafın üstünde beyaz. */
+.topbar[data-over] {
+  --on-bar: #f5f5f2;
+  --on-bar-2: rgba(255, 255, 255, 0.8);
+  --on-bar-3: rgba(255, 255, 255, 0.5);
+  --bar-fill: rgba(255, 255, 255, 0.14);
+  --bar-fill-hover: rgba(255, 255, 255, 0.22);
+  --bar-line: rgba(255, 255, 255, 0.1);
+  --bar-bg-solid: #1f1f22;
+  --bar-menu-ring: rgba(255, 255, 255, 0.1);
+}
+.topbar[data-over]::before {
+  background-color: transparent;
+  background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0));
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .topbar::before { background-color: var(--bar-bg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .topbar::before { transition-duration: 1ms; }
+}
+.barRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-width: 0;
-  padding: 0 12px;
-  border-right: 1px solid var(--bar-line);
-  transition: border-color 320ms var(--ease-out);
-}
-.shell[data-sidebar-closed] .brandArea {
-  border-right-color: transparent;
+  gap: 6px;
+  height: 100%;
+  padding: 0 28px;
 }
 .brand {
   display: inline-flex;
+  flex: none;
+  margin-right: 24px;
   border-radius: var(--r-sm);
 }
-.topbarInner {
-  position: relative;
+.nav {
+  display: flex;
+  align-self: stretch;
   min-width: 0;
-  height: 100%;
-  display: grid;
-  /* Sol: konum izi · sağ: arama, dil, tema, hesap (tek sıra). */
-  grid-template-columns: minmax(0, 1fr) auto;
+}
+.navList {
+  display: flex;
+  align-items: stretch;
+}
+.navList > li {
+  display: flex;
+}
+/* Bölüm bağlantısı: metin; seçili olunca yalnızca renk koyulaşır (kalınlık değişmez, yan
+ * bağlantılar kaymaz) ve altında altın çizgi. Basınca anında hafif kararır. */
+.navLink {
+  position: relative;
+  display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 0 var(--gutter) 0 var(--gutter);
+  padding: 0 14px;
+  font-size: 14.5px;
+  font-weight: 460;
+  letter-spacing: -0.008em;
+  color: var(--on-bar-2);
+  white-space: nowrap;
+  transition: color 120ms linear;
 }
-/*
- * Masaüstü: üst bar içerik kabıyla hizalı (kab: --page-max + --gutter, içerik sütununda ortalı).
- * Logolar her durumda içeriğin sol kenarında (kenar çubuğu açıkken çubuğun sağında); sağdaki
- * düğmeler içeriğin sağ kenarında. --edge: kabın kenar boşluğu, üst barın genişliğinden (cqw) hesaplanır. Geçiş
- * yalnızca kenar çubuğu açılıp kapanırken (html[data-sidebar-moving]); sütun geçişiyle aynı süre
- * ve eğride. Pencere boyutu değişince anında yerine oturur.
- */
-@media (min-width: 1024px) {
-  .topbar {
-    container-type: inline-size;
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-  .topbar > * {
-    --edge: max(var(--gutter), (100cqw - var(--sidebar-w) - var(--page-max)) / 2);
-    --bar-ease: cubic-bezier(0.25, 1, 0.3, 1);
-  }
-  .shell[data-sidebar-closed] .topbar > * {
-    --edge: max(var(--gutter), (100cqw - var(--page-max)) / 2);
-  }
-  .brandArea {
-    --brand-w: 197px; /* BrandLockup compact genişliği */
-    position: relative;
-    width: calc(var(--sidebar-w) + var(--edge) + var(--brand-w) + 24px);
-    padding-left: calc(var(--sidebar-w) + var(--edge));
-    border-right-color: transparent;
-  }
-  /* Kenar çubuğunun sınır çizgisi üst barda da sürer (logolar artık çubuğun üstünde değil). */
-  .topbar::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: calc(var(--sidebar-w) - 1px);
-    width: 1px;
-    background: var(--bar-line);
-    pointer-events: none;
-    transition: opacity 320ms var(--ease-out);
-  }
-  .shell[data-sidebar-closed] .topbar::before {
-    opacity: 0;
-  }
-  :global(html[data-sidebar-moving]) .brandArea {
-    transition:
-      width 440ms var(--bar-ease),
-      padding-left 440ms var(--bar-ease);
-  }
-  .brandArea > .sidebarToggle {
-    position: absolute;
-    top: 50%;
-    left: 12px;
-    translate: 0 -50%;
-    /* Yazı gizliyken 34px yuvarlak; görünürken hap ("Menü"). */
-    width: auto;
-    min-width: 34px;
-    gap: 12px;
-    padding: 0 8px;
-  }
-  /* "Menü" yazısı: menü düğmesiyle logolar arasında yer varsa (kenar çubuğu açıkken ya da geniş
-   * ekranda) görünür; dar ekranda kapalıyken logolara çarpmasın diye gizli. */
-  .menuLabel {
-    display: none;
-    padding-right: 4px;
-    font-size: 13.5px;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-  .shell:not([data-sidebar-closed]) .menuLabel {
-    display: inline;
-  }
-  @container (min-width: 1440px) {
-    .menuLabel {
-      display: inline;
-    }
-  }
-  .shell[data-sidebar-closed] .brandArea {
-    /* Logolar içeriğin sol kenarında; dar ekranda menü düğmesine çarpmaz. */
-    padding-left: max(54px, var(--edge));
-    width: calc(max(54px, var(--edge)) + var(--brand-w) + 24px);
-  }
-  :global(html[data-sidebar-moving]) .shell[data-sidebar-closed] .brandArea {
-    transition-duration: 380ms;
-  }
-  .topbarInner {
-    padding-left: var(--gutter);
-    padding-right: var(--edge);
-  }
-  :global(html[data-sidebar-moving]) .topbarInner {
-    transition: padding 440ms var(--bar-ease);
-  }
-  :global(html[data-sidebar-moving]) .shell[data-sidebar-closed] .topbarInner {
-    transition-duration: 380ms;
-  }
+.navLink:hover,
+.navLink[aria-current='page'] {
+  color: var(--on-bar);
 }
-@media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
-  :global(html[data-sidebar-moving]) .brandArea,
-  :global(html[data-sidebar-moving]) .topbarInner {
-    transition: none;
-  }
+.navLink:active {
+  color: var(--on-bar-3);
+  transition-duration: 0ms;
 }
-.topSearch { display: flex; width: 240px; margin-right: 4px; }
-.topSearch > * { width: 100%; }
-@media (max-width: 1279px) { .topSearch { width: 200px; } }
-
+.navMark {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--gold);
+}
 .topLeft {
   display: flex;
   align-items: center;
+  flex: 1;
   min-width: 0;
-}
-.topCenter {
-  display: none;
 }
 .topRight {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  justify-self: end;
+  flex: none;
   gap: 6px;
+  margin-left: auto;
 }
-/*
- * Masaüstü: sağdaki düğmeler ana sayfa üst şeridindeki sayılarla aynı sütunlarda (Home ölçer ve
- * --st-* değişkenlerini yazar; ölçülmeden önce Türkçe metne göre varsayılanlar):
- * dil ↔ "42 makine", tema ↔ "20 doküman", Giriş yap ↔ "95 sürüm · 75 medya" (bütün genişlik).
- */
+.topSearch {
+  display: flex;
+  width: 260px;
+  margin-right: 2px;
+}
+.topSearch > * {
+  width: 100%;
+}
 @media (min-width: 1024px) {
-  .topRight {
-    display: grid;
-    grid-template-columns: auto var(--st-w1, 72px) var(--st-w2, 86px) var(--st-w3, 156px);
-    column-gap: var(--st-gap, 22px);
-    justify-items: center;
+  .topbar .iconBtn {
+    width: 38px;
+    height: 38px;
   }
-  /* Sütunlar açıkça: arama kabın dışına alındığında da düğmeler yerinde kalır. */
-  .topRight > .hideSm {
-    grid-column: 2;
-  }
-  .topRight > .themeCell {
-    grid-column: 3;
-  }
-  /* Hesap düğmesi sütunu doldurmaz: kendi genişliğinde, alttaki sayılarla aynı eksende ortalı. */
-  .topRight > :last-child {
-    grid-column: 4;
-    justify-self: center;
-  }
-  /* Dil ile tema arasında ince ayraç: sütun aralığının tam ortasında. */
-  .themeCell {
-    position: relative;
-    justify-self: stretch;
-    justify-content: center;
-  }
-  .themeCell::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: calc(var(--st-gap, 22px) / -2);
-    width: 1px;
-    height: 20px;
-    translate: -0.5px -50%;
-    background: color-mix(in srgb, var(--on-bar) 32%, transparent);
-  }
-  /* Arama (kaydırınca belirir; diğer sayfalarda hep görünür): yer varsa "Giriş yap"ın sağında,
-   * içerik kabının dışındaki boşlukta, o boşluğa göre genişlikte. Yer yoksa dil düğmesinin solunda
-   * yalnızca büyüteç (ortadaki başlığa çarpmaz). */
-  .topRight {
-    position: relative;
-  }
-  .topSearch {
-    width: 34px;
-    margin-right: 0;
-  }
-  .topSearch [data-search-trigger][data-variant] {
-    justify-content: center;
-    padding: 0;
-  }
-  .topSearch [data-search-trigger][data-variant] > :last-child {
-    display: none;
+  .topbar .iconBtn.langButton {
+    width: auto;
   }
 }
-@container (min-width: 1420px) {
-  .shell[data-sidebar-closed] .topSearch {
-    position: absolute;
-    top: 50%;
-    left: calc(100% + 12px);
-    translate: 0 -50%;
-    width: min(240px, var(--edge) - 28px);
-  }
-  .shell[data-sidebar-closed] .topSearch [data-search-trigger][data-variant] {
-    justify-content: flex-start;
-    padding: 0 14px 0 12px;
-  }
-  .shell[data-sidebar-closed] .topSearch [data-search-trigger][data-variant] > :last-child {
-    display: block;
-  }
+/* Dar masaüstü: arama yalnızca büyüteç, bağlantılar birbirine biraz yaklaşır. */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .barRow { padding: 0 20px; }
+  .brand { margin-right: 12px; }
+  .navLink { padding: 0 11px; }
+  .navMark { left: 11px; right: 11px; }
+  .topSearch { width: 38px; margin-right: 0; }
+  .topSearch [data-search-trigger][data-variant] { justify-content: center; padding: 0; }
+  .topSearch [data-search-trigger][data-variant] > :last-child { display: none; }
 }
-@container (min-width: 1684px) {
-  .topSearch {
-    position: absolute;
-    top: 50%;
-    left: calc(100% + 12px);
-    translate: 0 -50%;
-    width: min(240px, var(--edge) - 28px);
-  }
-  .topSearch [data-search-trigger][data-variant] {
-    justify-content: flex-start;
-    padding: 0 14px 0 12px;
-  }
-  .topSearch [data-search-trigger][data-variant] > :last-child {
-    display: block;
-  }
+@media (prefers-reduced-motion: reduce) {
+  .navMark { transition: none !important; }
 }
 
 .sep {
@@ -537,11 +408,17 @@
 }
 
 /* ── Kenar çubuğu ───────────────────────────────────────────────────────────
- * Üst barla aynı koyu ton. Seçim basıldığı anda görünür (animasyon beklemez);
- * açılıp kapanma saf CSS; hover'da zemin yok, yalnızca metin belirginleşir. */
+ * Masaüstü: bulunduğunuz bölümün dizini, sayfanın kendi zemininde (koyu panel değil), içerikten
+ * ince bir çizgiyle ayrılır. Mobil menüde aynı ağaç çerçeve renkleriyle. Seçim basıldığı anda
+ * görünür; açılıp kapanma saf CSS; hover'da zemin yok, yalnızca metin belirginleşir. */
 
-/* Grid'in ilk sütunu: üst barın altında yapışık, ekran yüksekliğinde. Sütun daraldıkça kırpılır. */
+/* Grid'in ilk sütunu: üst çubuğun altında yapışık, ekran yüksekliğinde. */
 .sidebar {
+  --side-ink: var(--ink-2);
+  --side-ink-strong: var(--ink);
+  --side-ink-3: var(--ink-3);
+  --side-fill: var(--fill-selected);
+  --side-line: var(--line);
   grid-column: 1;
   position: sticky;
   z-index: 20;
@@ -549,27 +426,57 @@
   align-self: start;
   height: calc(100dvh - var(--bar-h));
   overflow: hidden;
-  background-color: var(--side-bg);
-  background-image: var(--chrome-texture);
-  background-size: 420px 420px;
-  background-position: 0 calc(-1 * var(--bar-h));
+  border-right: 1px solid var(--line);
   color: var(--side-ink);
 }
-/* Panelin içi hep tam genişlikte: sütun açılırken yeniden dizilmez, yalnızca görünür olur. */
 .sidebarInner {
+  position: relative;
   width: var(--sidebar-w);
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 .sidebarScroll {
+  position: relative;
+  z-index: 1;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 16px 12px 20px;
+  padding: 28px 16px 24px;
   scrollbar-width: thin;
-  scrollbar-color: var(--bar-scrollbar) transparent;
+  scrollbar-color: var(--line-strong) transparent;
+}
+/* Boş kalan alt köşede marka: büyük, soluk pervane kanadı; listenin arkasında, köşeden taşar. */
+.sideSail {
+  position: absolute;
+  left: -18px;
+  bottom: -96px;
+  width: 132px;
+  color: var(--gold);
+  opacity: 0.1;
+  transform: rotate(40deg);
+  pointer-events: none;
+}
+/* Alt klasörü olmayan satırlar (kurumsal, medya) başlıkla aynı hizada; açılır ok yeri ayrılmaz. */
+.sectionHead[data-solo] ~ .sectionBody .rowWrap:not(:has(.disclosure)) > .treeLink[data-indent='1'] {
+  padding-left: 10px;
+}
+/* Tek bölüm başlığı (kenar çubuğu): bölümün adı, sayısı; altında ince çizgi. Kapanmaz. */
+.sectionHead[data-solo] {
+  height: auto;
+  margin: 0 0 10px;
+  padding: 0 10px 14px;
+  border-bottom: 1px solid var(--side-line);
+}
+.sectionHead[data-solo] .sectionLabel {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 560;
+  letter-spacing: -0.018em;
+}
+.sectionHead[data-solo] .count {
+  font-size: 13px;
 }
 
 .primary {
@@ -903,6 +810,41 @@
 
 /* ── İçerik ───────────────────────────────────────────────────────────────── */
 
+/* Gövde kendi katmanı (z 0): üst şerit (z -1) body zemininin altına düşmesin. Genel kaplamalar
+ * (arama, ışık kutusu, düzenleyici) App düzeyinde, bu katmanın dışında çizilir. */
+.body {
+  position: relative;
+  z-index: 0;
+}
+/* İç sayfaların üst şeridi: altın ışık aşağı doğru söner; sağ üstte pervane deseni köşeden sola
+ * ve aşağı doğru kaybolur. Üst çubuğun altına kadar uzanır (yarı saydam çubuktan görünür), kenar
+ * çubuğunun da arkasından geçer. İçeriğin arkasında (z -1), tıklamaları engellemez. */
+.wash {
+  position: absolute;
+  top: calc(-1 * var(--bar-h));
+  left: 0;
+  right: 0;
+  height: calc(380px + var(--bar-h));
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 13%, transparent), transparent 92%);
+}
+.washPattern {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(760px, 72%);
+  height: 100%;
+  color: var(--gold);
+  opacity: 0.3;
+  -webkit-mask-image: radial-gradient(115% 100% at 100% 0%, #000 0%, rgba(0, 0, 0, 0.5) 38%, transparent 72%);
+  mask-image: radial-gradient(115% 100% at 100% 0%, #000 0%, rgba(0, 0, 0, 0.5) 38%, transparent 72%);
+}
+@media (max-width: 767px) {
+  .wash { height: 260px; }
+  .washPattern { width: 100%; opacity: 0.24; }
+}
 
 /* ── Ekran geçişi perdesi (açılış perdesinin küçüğü) ───────────────────────── */
 
@@ -1151,36 +1093,29 @@
 }
 
 @media (max-width: 1023px) {
-  .body {
-    padding-left: 0;
-  }
-  .topbar {
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-  .brandArea {
-    padding: 0 12px;
-    border-right: 0;
-  }
   .sidebar {
     display: none;
   }
-  .body {
-    padding-left: 0 !important;
+  .barRow {
+    gap: 4px;
+    padding: 0 12px 0 16px;
   }
-  .searchSlot {
-    width: 220px;
-  }
-  .topbar:not([data-home]) .brand { display: none; }
-  .topbarInner { padding-left: 0; }
-  .mobileNav, .topCenter { display: none; }
+  .brand { margin-right: 0; }
   .backDesk { margin-right: 4px; }
 }
 
 @media (max-width: 767px) {
-  /* Sabit çubuklar kaydırmada arka planı her karede yeniden bulanıklaştırmaz. */
+  /* Telefonda plaka bulanıklaştırmaz (kaydırmada her kare yeniden çizilmesin), daha yoğun renkle cam
+   * hissi verir; kavis ve içeri çekilme aynı. */
   .topbar {
-    --blur-bar: none;
-    background-color: var(--bar-bg-solid);
+    --plate-r: 20px;
+    --plate-blur: 0px;
+  }
+  .topbar[data-scrolled] {
+    --plate-inset: 8px;
+    --plate-r: 20px;
+    --plate-a: 94%;
+    --plate-blur: 0px;
   }
   .tabbar .tabGroup {
     background: var(--bar-bg-solid);
@@ -1211,24 +1146,6 @@
   }
   .searchMobile {
     display: inline-flex;
-  }
-  .mobileNav {
-    display: none;
-    min-width: 0;
-  }
-  .topbarInner {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 8px;
-    padding: 0 12px 0 0;
-  }
-  .topCenter {
-    display: none;
-    justify-content: center;
-    min-width: 0;
-    max-width: none;
-  }
-  .topbar:not(:has(.back)) .topCenter {
-    visibility: hidden;
   }
   .tabbar {
     position: fixed;
@@ -1408,11 +1325,8 @@
   .tabMenu[data-open] .menuGlyph > span:nth-child(2) { opacity: 0; transform: scaleX(.2); }
   .tabMenu[data-open] .menuGlyph > span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
   .content { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
-  /* Üstte menü düğmesi yok (alttaki menü düğmesi var); iç sayfalarda geri düğmesi kenara yaslanır. */
-  .sidebarToggle { display: none; }
-  .topbar:not([data-home]) { grid-template-columns: minmax(0, 1fr); }
-  .topbar:not([data-home]) .brandArea { display: none; }
-  .topbar:not([data-home]) .topbarInner { padding-left: 6px; }
+  /* İç sayfalarda geri düğmesi kenara yaslanır. */
+  .topbar:not([data-home]) .barRow { padding-left: 6px; }
 }
 /* Küçük telefonlar: çubuk biraz alçalır; hap alçalan grubun içinde ortalı kalır, dışına taşmaz. */
 @media (max-width: 374px) {

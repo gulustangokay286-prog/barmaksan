@@ -5,6 +5,7 @@ import { Icon } from './Icon';
 import { AccountMenu } from './AccountMenu';
 import { BrandLockup, Button } from './ui';
 import { SearchTrigger } from './SearchTrigger';
+import { Pervane, PervanePattern } from './Pervane';
 import { topSearchReveal } from '../lib/reveal';
 import { Link, useGoBack } from '../lib/link';
 import { useBootstrap, useChromeState, useUi } from '../lib/ui';
@@ -37,7 +38,7 @@ function useTree() {
 }
 
 const hrefOf = (n: { kind: string; slug: string }) => (n.kind === 'machine' ? `/m/${n.slug}` : `/k/${n.slug}`);
-const ROOT_ORDER = new Map([['kurumsal', 0], ['makineler', 1], ['medya', 2]]);
+const ROOT_ORDER = new Map([['makineler', 0], ['kurumsal', 1], ['medya', 2]]);
 /** Ana bölümler birbirinden ayırt edilsin diye yalnızca bölüm başlıklarında simge; satırlar simgesiz. */
 const ROOT_ICON = new Map([['kurumsal', 'briefcase'], ['makineler', 'factory'], ['medya', 'images']]);
 
@@ -137,12 +138,13 @@ const Branch = memo(function Branch({ node, kids, active, open, onToggle, onNavi
   );
 });
 
-function Tree({ onNavigate }: { onNavigate?: () => void }) {
+/** `only`: yalnızca o bölüm (masaüstü kenar çubuğu); başlığı sabit, kapanmaz. Yoksa bütün bölümler (mobil menü). */
+function Tree({ onNavigate, only }: { onNavigate?: () => void; only?: string }) {
   const { pick } = useI18n();
   const { loaded, roots, children, bySlug, byId } = useTree();
   const orderedRoots = useMemo(() => [...roots].sort((a, b) =>
     (ROOT_ORDER.get(a.slug) ?? ROOT_ORDER.size) - (ROOT_ORDER.get(b.slug) ?? ROOT_ORDER.size)
-  ), [roots]);
+  ).filter((r) => !only || r.slug === only), [roots, only]);
   const active = activeSlugOf(useNavPath());
   const { collapsed, toggle: toggleSection } = useCollapsedSections();
   const navRef = useRef<HTMLElement>(null);
@@ -211,18 +213,20 @@ function Tree({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav ref={navRef} className={s.tree} aria-label="Klasörler">
       {orderedRoots.map((section) => {
-        const isCollapsed = collapsed.has(section.slug);
+        const isCollapsed = !only && collapsed.has(section.slug);
         return (
           <div key={section.id} className={s.treeSection} data-collapsed={isCollapsed || undefined}>
-            <div className={s.sectionHead}>
+            <div className={s.sectionHead} data-solo={only ? '' : undefined}>
               <Link to={hrefOf(section)} className={s.sectionLabel} onClick={onNavigate} data-active={active === section.slug || undefined} aria-current={active === section.slug ? 'page' : undefined} onPointerEnter={() => prefetchFolder(section.slug)}>
-                <Icon name={ROOT_ICON.get(section.slug) ?? 'folder'} size={16} strokeWidth={1.6} />
+                {!only && <Icon name={ROOT_ICON.get(section.slug) ?? 'folder'} size={16} strokeWidth={1.6} />}
                 <span>{pick(section.name)}</span>
               </Link>
               <span className={s.count}>{count(section)}</span>
-              <button className={s.sectionToggle} onClick={() => toggleSection(section.slug)} aria-expanded={!isCollapsed} aria-label={pick(section.name)} data-collapsed={isCollapsed || undefined}>
-                <Icon name="chevronDown" size={14} strokeWidth={1.8} />
-              </button>
+              {!only && (
+                <button className={s.sectionToggle} onClick={() => toggleSection(section.slug)} aria-expanded={!isCollapsed} aria-label={pick(section.name)} data-collapsed={isCollapsed || undefined}>
+                  <Icon name="chevronDown" size={14} strokeWidth={1.8} />
+                </button>
+              )}
             </div>
             {!isCollapsed && <div className={s.sectionBody} data-open>
               <ul>
@@ -442,34 +446,24 @@ function SidebarFoot() {
 }
 
 /*
- * Masaüstü kenar çubuğu: içerikle aynı CSS grid'in ilk sütunu. Aç/kapa yalnızca o sütunun genişliğini
- * değiştirir (0 ↔ 264px); panel ve içerik aynı düzen hesabında, ortak kenarı paylaşır: aralarında
- * boşluk, çizgi ya da kopma olamaz. Panelin içi 264px sabit; sütun açıldıkça görünür (yeniden dizilmez).
+ * Masaüstü kenar çubuğu: bulunduğunuz bölümün dizini (Makineler, Kurumsal ya da Medya). Ana gezinme
+ * üst çubukta olduğu için burada yalnızca o bölümün klasörleri durur; bölüm dışındaki sayfalarda
+ * (ana sayfa, son güncellenenler, kaydedilenler, doküman) hiç yoktur, içerik tam genişlikte açılır.
+ * Zemin sayfanın kendisi: ayrı bir koyu panel değil, içerikle aynı yüzeyde ince bir çizgiyle ayrılan dizin.
  */
-const Sidebar = memo(function Sidebar({ open }: { open: boolean }) {
+const Sidebar = memo(function Sidebar({ section }: { section: string }) {
   return (
-    <aside id="desktop-sidebar" className={s.sidebar} data-open={open || undefined} inert={!open} aria-hidden={!open || undefined}>
+    <aside id="desktop-sidebar" className={s.sidebar}>
       <div className={s.sidebarInner}>
         <NavPathScope className={s.sidebarScroll}>
-          <PrimaryNav />
-          <Tree />
+          <Tree only={section} />
         </NavPathScope>
         <SidebarFoot />
+        <Pervane className={s.sideSail} />
       </div>
     </aside>
   );
 });
-
-/** Üç çizgi. Her basışta çizgiler sırayla kısa bir dalga yapar; açılışta oynamaz. */
-function MenuGlyph({ open, played }: { open: boolean; played: boolean }) {
-  return (
-    <span className={s.burger} data-state={open ? 'open' : 'closed'} data-played={played || undefined} aria-hidden="true">
-      <span />
-      <span />
-      <span />
-    </span>
-  );
-}
 
 // ── Üst bar ─────────────────────────────────────────────────────────────────
 
@@ -549,37 +543,123 @@ function BarTitle() {
   return <span className={s.barTitle} data-hidden={titleVisible || undefined} aria-hidden={titleVisible || undefined} title={title}>{title}</span>;
 }
 
-function Topbar({ expanded, onToggle, desktop }: { expanded: boolean; onToggle: () => void; desktop: boolean }) {
-  const { openSearch } = useUi();
-  const [played, setPlayed] = useState(false);
-  const { t, lang } = useI18n();
+/** Bulunduğunuz yerin ana bölümü (makineler / kurumsal / medya): ağaçta köke kadar çıkılarak bulunur. */
+function useRootSection(path: string) {
+  const { bySlug, byId } = useTree();
+  const { trail } = useChromeState();
+  return useMemo(() => {
+    if (path === '/medya' || path.startsWith('/medya/')) return 'medya';
+    let slug = activeSlugOf(path);
+    if (!slug && path.startsWith('/dokuman') && trail?.[0]?.to) slug = activeSlugOf(trail[0].to);
+    let n = slug ? bySlug.get(slug) : undefined;
+    while (n && n.parentId != null) n = byId.get(n.parentId);
+    return n?.slug ?? null;
+  }, [path, trail, bySlug, byId]);
+}
+
+/**
+ * Ana gezinme: bölümler metin olarak, yan yana. Bulunduğunuz bölümün altında altın çizgi; bölüm
+ * değişince çizgi eskisinin yerinden yenisine kayar (nereden nereye geçtiğiniz görünür).
+ */
+function MainNav() {
+  const { t, pick } = useI18n();
+  const path = useNavPath();
+  const section = useRootSection(path);
+  const { bySlug } = useTree();
+  const name = (slug: string, fallback: string) => {
+    const n = bySlug.get(slug);
+    return n ? pick(n.name) : fallback;
+  };
+  const items = [
+    { key: 'makineler', to: '/k/makineler', label: name('makineler', t('machines')), on: section === 'makineler' },
+    { key: 'kurumsal', to: '/k/kurumsal', label: name('kurumsal', 'Kurumsal'), on: section === 'kurumsal' },
+    { key: 'medya', to: '/medya', label: name('medya', t('media')), on: section === 'medya' },
+    { key: 'son', to: '/son', label: t('recent'), on: path.startsWith('/son') },
+  ];
+  return (
+    <ul className={s.navList}>
+      {items.map((i) => (
+        <li key={i.key}>
+          <Link to={i.to} className={s.navLink} aria-current={i.on ? 'page' : undefined} onPointerEnter={() => i.to.startsWith('/k/') && prefetchFolder(i.key)}>
+            {i.label}
+            {i.on && <motion.span layoutId="nav-mark" className={s.navMark} transition={{ type: 'spring', bounce: 0, duration: 0.42 }} />}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function SavedLink() {
+  const { t } = useI18n();
   const { pathname } = useLocation();
+  const on = pathname.startsWith('/kaydedilenler');
+  return (
+    <Link to="/kaydedilenler" className={s.iconBtn} data-on={on || undefined} aria-current={on ? 'page' : undefined} aria-label={t('saved')} title={t('saved')}>
+      <Icon name="bookmark" size={18} strokeWidth={1.6} />
+    </Link>
+  );
+}
+
+/*
+ * Üst çubuk. Masaüstünde sitenin ana gezinmesi: solda logo ve bölümler; sağda arama ve kaydedilenler,
+ * ince bir ayraçtan sonra dil, tema ve hesap. Tam genişlik ve her sayfada aynı: hiçbir öğe yer
+ * değiştirmez. Mobilde geri, sayfanın adı, arama ve hesap (gezinme alttaki sekmelerde).
+ */
+/** Sayfa en üstten kaydırıldı mı (üst çubuğun malzemesi buna göre değişir). */
+function useScrolled() {
+  const [scrolled, setScrolled] = useState(() => window.scrollY > 4);
+  useEffect(() => {
+    const on = () => setScrolled(window.scrollY > 4);
+    on();
+    window.addEventListener('scroll', on, { passive: true });
+    return () => window.removeEventListener('scroll', on);
+  }, []);
+  return scrolled;
+}
+
+/*
+ * Malzeme üç hâlde (Shell.module.css .topbar::before):
+ *  - ana sayfanın en üstü: saydam; giriş fotoğrafı çubuğun altına kadar uzanır, yazılar beyaz;
+ *  - diğer sayfaların en üstü: yarı saydam cam, alt köşeler kavisli, sayfanın altın şeridi altından görünür;
+ *  - kaydırınca: daha yoğun buzlu cam, kenarlardan içeri çekilir ve gölgelenir — üstten asılı bir ada.
+ */
+function Topbar({ desktop }: { desktop: boolean }) {
+  const { openSearch } = useUi();
+  const { t } = useI18n();
+  const { pathname } = useLocation();
+  const home = pathname === '/';
+  const scrolled = useScrolled();
+  const over = home && !scrolled;
+  const brand = <Link to="/" className={s.brand} aria-label={t('library')}><BrandLockup compact onDark={over ? true : undefined} /></Link>;
 
   return (
-    <header className={s.topbar} data-home={pathname === '/' || undefined}>
-      <div className={s.brandArea}>
-        <button className={`${s.iconBtn} ${s.sidebarToggle}`} onClick={() => { setPlayed(true); onToggle(); }} aria-expanded={expanded} aria-controls={desktop ? 'desktop-sidebar' : 'mobile-sidebar'} aria-label={lang === 'tr' ? 'Menü' : 'Menu'} title={lang === 'tr' ? (expanded ? 'Kenar çubuğunu kapat' : 'Kenar çubuğunu aç') : (expanded ? 'Close sidebar' : 'Open sidebar')}>
-          <MenuGlyph open={expanded} played={played} />
-          <span className={s.menuLabel} aria-hidden="true">{lang === 'tr' ? 'Menü' : 'Menu'}</span>
-        </button>
-        <Link to="/" className={s.brand} aria-label={t('library')}>
-          <BrandLockup compact />
-        </Link>
-      </div>
-      <div className={s.topbarInner}>
-        <div className={s.topLeft}>
-
-          {pathname !== '/' && <BarBack />}
-          <BarTitle />
-        </div>
-        {/* Sağda tek sıra, hepsi 34px: arama · dil · tema · hesap. */}
+    <header className={s.topbar} data-home={home || undefined} data-scrolled={scrolled || undefined} data-over={over || undefined}>
+      <div className={s.barRow}>
+        {desktop ? (
+          <>
+            {brand}
+            <NavPathScope className={s.nav}><MainNav /></NavPathScope>
+          </>
+        ) : (
+          <div className={s.topLeft}>
+            {home ? brand : <><BarBack /><BarTitle /></>}
+          </div>
+        )}
         <div className={s.topRight}>
-          <div className={s.topSearch}><SearchField /></div>
-          <button className={s.searchMobile} data-search-trigger="mobile" onClick={(e) => openSearch('', e.currentTarget)} aria-label={t('search')}>
-            <Icon name="search" size={20} />
-          </button>
-          <div className={s.hideSm}><LangMenu /></div>
-          <div className={`${s.hideSm} ${s.themeCell}`}><ThemeToggle /></div>
+          {desktop ? (
+            <>
+              <div className={s.topSearch}><SearchField /></div>
+              <SavedLink />
+              <span className={s.sep} aria-hidden="true" />
+              <LangMenu />
+              <ThemeToggle />
+            </>
+          ) : (
+            <button className={s.searchMobile} data-search-trigger="mobile" onClick={(e) => openSearch('', e.currentTarget)} aria-label={t('search')}>
+              <Icon name="search" size={20} />
+            </button>
+          )}
           <AccountMenu />
         </div>
       </div>
@@ -858,32 +938,33 @@ function RouteCurtain() {
   );
 }
 
+/**
+ * İç sayfaların üstünde altın bir ışık ve pervane deseni (kılavuzun web örneğindeki altın örtünün
+ * sakin karşılığı). Maskeyle aşağıya ve sola doğru söner; boş beyaz alanı marka diliyle doldurur,
+ * içerikle yarışmaz.
+ */
+function PageWash() {
+  return (
+    <div className={s.wash} aria-hidden="true">
+      <PervanePattern className={s.washPattern} scale={1.5} />
+    </div>
+  );
+}
+
 // ── Kabuk ───────────────────────────────────────────────────────────────────
 
 export function Shell({ children, overlays }: { children: ReactNode; overlays?: ReactNode }) {
   const desktop = useMediaQuery('(min-width: 1024px)');
-  const { navOpen, setNavOpen } = useUi();
-  const [collapsed, setCollapsed] = useState(() => {
-    try { return localStorage.getItem('bk.sidebar.closed') === 'true'; } catch { return false; }
-  });
-  const moveTimer = useRef(0);
-  const toggleSidebar = () => {
-    if (!desktop) { setNavOpen(!navOpen); return; }
-    const next = !collapsed;
-    try { localStorage.setItem('bk.sidebar.closed', String(next)); } catch { /* private mode */ }
-    // Üst bardaki hizalama kaymaları yalnızca bu geçişte canlandırılır (pencere boyutu değişince değil).
-    const html = document.documentElement;
-    html.dataset.sidebarMoving = '';
-    window.clearTimeout(moveTimer.current);
-    moveTimer.current = window.setTimeout(() => { delete html.dataset.sidebarMoving; }, 520);
-    setCollapsed(next);
-  };
-  const open = desktop && !collapsed;
+  const { pathname } = useLocation();
+  const root = useRootSection(pathname);
+  // Kenar çubuğu yalnızca bir bölümün klasör ve makine sayfalarında (ve medya kütüphanesinde).
+  const section = desktop && root && /^\/(k|m|medya)(\/|$)/.test(pathname) ? root : null;
   return (
-    <div className={s.shell} data-sidebar-closed={!open || undefined}>
-      <Topbar expanded={desktop ? !collapsed : navOpen} onToggle={toggleSidebar} desktop={desktop} />
+    <div className={s.shell} data-sidebar-closed={!section || undefined}>
+      <Topbar desktop={desktop} />
       <div className={s.body}>
-        {desktop && <Sidebar open={open} />}
+        {pathname !== '/' && <PageWash />}
+        {section && <Sidebar section={section} />}
         <main className={s.content}>
           <RouteCurtain />
           {children}

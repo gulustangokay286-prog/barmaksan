@@ -18,6 +18,7 @@ import {
 } from 'motion/react';
 import { MachineCarousel, type CarouselItem } from './MachineCarousel';
 import { Icon } from './Icon';
+import { PervanePattern } from './Pervane';
 import { Link } from '../lib/link';
 import { useI18n } from '../lib/i18n';
 import { useBootstrap } from '../lib/ui';
@@ -75,6 +76,20 @@ function useFeaturedMachines() {
 }
 
 // Telefonda doğal sayfa akışı; geniş ekranda kaydırmaya bağlı sahne korunur.
+/**
+ * Altın örtü (kılavuzun web örneği: fotoğrafın üstünde altın). Başlığın durduğu sol alttan yükselen
+ * altın ışık ve pervane deseni; maskeyle sağa ve yukarı doğru söner, fotoğraf sağda açık kalır.
+ */
+function Gild() {
+  return (
+    <>
+      <div className={s.gild} aria-hidden="true" />
+      <div className={s.gildGlow} aria-hidden="true" />
+      <PervanePattern className={s.gildPattern} scale={1.8} />
+    </>
+  );
+}
+
 export function Hero(props: HeroProps) {
   const mobile = useMediaQuery('(max-width: 767px)');
   const compact = useMediaQuery('(prefers-reduced-motion: reduce)');
@@ -97,6 +112,7 @@ function MobileHero({ children }: HeroProps) {
         <div className={s.mobileBackdrop} aria-hidden="true">
           {photo && <img className={s.mobilePhoto} src={photo.src} alt="" decoding="async" fetchPriority="high" />}
           <div className={s.shade} style={{ opacity: 0.58 }} />
+          <Gild />
         </div>
         <div className={s.mobileCopy}>{children(progress, DEFAULT_PHASES)}</div>
       </div>
@@ -176,9 +192,10 @@ function DesktopHero({ children }: HeroProps) {
     return () => window.clearTimeout(timer);
   }, [prev, index]);
 
-  // ── Kaydırma ilerlemesi: bölüm üst barın altına değdiğinde 0, sahne bırakılırken 1 ──
-  const barH = useRef(56);
-  const { scrollYProgress: p } = useScroll({ target: sectionRef, offset: ['start 56px', 'end end'] });
+  // ── Kaydırma ilerlemesi: bölüm ekranın üstüne değdiğinde 0, sahne bırakılırken 1 ──
+  // Sahne üst çubuğun altına kadar uzanır; görünen alan çubuğun altı (barH kadar aşağıda başlar).
+  const barH = useRef(72);
+  const { scrollYProgress: p } = useScroll({ target: sectionRef, offset: ['start start', 'end end'] });
 
   // ── Ölçüm: geniş ekranda dinlenmedeki carousel sağ sütundaki yuvada; kilitte sahnenin ortasında. ──
   // Yuvanın merkezi, ölçeği ve görünürlüğü motion değerlerinde (React çizimi yok).
@@ -191,9 +208,11 @@ function DesktopHero({ children }: HeroProps) {
   useLayoutEffect(() => {
     const sticky = stickyRef.current;
     if (!sticky) return;
-    barH.current = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--bar-h'), 10) || 56;
+    barH.current = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--bar-h'), 10) || 72;
     const measure = () => {
-      const sr = sticky.getBoundingClientRect();
+      // Görünen alan: sahnenin çubuk altında kalan kısmı (sahne çubuğun arkasına kadar uzanır).
+      const box = sticky.getBoundingClientRect();
+      const sr = { top: box.top + barH.current, left: box.left, width: box.width, height: box.height - barH.current, right: box.right };
       const gutter = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gutter'), 10) || 40;
       const sceneW = Math.min(820, sr.width - gutter * 2);
       // Kart boyu: genişlikten ve yükseklikten (başlık + alt şerit payı), hangisi darsa.
@@ -234,8 +253,8 @@ function DesktopHero({ children }: HeroProps) {
       const section = sectionRef.current;
       if (section) {
         const vh = window.innerHeight;
-        const D = Math.max(1, section.offsetHeight - sr.height);
-        const release = Math.max(0.5, (D - sr.height) / D);
+        const D = Math.max(1, section.offsetHeight - box.height);
+        const release = Math.max(0.5, (D - box.height) / D);
         const next = { move: (PRE * vh) / D, lock: ((PRE + MOVE) * vh) / D, release, hold: release - (HOLD * vh) / D };
         setPhases((cur) => (Math.abs(cur.move - next.move) + Math.abs(cur.lock - next.lock) + Math.abs(cur.release - next.release) + Math.abs(cur.hold - next.hold) < 1e-4 ? cur : next));
       }
@@ -323,8 +342,8 @@ function DesktopHero({ children }: HeroProps) {
         if (target == null) return;
         const el = sectionRef.current;
         if (!el) return;
-        const top = el.getBoundingClientRect().top + window.scrollY - barH.current;
-        const dist = el.offsetHeight - (stickyRef.current?.offsetHeight ?? window.innerHeight - barH.current);
+        const top = el.getBoundingClientRect().top + window.scrollY;
+        const dist = el.offsetHeight - (stickyRef.current?.offsetHeight ?? window.innerHeight);
         gliding = true;
         window.scrollTo({ top: Math.round(top + target * dist), behavior: reduce ? 'auto' : 'smooth' });
       }, 150);
@@ -361,6 +380,7 @@ function DesktopHero({ children }: HeroProps) {
             ) : null)}
           </div>
           <motion.div className={s.shade} style={{ opacity: shade }} />
+          <Gild />
         </div>
 
         <div className={s.layout}>

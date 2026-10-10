@@ -60,6 +60,9 @@
   --bar-scrollbar: rgba(0, 0, 0, 0.16);
   --chrome-texture: url('/brand/pattern-mill-ink.svg');
   --scrim-solid: rgba(20, 20, 22, 0.42);
+  /* Üst çubuk plakasının yoğunluğu: sayfanın en üstünde / kaydırınca. */
+  --plate-top: 66%;
+  --plate-scrolled: 80%;
 
   /* Gölge: yalnızca yüzen yüzeyler */
   --shadow-float: 0 1px 1px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.1), 0 32px 80px rgba(0, 0, 0, 0.08);
@@ -85,8 +88,8 @@
   --s-18: 72px;
 
   /* Yerleşim */
-  --sidebar-w: 264px;
-  --bar-h: 56px;
+  --sidebar-w: 260px;
+  --bar-h: 72px;
   --page-max: 1200px;
   --content-max: var(--page-max);
   --grid-gap: 24px;
@@ -139,6 +142,8 @@
     --bar-scrollbar: rgba(255, 255, 255, 0.16);
     --chrome-texture: url('/brand/pattern-mill.svg');
     --scrim-solid: rgba(20, 20, 22, 0.42);
+    --plate-top: 92%;
+    --plate-scrolled: 84%;
   }
 }
 
@@ -161,6 +166,8 @@
   --bar-scrollbar: rgba(255, 255, 255, 0.16);
   --chrome-texture: url('/brand/pattern-mill.svg');
   --scrim-solid: rgba(20, 20, 22, 0.42);
+  --plate-top: 92%;
+  --plate-scrolled: 84%;
 }
 
 @media (max-width: 1023px) {
@@ -168,6 +175,7 @@
     --gutter: 24px;
     --grid-gap: 20px;
     --section-gap: 64px;
+    --bar-h: 60px;
   }
 }
 
@@ -176,7 +184,7 @@
     --gutter: 16px;
     --grid-gap: 16px;
     --section-gap: 48px;
-    --bar-h: 52px;
+    --bar-h: 56px;
     --tabbar-h: 58px;
   }
 }
