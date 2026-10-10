@@ -59,19 +59,26 @@
   left: 0;
   right: 0;
   z-index: 29;
-  height: calc(var(--bar-h) + 20px);
+  height: calc(var(--bar-h) + 40px);
   pointer-events: none;
   mix-blend-mode: multiply;
+  /* Koyuluk = 0.8 × (1 − smootherstep(t)): eğim iki uçta da sıfır. Üstte koyuluk tutulur, sonda
+   * sıfıra yaslanarak biter — bitişte göz yanılmasıyla oluşan açık çizgi (Mach bandı) görünmez. */
   background: linear-gradient(
     180deg,
     rgba(22, 18, 8, 0.8) 0%,
-    rgba(22, 18, 8, 0.72) 16%,
-    rgba(22, 18, 8, 0.6) 32%,
-    rgba(22, 18, 8, 0.46) 47%,
-    rgba(22, 18, 8, 0.32) 61%,
-    rgba(22, 18, 8, 0.19) 74%,
-    rgba(22, 18, 8, 0.09) 86%,
-    rgba(22, 18, 8, 0.03) 94%,
+    rgba(22, 18, 8, 0.793) 10%,
+    rgba(22, 18, 8, 0.754) 20%,
+    rgba(22, 18, 8, 0.67) 30%,
+    rgba(22, 18, 8, 0.546) 40%,
+    rgba(22, 18, 8, 0.4) 50%,
+    rgba(22, 18, 8, 0.254) 60%,
+    rgba(22, 18, 8, 0.13) 70%,
+    rgba(22, 18, 8, 0.082) 75%,
+    rgba(22, 18, 8, 0.046) 80%,
+    rgba(22, 18, 8, 0.021) 85%,
+    rgba(22, 18, 8, 0.007) 90%,
+    rgba(22, 18, 8, 0.001) 95%,
     rgba(22, 18, 8, 0) 100%
   );
 }
