@@ -27,18 +27,20 @@
  * Masaüstünde sitenin ana gezinmesi (72px): solda logo ve bölümler, sağda arama, kaydedilenler,
  * dil, tema ve hesap. Tam genişlik ve her sayfada aynı yerde; sayfa değişince hiçbir öğe kaymaz.
  *
- * Malzeme ayrı bir plaka (::before): dikdörtgen değil, alt köşeleri kavisli. Saydamlığı sayfanın
- * durumuyla değişir (Shell.tsx Topbar): ana sayfanın en üstünde hiç yok (fotoğraf altından görünür),
- * diğer sayfaların en üstünde yarı saydam, kaydırınca yoğun buzlu cam olup kenarlardan içeri
- * çekilir ve gölgelenir. Yalnızca inset, renk, gölge ve bulanıklık geçiş yapar; yükseklik sabit,
- * içerik zıplamaz. Plakanın kendi bulanıklığı olsun diye çubuğun kendisinde filtre yok.
+ * Zemin bir plaka değil, iPhone'daki Mesajlar ekranı gibi yukarıdan yumuşak bir karartma (::before):
+ * en üstte koyu, aşağı doğru kademeli (eğri gibi, düz çizgi değil) saydamlaşır ve çubuğun biraz
+ * altına kadar sönerek iner; altından geçen içerik hafifçe bulanır, bulanıklık da aynı geçişle kaybolur.
+ * Sayfanın en üstünden itibaren hep aynı: kaydırınca hiçbir şey değişmez, ani geçiş yok. Yazılar beyaz.
  */
 .topbar {
-  --plate-inset: 0px;
-  --plate-r: 22px;
-  --plate-a: var(--plate-top);
-  --plate-blur: 16px;
-  --plate-shadow: 0 0.5px 0 var(--bar-line);
+  --on-bar: #f5f5f2;
+  --on-bar-2: rgba(255, 255, 255, 0.82);
+  --on-bar-3: rgba(255, 255, 255, 0.52);
+  --bar-fill: rgba(255, 255, 255, 0.14);
+  --bar-fill-hover: rgba(255, 255, 255, 0.22);
+  --bar-line: rgba(255, 255, 255, 0.12);
+  --bar-bg-solid: #1f1f22;
+  --bar-menu-ring: rgba(255, 255, 255, 0.1);
   position: sticky;
   top: 0;
   z-index: 30;
@@ -48,117 +50,38 @@
 .topbar::before {
   content: '';
   position: absolute;
-  inset: 0 var(--plate-inset);
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--bar-h) + 28px);
   z-index: -1;
-  border-radius: 0 0 var(--plate-r) var(--plate-r);
-  background-color: color-mix(in srgb, var(--bar-bg-solid) var(--plate-a), transparent);
-  -webkit-backdrop-filter: blur(var(--plate-blur)) saturate(170%);
-  backdrop-filter: blur(var(--plate-blur)) saturate(170%);
-  box-shadow: var(--plate-shadow);
-  transition:
-    inset 560ms var(--ease-out),
-    border-radius 560ms var(--ease-out),
-    background-color 360ms var(--ease-out),
-    box-shadow 360ms var(--ease-out),
-    -webkit-backdrop-filter 360ms var(--ease-out),
-    backdrop-filter 360ms var(--ease-out);
-}
-/* Değirmen dokusu (değirmen, başak, valsli, taş, silo çizimleri): plakanın üstünde ayrı katman, aynı
- * kavisle. Desen dosyası kenar çubuğu için çok soluk çizildiği için iki kat basılır: cam saydam
- * kalırken çizimler seçilir ama baskın olmaz. Ana sayfanın en üstünde (saydam hâl) yok. */
-.topbar::after {
-  content: '';
-  position: absolute;
-  inset: 0 var(--plate-inset);
-  z-index: -1;
-  border-radius: 0 0 var(--plate-r) var(--plate-r);
-  background-image: var(--chrome-texture), var(--chrome-texture);
-  background-size: 420px 420px;
-  background-position: 0 -24px;
   pointer-events: none;
-  transition: inset 560ms var(--ease-out), border-radius 560ms var(--ease-out), opacity 360ms var(--ease-out);
+  /* Üstte belirgin koyu, eğri boyunca (ease-out) azalır ve çubuğun hemen altında biter: sayfa başlığı
+   * ve kenar çubuğu aydınlığını korur. Bulanıklık ve maske yok — geçişte kenar oluşturuyorlardı. */
+  background: linear-gradient(
+    180deg,
+    rgba(12, 12, 14, 0.64) 0%,
+    rgba(12, 12, 14, 0.6) 15%,
+    rgba(12, 12, 14, 0.52) 30%,
+    rgba(12, 12, 14, 0.42) 45%,
+    rgba(12, 12, 14, 0.32) 58%,
+    rgba(12, 12, 14, 0.22) 70%,
+    rgba(12, 12, 14, 0.13) 80%,
+    rgba(12, 12, 14, 0.07) 88%,
+    rgba(12, 12, 14, 0.025) 95%,
+    rgba(12, 12, 14, 0) 100%
+  );
 }
-.topbar[data-over]::after {
-  opacity: 0;
+/* Karartma hafif olduğundan beyaz yazı, ikon ve logoya yumuşak bir gölge: açık zeminde de okunur. */
+.barRow {
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.32);
 }
-/* Kaydırınca: dolu plaka (şeffaf değil), kenardan kenara; alt köşeler kavisli. Net kenar çizgisi,
- * üstte ince ışık, toplu bir gölge. */
-.topbar[data-scrolled] {
-  --plate-r: 24px;
-  --plate-a: var(--plate-scrolled);
-  --plate-blur: 20px;
-  --plate-shadow:
-    0 0 0 1px var(--bar-line),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 12px 30px -12px rgba(0, 0, 0, 0.38);
-}
-/* Ana sayfanın en üstü: plaka saydam, yalnızca yazıların okunması için yukarıdan hafif gölge;
- * çubuktaki her şey koyu fotoğrafın üstünde beyaz. */
-.topbar[data-over] {
-  --on-bar: #f5f5f2;
-  --on-bar-2: rgba(255, 255, 255, 0.8);
-  --on-bar-3: rgba(255, 255, 255, 0.5);
-  --bar-fill: rgba(255, 255, 255, 0.14);
-  --bar-fill-hover: rgba(255, 255, 255, 0.22);
-  --bar-line: rgba(255, 255, 255, 0.1);
-  --bar-bg-solid: #1f1f22;
-  --bar-menu-ring: rgba(255, 255, 255, 0.1);
-}
-.topbar[data-over]::before {
-  background-color: transparent;
-  background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0));
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: none;
-}
-/* İç sayfaların en üstü: çıplak çubuk — plaka ve kenar yok; sayfanın altın şeridi doğrudan görünür.
- * Zemin açık olduğu için yazılar ve düğmeler koyu (temadan bağımsız), açılan menüler açık zeminli. */
-.topbar[data-naked] {
-  --on-bar: var(--ink);
-  --on-bar-2: var(--ink-2);
-  --on-bar-3: var(--ink-3);
-  --bar-fill: rgba(0, 0, 0, 0.05);
-  --bar-fill-hover: rgba(0, 0, 0, 0.085);
-  --bar-line: rgba(0, 0, 0, 0.08);
-  --bar-bg-solid: #f6f6f4;
-  --bar-menu-ring: rgba(0, 0, 0, 0.08);
-}
-.topbar[data-naked]::before {
-  background-color: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: none;
-}
-/* Kaydırınca: düz, koyu geçiş. Üstte koyu, aşağı doğru saydamlaşır; plaka, kavis, bulanıklık, doku,
- * çizgi yok. Yazılar beyaz; açılan menüler koyu zeminli. */
-.topbar[data-fade] {
-  --on-bar: #f5f5f2;
-  --on-bar-2: rgba(255, 255, 255, 0.8);
-  --on-bar-3: rgba(255, 255, 255, 0.5);
-  --bar-fill: rgba(255, 255, 255, 0.14);
-  --bar-fill-hover: rgba(255, 255, 255, 0.22);
-  --bar-line: rgba(255, 255, 255, 0.1);
-  --bar-bg-solid: #1f1f22;
-  --bar-menu-ring: rgba(255, 255, 255, 0.1);
-}
-.topbar[data-fade]::before {
-  inset: 0;
-  border-radius: 0;
-  background-color: transparent;
-  background-image: linear-gradient(180deg, rgba(14, 14, 16, 0.94) 0%, rgba(14, 14, 16, 0.84) 50%, rgba(14, 14, 16, 0) 100%);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: none;
-}
-.topbar[data-naked]::after,
-.topbar[data-fade]::after {
-  opacity: 0;
+.barRow svg,
+.brand img {
+  filter: drop-shadow(0 1px 5px rgba(0, 0, 0, 0.3));
 }
 @media (prefers-reduced-transparency: reduce) {
-  .topbar::before { background-color: var(--bar-bg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .topbar::before, .topbar::after { transition-duration: 1ms; }
+  .topbar::before { background: #1f1f22; height: var(--bar-h); }
 }
 .barRow {
   display: flex;
@@ -1157,16 +1080,6 @@
 }
 
 @media (max-width: 767px) {
-  /* Telefonda plaka bulanıklaştırmaz (kaydırmada her kare yeniden çizilmesin), daha yoğun renkle cam
-   * hissi verir; kavis ve içeri çekilme aynı. */
-  .topbar {
-    --plate-r: 20px;
-    --plate-blur: 0px;
-  }
-  .topbar[data-scrolled] {
-    --plate-r: 20px;
-    --plate-blur: 0px;
-  }
   .tabbar .tabGroup {
     background: var(--bar-bg-solid);
     box-shadow: inset 0 0 0 1px var(--bar-line), 0 8px 24px rgba(0, 0, 0, .18);

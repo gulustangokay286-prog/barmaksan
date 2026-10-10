@@ -607,55 +607,17 @@ function SavedLink() {
  * Üst çubuk. Masaüstünde sitenin ana gezinmesi: solda logo ve bölümler; sağda arama ve kaydedilenler,
  * ince bir ayraçtan sonra dil, tema ve hesap. Tam genişlik ve her sayfada aynı: hiçbir öğe yer
  * değiştirmez. Mobilde geri, sayfanın adı, arama ve hesap (gezinme alttaki sekmelerde).
- */
-/**
- * Üst çubuğun malzemesini belirleyen iki bilgi: sayfa en üstten kaydırıldı mı, çubuğun hemen altında
- * koyu giriş fotoğrafı mı var ([data-hero-dark]). Ana sayfada çubuk, beyaz içerik sayfası (son
- * güncellenenler) altına girene kadar şeffaf kalır; o an dolu plakaya geçer.
- */
-function useBarContext(pathname: string) {
-  const [state, setState] = useState({ scrolled: false, overHero: false });
-  useEffect(() => {
-    const on = () => {
-      const scrolled = window.scrollY > 4;
-      const bar = document.querySelector('header')?.getBoundingClientRect().bottom ?? 0;
-      const below = document.elementFromPoint(window.innerWidth / 2, bar + 1);
-      const overHero = !!below?.closest('[data-hero-dark]');
-      setState((s) => (s.scrolled === scrolled && s.overHero === overHero ? s : { scrolled, overHero }));
-    };
-    on();
-    const id = window.setTimeout(on, 400); // sayfa ilk çizildikten sonra bir kez daha
-    window.addEventListener('scroll', on, { passive: true });
-    window.addEventListener('resize', on);
-    return () => {
-      window.clearTimeout(id);
-      window.removeEventListener('scroll', on);
-      window.removeEventListener('resize', on);
-    };
-  }, [pathname]);
-  return state;
-}
-
-/*
- * Malzeme üç hâlde (Shell.module.css .topbar::before):
- *  - ana sayfada giriş fotoğrafı altındayken: şeffaf; fotoğraf çubuğun altına kadar uzanır, yazılar beyaz;
- *  - iç sayfaların en üstü: çıplak — plaka yok, sayfanın altın şeridi doğrudan görünür, yazılar koyu;
- *  - kaydırınca (ana sayfada beyaz içeriğe geçince): düz, koyu bir geçiş — üstte koyu, aşağı doğru
- *    saydamlaşır; yazılar beyaz.
+ * Zemin her yerde aynı yukarıdan karartma (Shell.module.css .topbar::before): yazılar ve logo beyaz.
  */
 function Topbar({ desktop }: { desktop: boolean }) {
   const { openSearch } = useUi();
   const { t } = useI18n();
   const { pathname } = useLocation();
   const home = pathname === '/';
-  const { scrolled, overHero } = useBarContext(pathname);
-  const over = home && (!scrolled || overHero);
-  const naked = !over && !scrolled;
-  const fade = !over && scrolled;
-  const brand = <Link to="/" className={s.brand} aria-label={t('library')}><BrandLockup compact onDark={!naked} /></Link>;
+  const brand = <Link to="/" className={s.brand} aria-label={t('library')}><BrandLockup compact onDark /></Link>;
 
   return (
-    <header className={s.topbar} data-home={home || undefined} data-scrolled={scrolled || undefined} data-over={over || undefined} data-naked={naked || undefined} data-fade={fade || undefined}>
+    <header className={s.topbar} data-home={home || undefined}>
       <div className={s.barRow}>
         {desktop ? (
           <>

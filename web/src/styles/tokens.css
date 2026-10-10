@@ -60,9 +60,6 @@
   --bar-scrollbar: rgba(0, 0, 0, 0.16);
   --chrome-texture: url('/brand/pattern-mill-ink.svg');
   --scrim-solid: rgba(20, 20, 22, 0.42);
-  /* Üst çubuk plakasının yoğunluğu: sayfanın en üstünde / kaydırınca. */
-  --plate-top: 66%;
-  --plate-scrolled: 96%;
 
   /* Gölge: yalnızca yüzen yüzeyler */
   --shadow-float: 0 1px 1px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.1), 0 32px 80px rgba(0, 0, 0, 0.08);
@@ -142,8 +139,6 @@
     --bar-scrollbar: rgba(255, 255, 255, 0.16);
     --chrome-texture: url('/brand/pattern-mill.svg');
     --scrim-solid: rgba(20, 20, 22, 0.42);
-    --plate-top: 92%;
-    --plate-scrolled: 97%;
   }
 }
 
@@ -166,8 +161,6 @@
   --bar-scrollbar: rgba(255, 255, 255, 0.16);
   --chrome-texture: url('/brand/pattern-mill.svg');
   --scrim-solid: rgba(20, 20, 22, 0.42);
-  --plate-top: 92%;
-  --plate-scrolled: 97%;
 }
 
 @media (max-width: 1023px) {
