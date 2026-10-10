@@ -78,16 +78,15 @@
   pointer-events: none;
   transition: inset 560ms var(--ease-out), border-radius 560ms var(--ease-out), opacity 360ms var(--ease-out);
 }
-.topbar[data-over]:not([data-scrolled])::after {
+.topbar[data-over]::after {
   opacity: 0;
 }
-/* Kaydırınca: saydam buzlu cam (yoğunluk --plate-scrolled); kenarı hafif sert — net bir kenar
- * çizgisi, üstte ince ışık, toplu bir gölge. */
+/* Kaydırınca: dolu plaka (şeffaf değil), kenardan kenara; alt köşeler kavisli. Net kenar çizgisi,
+ * üstte ince ışık, toplu bir gölge. */
 .topbar[data-scrolled] {
-  --plate-inset: 10px;
   --plate-r: 24px;
   --plate-a: var(--plate-scrolled);
-  --plate-blur: 14px;
+  --plate-blur: 20px;
   --plate-shadow:
     0 0 0 1px var(--bar-line),
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
@@ -104,7 +103,6 @@
   --bar-line: rgba(255, 255, 255, 0.1);
   --bar-bg-solid: #1f1f22;
   --bar-menu-ring: rgba(255, 255, 255, 0.1);
-  --chrome-texture: url('/brand/pattern-mill.svg');
 }
 .topbar[data-over]::before {
   background-color: transparent;
@@ -112,13 +110,6 @@
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   box-shadow: none;
-}
-/* Fotoğrafın üstünde kaydırınca: yine şeffaf (bulanıklık yok, fotoğraf olduğu gibi görünür); hafif
- * sertlik kenardan gelir — kavisli ince beyaz çizgi ve çok hafif bir koyuluk; doku beyaz. */
-.topbar[data-over][data-scrolled]::before {
-  background-color: rgba(0, 0, 0, 0.14);
-  background-image: none;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 10px 26px -14px rgba(0, 0, 0, 0.5);
 }
 @media (prefers-reduced-transparency: reduce) {
   .topbar::before { background-color: var(--bar-bg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
@@ -1141,9 +1132,7 @@
     --plate-blur: 0px;
   }
   .topbar[data-scrolled] {
-    --plate-inset: 8px;
     --plate-r: 20px;
-    --plate-a: 94%;
     --plate-blur: 0px;
   }
   .tabbar .tabGroup {
