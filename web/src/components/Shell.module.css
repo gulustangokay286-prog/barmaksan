@@ -611,16 +611,26 @@
   background: var(--side-fill);
 }
 
+/*
+ * Ana bölümler ayrı "yerler" gibi okunur: başlıkta tek simge + belirgin ad, bölümler arasında ince
+ * çizgi ve nefes payı. Satırlarda simge yok (süs değil, yön).
+ */
 .tree {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
+}
+.treeSection + .treeSection {
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--side-line);
 }
 .sectionHead {
   display: flex;
   align-items: center;
   gap: 4px;
-  height: 30px;
+  height: 34px;
+  margin-bottom: 2px;
   padding-left: 10px;
 }
 .sectionLabel {
@@ -628,16 +638,29 @@
   min-width: 0;
   display: flex;
   align-items: center;
+  gap: 10px;
   height: 100%;
-  font-size: 12.5px;
-  font-weight: 580;
-  color: var(--side-ink-3);
+  font-size: 13.5px;
+  font-weight: 560;
+  letter-spacing: -0.005em;
+  color: var(--side-ink-strong);
   border-radius: 6px;
   transition: color 90ms linear;
 }
-.sectionLabel:hover,
-.sectionLabel[data-active] {
+.sectionLabel > svg {
+  flex: none;
+  color: var(--side-ink-3);
+  transition: color 90ms linear;
+}
+.sectionLabel:hover > svg,
+.sectionLabel[data-active] > svg {
   color: var(--side-ink-strong);
+}
+.sectionLabel > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .sectionToggle {
   display: flex;

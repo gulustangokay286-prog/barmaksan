@@ -39,6 +39,8 @@ function useTree() {
 
 const hrefOf = (n: { kind: string; slug: string }) => (n.kind === 'machine' ? `/m/${n.slug}` : `/k/${n.slug}`);
 const ROOT_ORDER = new Map([['kurumsal', 0], ['makineler', 1], ['medya', 2]]);
+/** Ana bölümler birbirinden ayırt edilsin diye her bölüm başlığında tek bir simge (satırlarda yok). */
+const ROOT_ICON = new Map([['kurumsal', 'building'], ['makineler', 'parts'], ['medya', 'images']]);
 
 function activeSlugOf(pathname: string) {
   const m = /^\/(m|k)\/([^/]+)/.exec(pathname);
@@ -145,6 +147,7 @@ function Tree({ onNavigate }: { onNavigate?: () => void }) {
   const { pathname } = useLocation();
   const active = activeSlugOf(pathname);
   const { collapsed, toggle: toggleSection } = useCollapsedSections();
+  const navRef = useRef<HTMLElement>(null);
 
   // Etkin klasörün ata zinciri otomatik açılır; elle açılanlar korunur.
   const ancestors = useMemo(() => {
@@ -179,6 +182,21 @@ function Tree({ onNavigate }: { onNavigate?: () => void }) {
     return next;
   }), []);
 
+  // Neredeyim: açılan sayfanın satırı listede görünmüyorsa kenar çubuğu onu yumuşakça ortaya alır.
+  useEffect(() => {
+    if (!loaded || !active) return;
+    const frame = requestAnimationFrame(() => {
+      const row = navRef.current?.querySelector<HTMLElement>('[aria-current="page"]');
+      const box = row?.closest<HTMLElement>(`.${s.sidebarScroll}, .${s.sheetBody}`);
+      if (!row || !box) return;
+      const r = row.getBoundingClientRect(), b = box.getBoundingClientRect();
+      if (r.top >= b.top + 8 && r.bottom <= b.bottom - 8) return;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      box.scrollTo({ top: box.scrollTop + r.top - b.top - b.height / 3, behavior: reduce ? 'auto' : 'smooth' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [loaded, active, open]);
+
   if (!loaded) return <TreeSkeleton />;
 
   const count = (n: TreeNode) => {
@@ -193,13 +211,14 @@ function Tree({ onNavigate }: { onNavigate?: () => void }) {
   const within = (node: TreeNode, kids: TreeNode[]) => (active && (node.slug === active || kids.some((k) => k.slug === active)) ? active : null);
 
   return (
-    <nav className={s.tree} aria-label="Klasörler">
+    <nav ref={navRef} className={s.tree} aria-label="Klasörler">
       {orderedRoots.map((section) => {
         const isCollapsed = collapsed.has(section.slug);
         return (
           <div key={section.id} className={s.treeSection} data-collapsed={isCollapsed || undefined}>
             <div className={s.sectionHead}>
-              <Link to={hrefOf(section)} className={s.sectionLabel} onClick={onNavigate} data-active={active === section.slug || undefined} onPointerEnter={() => prefetchFolder(section.slug)}>
+              <Link to={hrefOf(section)} className={s.sectionLabel} onClick={onNavigate} data-active={active === section.slug || undefined} aria-current={active === section.slug ? 'page' : undefined} onPointerEnter={() => prefetchFolder(section.slug)}>
+                <Icon name={ROOT_ICON.get(section.slug) ?? 'folder'} size={16} strokeWidth={1.6} />
                 <span>{pick(section.name)}</span>
               </Link>
               <span className={s.count}>{count(section)}</span>
