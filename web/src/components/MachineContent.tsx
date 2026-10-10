@@ -8,7 +8,7 @@ import { useI18n } from '../lib/i18n';
 import { useUi } from '../lib/ui';
 import { useViewportActive } from '../lib/viewport';
 import { Link } from '../lib/link';
-import { type Doc, type FileInfo, type MachineProfile, type MaintenanceCategory, type TechnicalTable, pdfPageLink } from '../lib/api';
+import { type Doc, type FileInfo, type MachineProfile, type MaintenanceCategory, pdfPageLink } from '../lib/api';
 import s from './MachineContent.module.css';
 
 // ── Makine galerisi ─────────────────────────────────────────────────────────
@@ -232,16 +232,6 @@ export function ProductOverview({ profile }: { profile?: MachineProfile }) {
     {profile?.description ? <div className={s.description}>{profile.description.split(/\n\s*\n/).map((p, i) => <p key={i}>{p}</p>)}</div> : <p className={s.empty}>{tr ? 'Bu dilde ürün açıklaması eklenmemiş.' : 'A product description has not been added in this language.'}</p>}
     {!!profile?.features.length && <div className={s.part}><h3>{tr ? 'Ürün özellikleri' : 'Product features'}</h3><ul className={s.features}>{profile.features.map((f, i) => <li key={i}>{f}</li>)}</ul></div>}
     {!!profile?.applications.length && <div className={s.part}><h3>{tr ? 'Kullanım alanları' : 'Applications'}</h3><ul className={s.applications}>{profile.applications.map((f, i) => <li key={i}>{f}</li>)}</ul></div>}
-  </section>;
-}
-
-export function TechnicalSpecifications({ tables }: { tables: TechnicalTable[] }) {
-  const { lang } = useI18n();
-  return <section id="teknik-ozellikler" className={s.specifications}>
-    <h2>{lang === 'tr' ? 'Teknik özellikler' : 'Technical specifications'}</h2>
-    {tables.map((t, i) => <div key={i} className={s.tableWrap} tabIndex={0} role="region" aria-label={t.title || (lang === 'tr' ? 'Teknik özellikler tablosu' : 'Technical specification table')}>
-      <table>{t.title && <caption>{t.title}</caption>}<thead><tr>{t.columns.map((c, ci) => <th key={ci} scope="col">{c}</th>)}</tr></thead><tbody>{t.rows.map((r, ri) => <tr key={ri}>{r.map((v, vi) => vi === 0 ? <th key={vi} scope="row">{v}</th> : <td key={vi}>{v}</td>)}</tr>)}</tbody></table>
-    </div>)}
   </section>;
 }
 

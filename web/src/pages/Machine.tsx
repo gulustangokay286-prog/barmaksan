@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Icon } from '../components/Icon';
 import { DateStamp } from '../components/DateStamp';
 import { MediaGrid, DocThumb, docHref } from '../components/Docs';
-import { MachineGallery, MaintenanceBank, ProductOverview, TechnicalSpecifications } from '../components/MachineContent';
+import { MachineGallery, MaintenanceBank, ProductOverview } from '../components/MachineContent';
 import { MachineSkeleton } from '../components/Skeletons';
 import { api, downloadLink, type Doc, type MachineContent, type MachineLink } from '../lib/api';
 import { VideoLinkEditor, VideoLinkRow, type NewVideoLink } from '../components/VideoLinks';
@@ -55,12 +55,10 @@ export default function Machine() {
   const selected = f.content?.gallery != null ? f.content.gallery.map((id) => photos.find((d) => d.id === id)).filter((d): d is Doc => !!d) : photos;
   const bank = f.content?.maintenance ?? [];
   const hasMaintenance = bank.some((c) => c.topics.some((topic) => topic.translations[code]));
-  const hasSpecs = !!profile?.specifications.length;
   const direction = boot?.languages.find((l) => l.code === code)?.direction ?? 'ltr';
   const technical = TECHNICAL.map((type) => docs.find((d) => d.type === type)).filter((d): d is Doc => !!d);
   const sections = [
     { id: 'genel-bakis', label: tr ? 'Genel bakış' : 'Overview' },
-    ...(hasSpecs ? [{ id: 'teknik-ozellikler', label: tr ? 'Teknik özellikler' : 'Specifications' }] : []),
     { id: 'belgeler', label: tr ? 'Belgeler' : 'Documents', count: docs.length },
     ...(hasMaintenance ? [{ id: 'bakim', label: tr ? 'Bakım' : 'Maintenance' }] : []),
     ...(media.length ? [{ id: 'medya', label: tr ? 'Medya' : 'Media' }] : []),
@@ -91,7 +89,6 @@ export default function Machine() {
           </div>
         </div>
         <ProductOverview profile={profile} />
-        {hasSpecs && <TechnicalSpecifications tables={profile!.specifications} />}
         <section id="belgeler" className={m.block}>
           <h2 className={m.h2}>{tr ? 'Belgeler' : 'Documents'}</h2>
           <DocCards key={code} docs={docs} machine={name} slug={f.slug} content={f.content} all={f.documents} />

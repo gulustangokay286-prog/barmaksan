@@ -218,7 +218,7 @@ export function MachineSheet({ slug, tree, defaultParent: parentHint, onClose, o
       ) : (
         <>
           {machine && <nav className={a.editorNav} aria-label={tr ? 'Makine düzenleme bölümleri' : 'Machine editing sections'}>
-            {([['details', 'Bilgiler', 'Details', 'parts'], ['profile', 'Açıklama', 'Description', 'file'], ['specifications', 'Teknik', 'Technical', 'table'], ['gallery', 'Galeri', 'Gallery', 'images'], ['files', 'Belgeler', 'Files', 'folder'], ['maintenance', 'Bakım', 'Maintenance', 'wrench']] as const).map(([id, labelTr, labelEn, icon]) => <button key={id} className={a.editorTab} aria-pressed={panel === id} onClick={() => setPanel(id)}><Icon name={icon} size={16} />{tr ? labelTr : labelEn}{id === 'files' && <span>{own.length}</span>}</button>)}
+            {([['details', 'Bilgiler', 'Details', 'parts'], ['profile', 'Açıklama', 'Description', 'file'], ['gallery', 'Galeri', 'Gallery', 'images'], ['files', 'Belgeler', 'Files', 'folder'], ['maintenance', 'Bakım', 'Maintenance', 'wrench']] as const).map(([id, labelTr, labelEn, icon]) => <button key={id} className={a.editorTab} aria-pressed={panel === id} onClick={() => setPanel(id)}><Icon name={icon} size={16} />{tr ? labelTr : labelEn}{id === 'files' && <span>{own.length}</span>}</button>)}
           </nav>}
           <div hidden={panel !== 'details'}>
           {machine && (

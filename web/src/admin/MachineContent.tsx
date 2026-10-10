@@ -15,7 +15,7 @@ const blankTopic = (): MaintenanceTranslation => ({ title: '', description: '', 
 const lines = (s: string) => s.split('\n');
 const move = <T,>(items: T[], index: number, direction: number) => { const copy = [...items]; const to = index + direction; if (to < 0 || to >= copy.length) return copy; [copy[index], copy[to]] = [copy[to], copy[index]]; return copy; };
 
-export type ContentPanel = 'profile' | 'specifications' | 'gallery' | 'maintenance';
+export type ContentPanel = 'profile' | 'gallery' | 'maintenance';
 export function MachineContentEditor({ slug, panel, onStatus }: { slug: string; panel: ContentPanel | null; onStatus: (status: { dirty: boolean; busy: boolean }) => void }) {
   const { lang, locale, pick } = useI18n();
   const tr = lang === 'tr';
@@ -61,29 +61,6 @@ export function MachineContentEditor({ slug, panel, onStatus }: { slug: string; 
         <label className={a.field}><span>{tr ? 'Bu dilde ne değişti?' : 'What changed in this language?'}</span><input value={profile.changeNote} onChange={(e) => profileChange({ changeNote: e.target.value })} /></label>
         {value.profiles[code] && <ConfirmButton label={tr ? 'Bu dildeki ürün içeriğini kaldır' : 'Remove product content in this language'} confirm={tr ? 'Kaldırmayı onayla' : 'Confirm remove'} onConfirm={() => { const profiles = { ...value.profiles }; delete profiles[code]; setValue({ ...value, profiles }); }} />}
       </div>
-    </Section>
-    </div><div hidden={panel !== 'specifications'}>
-    <Section title={tr ? 'Teknik özellikler' : 'Technical specifications'} aside={<button type="button" className={a.textBtn} onClick={() => profileChange({ specifications: [...profile.specifications, { title: '', columns: [tr ? 'Özellik' : 'Property', tr ? 'Değer' : 'Value'], rows: [] }] })}><Icon name="plus" size={14} />{tr ? 'Tablo ekle' : 'Add table'}</button>}>
-      {profile.specifications.map((table, i) => {
-        const change = (patch: Partial<typeof table>) => profileChange({ specifications: profile.specifications.map((t, index) => index === i ? { ...t, ...patch } : t) });
-        return <div key={i} className={s.item}>
-          <label className={a.field}><span>{tr ? 'Tablo başlığı' : 'Table title'}</span><input value={table.title} onChange={(e) => change({ title: e.target.value })} /></label>
-          <div className={s.tableScroll}>
-            <table className={s.tableEditor} aria-label={table.title || (tr ? 'Teknik tablo' : 'Technical table')}>
-              <thead><tr>{table.columns.map((column, ci) => <th key={ci}>
-                <input aria-label={tr ? `${ci + 1}. sütun başlığı` : `Column ${ci + 1} heading`} value={column} onChange={(e) => change({ columns: table.columns.map((c, n) => n === ci ? e.target.value : c) })} />
-                <button type="button" className={a.iconBtnSm} disabled={table.columns.length <= 1} aria-label={tr ? `${column} sütununu kaldır` : `Remove ${column} column`} onClick={() => change({ columns: table.columns.filter((_, n) => n !== ci), rows: table.rows.map((r) => r.filter((_, n) => n !== ci)) })}><Icon name="close" size={13} /></button>
-              </th>)}<th /></tr></thead>
-              <tbody>{table.rows.map((row, ri) => <tr key={ri}>{table.columns.map((column, ci) => <td key={ci}><input aria-label={`${ri + 1} · ${column}`} value={row[ci] ?? ''} onChange={(e) => change({ rows: table.rows.map((r, n) => n === ri ? table.columns.map((_, c) => c === ci ? e.target.value : r[c] ?? '') : r) })} /></td>)}<td><button type="button" className={a.iconBtnSm} aria-label={tr ? `${ri + 1}. satırı kaldır` : `Remove row ${ri + 1}`} onClick={() => change({ rows: table.rows.filter((_, n) => n !== ri) })}><Icon name="trash" size={14} /></button></td></tr>)}</tbody>
-            </table>
-          </div>
-          <div className={s.tableTools}>
-            <button type="button" className={a.secondary} onClick={() => change({ rows: [...table.rows, table.columns.map(() => '')] })}><Icon name="plus" size={14} />{tr ? 'Satır ekle' : 'Add row'}</button>
-            <button type="button" className={a.secondary} onClick={() => change({ columns: [...table.columns, ''], rows: table.rows.map((r) => [...r, '']) })}><Icon name="plus" size={14} />{tr ? 'Sütun ekle' : 'Add column'}</button>
-            <ConfirmButton label={tr ? 'Tabloyu kaldır' : 'Remove table'} confirm={tr ? 'Tabloyu kaldırmayı onayla' : 'Confirm remove table'} onConfirm={() => profileChange({ specifications: profile.specifications.filter((_, index) => i !== index) })} />
-          </div>
-        </div>;
-      })}
     </Section>
     </div><div hidden={panel !== 'gallery'}>
     <Section title={tr ? 'Fotoğraf galerisi' : 'Photo gallery'} aside={<button type="button" className={a.textBtn} onClick={() => setUpload({ mode: 'new', folder: slug, type: 'fotograf' })}><Icon name="upload" size={14} />{tr ? 'Görsel yükle' : 'Upload image'}</button>}>
