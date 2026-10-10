@@ -46,7 +46,7 @@ const ROOT_ICON = new Map([['kurumsal', 'briefcase'], ['makineler', 'factory'], 
  * Makine ağacında simge yok; orada açma okları yön verir (her yere simge basılmaz).
  */
 const ROW_ICON = new Map([
-  ['kurumsal-kimlik', 'swatch'], ['sertifikalar', 'award'], ['kataloglar', 'catalog'], ['sirket-profilleri', 'sheet'], ['musteri-dosyalari', 'handshake'],
+  ['kurumsal-kimlik', 'swatch'], ['yonetim', 'users'], ['sertifikalar', 'award'], ['kataloglar', 'catalog'], ['sirket-profilleri', 'sheet'], ['musteri-dosyalari', 'handshake'],
   ['tanitim-videolari', 'clapper'], ['fabrika-fotograflari', 'camera'], ['drone-cekimleri', 'video'], ['urun-gorselleri', 'photo'],
 ]);
 

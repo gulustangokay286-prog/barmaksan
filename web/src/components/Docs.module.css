@@ -276,6 +276,88 @@
 
 /* ── Medya ────────────────────────────────────────────────────────────────── */
 
+/*
+ * Kişiler, piramit: her katman ortalı bir satır, tepedeki kart biraz büyük. Portreler eşit (4:5),
+ * yüz üstte kalacak şekilde kırpılır; ad + unvan ortalı, altta. Süs çizgisi yok; hiyerarşiyi düzen anlatır.
+ */
+.pyramid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 44px;
+}
+.tier {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 32px 24px;
+  width: 100%;
+}
+.personItem {
+  width: 196px;
+}
+.tier[data-top] .personItem {
+  width: 236px;
+}
+.person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  text-align: center;
+  border-radius: 14px;
+}
+.portrait {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--fill);
+  color: var(--ink-4);
+  transition: transform 140ms var(--ease-out);
+}
+.portrait img {
+  object-position: 50% 18%;
+  transition: transform 640ms var(--ease-out), opacity 420ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .person:hover .portrait img[data-loaded] {
+    transform: scale(1.03);
+  }
+}
+.person:active .portrait {
+  transform: scale(0.985);
+}
+.personName {
+  margin-top: 12px;
+  font-size: 15.5px;
+  line-height: 21px;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.personRole {
+  margin-top: 2px;
+  font-size: 13.5px;
+  line-height: 18px;
+  color: var(--ink-3);
+}
+.tier[data-top] .personName {
+  font-size: 17px;
+  line-height: 23px;
+}
+/* Telefonda: alt katmanlar ikişer, tepe tek ve biraz geniş. */
+@media (max-width: 559px) {
+  .pyramid { gap: 32px; }
+  .tier { gap: 24px 12px; }
+  .personItem { width: calc(50% - 6px); }
+  .tier[data-top] .personItem { width: 62%; }
+}
+
 .media {
   columns: 4 240px;
   column-gap: 16px;

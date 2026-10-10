@@ -3,7 +3,7 @@ import { Link } from '../lib/link';
 import { useQuery } from '@tanstack/react-query';
 import { Icon } from '../components/Icon';
 import { PageHeader, SectionTitle } from '../components/PageHeader';
-import { DocRow, GroupedDocs, MachineTile, MediaGrid } from '../components/Docs';
+import { DocRow, GroupedDocs, MachineTile, MediaGrid, PeopleGrid } from '../components/Docs';
 import { Button, FadeImage } from '../components/ui';
 import { BrandKit } from '../components/BrandKit';
 import { FolderSkeleton } from '../components/Skeletons';
@@ -35,6 +35,8 @@ export default function Folder() {
   const media = visible.filter((d) => types.get(d.type)?.media !== 'document');
   // Kurumsal Kimlik: logolar üstte önizlemeli gösterilir; listede tekrar edilmez.
   const brand = f.slug === 'kurumsal-kimlik';
+  // Yönetim: fotoğraflar kişi kartı olarak (portre, ad, unvan) gösterilir.
+  const people = f.slug === 'yonetim';
   const logos = brand ? visible.filter((d) => d.type === 'logo') : [];
   const docs = visible.filter((d) => types.get(d.type)?.media === 'document' && !(brand && d.type === 'logo'));
   const machines = f.children.filter((c) => c.kind === 'machine');
@@ -48,7 +50,7 @@ export default function Folder() {
   const meta = [
     f.machineCount > 0 && `${formatNumber(f.machineCount, lang)} ${t('machine')}`,
     docs.length > 0 && `${docs.length} ${t('documents')}`,
-    media.length > 0 && `${media.length} ${t('mediaItems')}`,
+    media.length > 0 && !people && `${media.length} ${t('mediaItems')}`,
   ].filter(Boolean);
 
   return (
@@ -111,7 +113,7 @@ export default function Folder() {
       {media.length > 0 && (
         <section className={docs.length ? p.section : undefined} style={docs.length ? undefined : { marginTop: 32 }}>
           {docs.length > 0 && <SectionTitle title={`${t('photos')} · ${t('videos')}`} count={media.length} />}
-          <MediaGrid items={media} />
+          {people ? <PeopleGrid items={media} /> : <MediaGrid items={media} />}
         </section>
       )}
 

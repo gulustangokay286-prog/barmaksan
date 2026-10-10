@@ -206,6 +206,53 @@ export function MachineTile({ m }: { m: Pick<FolderChild, 'slug' | 'name' | 'mod
   );
 }
 
+// ── Kişiler (Yönetim) ───────────────────────────────────────────────────────
+
+/** Unvandan katman: 0 yönetim kurulu, 1 genel müdür, 2 diğer yöneticiler (yardımcılar, direktörler). */
+function tierOf(role = '') {
+  const r = role.toLocaleLowerCase('tr');
+  if (/yönetim kurulu|chairman|board/.test(r)) return 0;
+  if (!/yardımcı|deputy|assistant/.test(r) && /genel müdür|general manager|\bceo\b/.test(r)) return 1;
+  return 2;
+}
+
+/**
+ * Kişi kartları, piramit düzeninde: tepede yönetim kurulu, altında katman katman yönetim; her
+ * katman ortalı bir satır. Kart: portre, ad ve unvan (başlık "Ad — Unvan"). Katman içi sıra yükleme
+ * sırası. Dokununca görüntüleyici açılır; oradan boyut/biçim seçilerek indirilir.
+ */
+export function PeopleGrid({ items }: { items: Doc[] }) {
+  const { setLightbox } = useUi();
+  const { pick } = useI18n();
+  const people = items
+    .map((d) => { const [name, role] = pick(d.title).split(/\s+—\s+/); return { d, name, role, tier: tierOf(role) }; })
+    .sort((a, b) => a.tier - b.tier || a.d.createdAt.localeCompare(b.d.createdAt));
+  const ordered = people.map((p) => p.d);
+  const tiers = [...new Set(people.map((p) => p.tier))].map((tier) => people.filter((p) => p.tier === tier));
+  return (
+    <div className={s.pyramid}>
+      {tiers.map((row, ti) => (
+        <ul key={ti} className={s.tier} data-top={ti === 0 && tiers.length > 1 ? '' : undefined}>
+          {row.map(({ d, name, role }) => {
+            const f = d.current?.file;
+            return (
+              <li key={d.id} className={`${s.personItem} reveal-3d`}>
+                <button className={s.person} onClick={() => setLightbox({ items: ordered, index: ordered.indexOf(d) })} aria-label={pick(d.title)}>
+                  <span data-media-id={d.id} className={s.portrait}>
+                    {f?.thumb ? <FadeImage src={f.thumb} fit="cover" /> : <Icon name="user" size={28} />}
+                  </span>
+                  <span className={s.personName}>{name}</span>
+                  {role && <span className={s.personRole}>{role}</span>}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ))}
+    </div>
+  );
+}
+
 // ── Medya ızgarası ──────────────────────────────────────────────────────────
 
 export function MediaGrid({ items, columns = 'auto' }: { items: Doc[]; columns?: 'auto' | 'dense' }) {
@@ -235,7 +282,7 @@ export function MediaGrid({ items, columns = 'auto' }: { items: Doc[]; columns?:
                 <span className={s.mediaTitle}>{pick(d.title)}</span>
                 <span className={s.mediaMeta}>
                   {f?.kind === 'video' ? (lang === 'tr' ? 'Video' : 'Film') : (lang === 'tr' ? 'Fotoğraf' : 'Photo')}
-                  {f?.durationMs ? ` · ${formatDuration(f.durationMs)}` : f?.width && f?.height ? ` · ${f.width}×${f.height}` : ''}
+                  {f?.durationMs ? ` · ${formatDuration(f.durationMs)}` : ''}
                 </span>
               </span>
             </button>
