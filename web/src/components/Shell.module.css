@@ -111,6 +111,27 @@
   backdrop-filter: none;
   box-shadow: none;
 }
+/* İç sayfaların en üstü: çıplak. Plaka, doku ve kenar yok; sayfanın altın şeridi doğrudan görünür.
+ * Zemin açık olduğu için yazılar ve düğmeler koyu (temadan bağımsız); açılan menüler açık zeminli. */
+.topbar[data-naked] {
+  --on-bar: var(--ink);
+  --on-bar-2: var(--ink-2);
+  --on-bar-3: var(--ink-3);
+  --bar-fill: rgba(0, 0, 0, 0.05);
+  --bar-fill-hover: rgba(0, 0, 0, 0.085);
+  --bar-line: rgba(0, 0, 0, 0.08);
+  --bar-bg-solid: #f6f6f4;
+  --bar-menu-ring: rgba(0, 0, 0, 0.08);
+}
+.topbar[data-naked]::before {
+  background-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+.topbar[data-naked]::after {
+  opacity: 0;
+}
 @media (prefers-reduced-transparency: reduce) {
   .topbar::before { background-color: var(--bar-bg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }

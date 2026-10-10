@@ -639,7 +639,7 @@ function useBarContext(pathname: string) {
 /*
  * Malzeme üç hâlde (Shell.module.css .topbar::before):
  *  - ana sayfada giriş fotoğrafı altındayken: şeffaf; fotoğraf çubuğun altına kadar uzanır, yazılar beyaz;
- *  - diğer sayfaların en üstü: yarı saydam cam, alt köşeler kavisli, sayfanın altın şeridi altından görünür;
+ *  - diğer sayfaların en üstü: çıplak — plaka yok, sayfanın altın şeridi doğrudan görünür, yazılar koyu;
  *  - beyaz içeriğe geçince (kaydırınca): dolu plaka, kenardan kenara, alt köşeler kavisli; doku, net kenar, gölge.
  */
 function Topbar({ desktop }: { desktop: boolean }) {
@@ -649,10 +649,11 @@ function Topbar({ desktop }: { desktop: boolean }) {
   const home = pathname === '/';
   const { scrolled, overHero } = useBarContext(pathname);
   const over = home && (!scrolled || overHero);
-  const brand = <Link to="/" className={s.brand} aria-label={t('library')}><BrandLockup compact onDark={over ? true : undefined} /></Link>;
+  const naked = !home && !scrolled;
+  const brand = <Link to="/" className={s.brand} aria-label={t('library')}><BrandLockup compact onDark={over ? true : naked ? false : undefined} /></Link>;
 
   return (
-    <header className={s.topbar} data-home={home || undefined} data-scrolled={scrolled || undefined} data-over={over || undefined}>
+    <header className={s.topbar} data-home={home || undefined} data-scrolled={scrolled || undefined} data-over={over || undefined} data-naked={naked || undefined}>
       <div className={s.barRow}>
         {desktop ? (
           <>
