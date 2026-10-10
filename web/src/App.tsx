@@ -5,6 +5,7 @@ import { Shell } from './components/Shell';
 import { SiteFooter } from './components/SiteFooter';
 import { SearchPalette } from './components/SearchPalette';
 import { Lightbox } from './components/Lightbox';
+import { AuthGate } from './components/AuthGate';
 import { EditorKeySheet, UploadSheet } from './components/Editor';
 import { useChromeActions, useUi } from './lib/ui';
 import { RouteGate } from './lib/route';
@@ -31,6 +32,7 @@ export default function Root() {
             <Lightbox />
             <EditorKeySheet />
             <UploadSheet />
+            <AuthGate />
           </>
         }
       >

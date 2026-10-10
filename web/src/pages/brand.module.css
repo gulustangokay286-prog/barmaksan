@@ -86,7 +86,7 @@
   font-family: var(--font-display);
   font-size: 28px;
   line-height: 32px;
-  font-weight: 680;
+  font-weight: 580;
   letter-spacing: -0.024em;
 }
 .blockLead {
@@ -156,7 +156,7 @@
   min-height: 18px;
   font-family: var(--font-mono);
   font-size: 12.5px;
-  font-weight: 560;
+  font-weight: 500;
   letter-spacing: 0.02em;
   opacity: 0.92;
 }
@@ -191,7 +191,7 @@
 .swatchName {
   font-size: 15.5px;
   line-height: 20px;
-  font-weight: 640;
+  font-weight: 540;
   letter-spacing: -0.01em;
   color: var(--ink);
 }
@@ -286,13 +286,13 @@
   gap: 1px;
   font-size: 14.5px;
   line-height: 19px;
-  font-weight: 600;
+  font-weight: 540;
   color: var(--ink);
 }
 .logoGround {
   font-size: 12.5px;
   line-height: 16px;
-  font-weight: 450;
+  font-weight: 420;
   color: var(--ink-3);
 }
 .logoDl {
@@ -305,7 +305,7 @@
   border-radius: 8px;
   font-family: var(--font-mono);
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 540;
   letter-spacing: 0.04em;
   color: var(--ink-2);
   background: var(--fill-hover);
@@ -332,14 +332,14 @@
   font-family: var(--font-display);
   font-size: clamp(44px, 6vw, 84px);
   line-height: 0.98;
-  font-weight: 700;
+  font-weight: 580;
   letter-spacing: -0.04em;
   color: var(--ink);
 }
 .typeSpecimen span {
   margin-top: 10px;
   font-size: 0.42em;
-  font-weight: 500;
+  font-weight: 460;
   letter-spacing: -0.02em;
   color: var(--ink-2);
 }
@@ -361,7 +361,7 @@
 .typeLabel {
   font-size: 12.5px;
   line-height: 16px;
-  font-weight: 560;
+  font-weight: 500;
   color: var(--ink-3);
 }
 .typeSample {
@@ -413,7 +413,7 @@
 .ruleTitle {
   font-size: 15px;
   line-height: 20px;
-  font-weight: 620;
+  font-weight: 540;
   letter-spacing: -0.01em;
   color: var(--ink);
 }

@@ -1,11 +1,11 @@
 .pin {
   /* Yükseklik = sabit alan + bekleme (4vh) + geçiş (55vh) + kilit (makine başına --per-card)
-   * + son makinede bekleme (50vh) + bırakma (sabit alan kadar: içerik sayfası bu mesafede yükselip üstüne kapanır).
-   * Hero.tsx'teki PRE / MOVE / HOLD / perCard ile aynı formül. */
+   * + son makinede bekleme (24vh) + bırakma (sabit alan kadar: içerik sayfası bu mesafede yükselip üstüne kapanır).
+   * Hero.tsx'teki PRE / MOVE / HOLD / perCard ile aynı formül. Kısa tutulur: içeriğe ulaşmak zahmetsiz olsun. */
   --stick: calc(100dvh - var(--bar-h) - var(--tabbar-h));
-  --per-card: 30vh;
+  --per-card: 14vh;
   position: relative;
-  height: calc(var(--stick) * 2 + 4vh + 55vh + 50vh + var(--scrub-span, 8) * var(--per-card));
+  height: calc(var(--stick) * 2 + 4vh + 55vh + 24vh + var(--scrub-span, 8) * var(--per-card));
 }
 /* Sahnenin bütün katmanları: bırakmada birlikte geriye çekilir. */
 .recede {
@@ -41,21 +41,33 @@
   z-index: 3; /* arama paneli carousel'in üstünde açılsın */
   pointer-events: none;
   display: grid;
-  grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
-  align-items: center;
-  gap: 32px;
+  /* Sayfanın 12 sütunu. Metin katmanı bütün alanı kaplar (üst şerit + sol alt blok, Home);
+   * carousel'in yuvası sağ altta, 8–12. sütunlarda. Kaydırınca carousel ortaya gelir (Hero.tsx). */
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: minmax(0, 1fr);
+  column-gap: var(--grid-gap);
+  align-self: stretch;
   width: 100%;
   max-width: calc(var(--page-max) + var(--gutter) * 2);
   margin: 0 auto;
-  padding: 0 var(--gutter) 48px;
+  padding: 24px var(--gutter) clamp(56px, 9vh, 96px);
 }
 .copy {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   /* Hücre tıklama yutmaz; görünürken metnin kendisi tıklanır (Home: pointerEvents). */
   pointer-events: none;
 }
-/* Yalnızca ölçü: carousel dinlenmede bu kutunun merkezine, bu genişliğe oturur. */
+/* Yalnızca ölçü: carousel dinlenmede bu kutunun genişliğine ve alt kenarına oturur. */
 .slot {
+  grid-column: 8 / span 5;
+  grid-row: 1;
+  /* Sütun aralığını da kullanır: metin bloğu 7. sütunu bütünüyle doldurmaz. */
+  margin-left: calc(var(--grid-gap) * -1);
+  align-self: end;
   min-width: 0;
   pointer-events: none;
 }
@@ -110,7 +122,7 @@
   padding: 0 10px 0 12px;
   border-radius: 8px;
   font-size: 13.5px;
-  font-weight: 560;
+  font-weight: 500;
   color: rgba(255, 255, 255, 0.86);
   background: rgba(255, 255, 255, 0.1);
   transition: background-color var(--t-fast), color var(--t-fast);
@@ -207,107 +219,54 @@
   background: #0b0b0d;
 }
 
-/* ── Alt şerit: görselin adı + ilerleme çizgileri ────────────────────────── */
-
-.footer {
-  position: absolute;
-  left: var(--gutter);
-  right: var(--gutter);
-  bottom: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-.caption {
-  position: relative;
-  height: 20px;
-  min-width: 0;
-  font-size: 13px;
-  font-weight: 540;
-  letter-spacing: 0.01em;
-  color: rgba(255, 255, 255, 0.78);
-  white-space: nowrap;
-}
-.caption span {
-  display: block;
-}
-.bars {
-  display: flex;
-  gap: 6px;
-}
-.bar {
-  position: relative;
-  width: 26px;
-  height: 14px;
-  padding: 6px 0;
-}
-.bar::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 6px;
-  height: 2px;
-  border-radius: 1px;
-  background: rgba(255, 255, 255, 0.28);
-}
-.barFill {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 6px;
-  height: 2px;
-  border-radius: 1px;
-  background: #fff;
-  transform: scaleX(0);
-  transform-origin: left;
-}
-.barFill[data-done] {
-  transform: scaleX(1);
-}
-.barFill[data-on] {
-  animation: fill 6s linear forwards;
-}
-@keyframes fill {
-  to {
-    transform: scaleX(1);
-  }
-}
-
-/* Tek sütun: üstte metin, altında küçük carousel. Kaydırınca metin söner, carousel ortaya
- * gelip büyür ve kilitlenir. Sığmazsa metin üstten başlar (auto kenar boşluğu = güvenli ortalama). */
+/* Tablet ve telefon: aynı düzen, daha az alt boşluk. */
 @media (max-width: 1023px) {
-  .recede {
-    align-items: flex-start;
-  }
   .layout {
     grid-template-columns: minmax(0, 1fr);
-    gap: 28px;
-    margin-block: auto;
-    padding-top: 24px;
-    padding-bottom: 32px;
+    padding-top: 16px;
+    padding-bottom: 40px;
   }
   .slot {
-    justify-self: center;
-    width: 56%;
+    display: none;
   }
 }
 
 @media (max-width: 767px) {
-  .pin {
-    --per-card: 22vh;
+  .mobileHero {
+    background: #111113;
+    color: #fff;
+    overflow: clip;
   }
-  .layout {
+  .mobileIntro {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    min-height: calc(100svh - var(--bar-h));
+    padding: 24px var(--gutter) calc(104px + env(safe-area-inset-bottom));
+  }
+  .mobileBackdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .mobilePhoto {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .mobileCopy {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+  }
+  .mobileScene {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 20px;
-    padding-top: 20px;
-  }
-  .slot {
-    width: 66%;
-  }
-  /* Telefonda alt şerit carousel'in altına biner: fotoğraflar akar, yazısı gösterilmez. */
-  .footer {
-    display: none;
+    padding: 32px var(--gutter) 48px;
   }
 }
 
@@ -315,9 +274,5 @@
   .slide[data-on],
   .slide[data-prev] {
     animation: none;
-  }
-  .barFill[data-on] {
-    animation: none;
-    transform: scaleX(1);
   }
 }

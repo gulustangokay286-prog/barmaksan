@@ -130,6 +130,15 @@ html[data-morph] .fade-in {
   }
 }
 
+@media (max-width: 767px) {
+  /* Dokunarak kaydırırken görünür içerik için her karede 3D katman üretme. */
+  .reveal,
+  .reveal-3d,
+  .reveal-page {
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*),
   ::view-transition-old(*),

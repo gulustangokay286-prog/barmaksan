@@ -8,6 +8,12 @@ import { machineContent } from './content.js';
 
 // ── Şekiller ────────────────────────────────────────────────────────────────
 
+/** Türetilmiş dosya yeniden üretildiyse (thumb.<rev>.webp) adres değişir; kalıcı önbellek eskiyi tutmaz. */
+const derivedRev = (key) => {
+  const rev = /\/[a-z]+\.([a-z0-9]+)\.webp$/.exec(key)?.[1];
+  return rev ? `&r=${rev}` : '';
+};
+
 export function fileDto(f) {
   if (!f || f.id == null) return null;
   const kind = fileKind(f.ext);
@@ -24,8 +30,8 @@ export function fileDto(f) {
     height: f.height,
     durationMs: f.duration_ms,
     pages: f.page_count,
-    thumb: f.thumb_key ? `/files/${f.id}/thumb.webp?v=${f.sha256}` : null,
-    preview: f.preview_key ? `/files/${f.id}/preview.webp?v=${f.sha256}` : null,
+    thumb: f.thumb_key ? `/files/${f.id}/thumb.webp?v=${f.sha256}${derivedRev(f.thumb_key)}` : null,
+    preview: f.preview_key ? `/files/${f.id}/preview.webp?v=${f.sha256}${derivedRev(f.preview_key)}` : null,
     raw: `/files/${f.id}/raw/${name}?v=${f.sha256}`,
   };
 }

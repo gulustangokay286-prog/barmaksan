@@ -8,6 +8,7 @@ import { Spinner } from '../components/ui';
 import { DateStamp } from '../components/DateStamp';
 import { Link } from '../lib/link';
 import { useI18n } from '../lib/i18n';
+import { versionLabel } from '../lib/format';
 import { useBootstrap, useUi } from '../lib/ui';
 import type { Activity } from '../lib/api';
 import a from './admin.module.css';
@@ -140,7 +141,7 @@ export function ActivityRow({ item }: { item: Activity }) {
       <span className={a.activityBody}>
         <span className={a.activityTitle}>
           {title}
-          {item.versionNo && item.action === 'version.published' ? <span className={a.versionChip}>v{item.versionNo}</span> : null}
+          {item.versionNo && item.action === 'version.published' ? <span className={a.versionChip}>{versionLabel(item.versionNo, lang)}</span> : null}
         </span>
         <span className={a.activityMeta}>
           {[

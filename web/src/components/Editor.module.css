@@ -61,7 +61,7 @@
 }
 .field > span {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 540;
   color: var(--ink-2);
 }
 .field input,
@@ -106,7 +106,7 @@
 }
 .dropTitle {
   font-size: 15px;
-  font-weight: 560;
+  font-weight: 500;
   color: var(--ink);
   word-break: break-all;
 }

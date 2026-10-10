@@ -11,6 +11,16 @@ export const config = {
   host: process.env.HOST ?? '127.0.0.1',
   dataDir,
   dbPath: path.join(dataDir, 'barmaksan.db'),
+  // Kullanıcılar, oturumlar, misafirler ve kaydedilenler ayrı dosyada: içerik veritabanından bağımsız
+  // yedeklenir/taşınır; içerik dışa aktarılırken kişisel veri yanında gitmez.
+  usersDbPath: path.join(dataDir, 'users.db'),
+  // Google ile giriş (isteğe bağlı): ikisi de verilmezse düğme görünmez.
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID ?? '',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+  },
+  // Dış bağlantılar (OAuth dönüş adresi) için sitenin kök adresi, ör. https://barmaksan.chenki.net
+  publicUrl: (process.env.PUBLIC_URL ?? '').replace(/\/$/, ''),
   storageDir: path.join(dataDir, 'storage'),
   tmpDir: path.join(dataDir, 'tmp'),
   schemaPath: path.join(serverRoot, 'db', 'schema.sql'),

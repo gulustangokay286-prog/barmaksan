@@ -268,6 +268,8 @@ CREATE TABLE IF NOT EXISTS machine_content (
   profiles_json TEXT NOT NULL DEFAULT '{}' CHECK(json_valid(profiles_json)),
   gallery_json TEXT NOT NULL DEFAULT 'null' CHECK(json_valid(gallery_json)),
   maintenance_json TEXT NOT NULL DEFAULT '[]' CHECK(json_valid(maintenance_json)),
+  -- Belge kartlarındaki video bağlantıları: [{ id, type, title, url | document }]
+  links_json TEXT NOT NULL DEFAULT '[]' CHECK(json_valid(links_json)),
   updated_at TEXT NOT NULL,
   author TEXT
 );

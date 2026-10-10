@@ -11,6 +11,7 @@ const { db } = await import('../src/db.js');
 const cmd = await import('../src/commands.js');
 const { createApp } = await import('../src/app.js');
 const { createUser } = await import('../src/auth.js');
+const { udb } = await import('../src/users-db.js');
 const { importProductContent } = await import('../seed/import-content.js');
 const server = createApp().listen(0, '127.0.0.1');
 await new Promise((resolve) => server.once('listening', resolve));
@@ -19,6 +20,7 @@ after(async () => {
   server.closeAllConnections();
   await new Promise((resolve) => server.close(resolve));
   db.close();
+  udb.close();
   fs.rmSync(temp, { recursive: true, force: true });
 });
 
@@ -93,10 +95,16 @@ test('same-type manuals keep separate languages and version histories; export re
 });
 
 test('publication author comes from the authenticated editor, not the old content stamp', async () => {
-  createUser({email:'qa@local.test',name:'QA editor',password:'Isolated-test-password'});
-  const login=(await request('/auth/login','POST',{email:'qa@local.test',password:'Isolated-test-password'})).data;
+  createUser({email:'qa@local.test',name:'QA editor',password:'Isolated-test-password-1'});
+  const loginResponse=await fetch(base+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'qa@local.test',password:'Isolated-test-password-1'})});
+  assert.equal(loginResponse.status,200);
+  const login=await loginResponse.json();
+  // Jeton yanıtta dönmez: yalnızca HttpOnly çerezde.
+  assert.equal(login.token,'session');
+  const cookie=loginResponse.headers.getSetCookie().map((c)=>c.split(';')[0]).join('; ');
+  assert.match(loginResponse.headers.getSetCookie()[0],/HttpOnly; Secure; SameSite=Strict/);
   const value=await content();value.profiles.en.description='Changed by authenticated editor';value.author='Previous source author';
-  const response=await fetch(base+'/machines/cleanmax-4/content',{method:'PUT',headers:{'Content-Type':'application/json','X-Editor-Key':login.token},body:JSON.stringify(value)});
+  const response=await fetch(base+'/machines/cleanmax-4/content',{method:'PUT',headers:{'Content-Type':'application/json',Cookie:cookie},body:JSON.stringify(value)});
   assert.equal(response.status,200);
   const saved=await response.json();
   assert.equal(saved.profiles.en.author,'QA editor');

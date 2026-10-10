@@ -58,6 +58,11 @@ export function formatDuration(ms: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
+/** Sürüm etiketi: "Versiyon 3" / "Version 3" (kısaltma "v3" kullanılmaz). */
+export function versionLabel(no: number, lang: Lang) {
+  return `${lang === 'tr' ? 'Versiyon' : 'Version'} ${no}`;
+}
+
 export function languageLabel(l: DocLanguage) {
   switch (l) {
     case 'tr':

@@ -13,7 +13,7 @@
 // Bütün konumlar tek bir kaydırma değerinden türetilir; kare başına React çizimi yok.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
-  AnimatePresence, motion, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll,
+  motion, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll,
   useTransform, type MotionValue,
 } from 'motion/react';
 import { MachineCarousel, type CarouselItem } from './MachineCarousel';
@@ -36,6 +36,16 @@ function useSlides() {
   })), [boot]);
 }
 const INTERVAL = 6000;
+// Carousel geometrisi (kart genişliğine oranla, ölçeksiz): görünen genişlik (öndeki + iki yanda ikişer kart),
+// öndeki kartın üst kenarı ve alt şeridin (oklar, makine adı) üst kenarı. Alt şerit ters ölçeklenir:
+// ekranda hep BAR_H yüksekliğinde.
+const SPREAD = 1.98;
+const CARD_TOP = 0.06;
+const BAR_TOP = 1.161;
+const BAR_H = 62;
+// Dar ekranda dinlenmede carousel görünmez; kaydırınca ortada, biraz aşağıdan ve küçükten belirir.
+const ENTER_Y = 56;
+const ENTER_SCALE = 0.92;
 
 /** Sahne evreleri (kaydırma ilerlemesi 0–1): geçiş başı, kilit başı, bırakma başı. */
 export type Phases = { move: number; lock: number; release: number; /** kaydırmanın son makinede durduğu yer */ hold: number };
@@ -46,7 +56,7 @@ const SCRUB_MAX = 99;
 const PRE = 0.04;
 const MOVE = 0.55;
 /** Son makinede bekleme: içerik yükselmeden önce son makine görülsün. */
-const HOLD = 0.5;
+const HOLD = 0.24;
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -64,11 +74,40 @@ function useFeaturedMachines() {
   }, [boot]);
 }
 
-// Sahne her genişlikte aynı: telefonda da fotoğraflar akar, carousel kaydırdıkça ortaya gelir.
-// Yalnızca "hareketi azalt" açıksa kaydırmaya bağlı olmayan sade sürüm çizilir.
+// Telefonda doğal sayfa akışı; geniş ekranda kaydırmaya bağlı sahne korunur.
 export function Hero(props: HeroProps) {
+  const mobile = useMediaQuery('(max-width: 767px)');
   const compact = useMediaQuery('(prefers-reduced-motion: reduce)');
+  if (mobile) return <MobileHero {...props} />;
   return compact ? <CompactHero {...props} /> : <DesktopHero {...props} />;
+}
+
+function MobileHero({ children }: HeroProps) {
+  const { lang } = useI18n();
+  const machines = useFeaturedMachines();
+  const photo = useSlides()[0];
+  const introRef = useRef<HTMLDivElement>(null);
+  const active = useViewportActive(introRef);
+  const progress = useMotionValue(0);
+  useEffect(() => { progress.set(active ? 0 : 1); }, [active, progress]);
+
+  return (
+    <section className={s.mobileHero}>
+      <div ref={introRef} className={s.mobileIntro}>
+        <div className={s.mobileBackdrop} aria-hidden="true">
+          {photo && <img className={s.mobilePhoto} src={photo.src} alt="" decoding="async" fetchPriority="high" />}
+          <div className={s.shade} style={{ opacity: 0.58 }} />
+        </div>
+        <div className={s.mobileCopy}>{children(progress, DEFAULT_PHASES)}</div>
+      </div>
+      <div className={s.mobileScene}>
+        <Link to="/k/makineler" className={s.lockAll}>
+          {lang === 'tr' ? 'Tüm makineler' : 'All machines'}<Icon name="chevronRight" size={14} />
+        </Link>
+        <MachineCarousel items={machines} autoplay={false} />
+      </div>
+    </section>
+  );
 }
 
 function CompactHero({ children }: HeroProps) {
@@ -92,7 +131,7 @@ function CompactHero({ children }: HeroProps) {
 }
 
 function DesktopHero({ children }: HeroProps) {
-  const { pick, lang } = useI18n();
+  const { lang } = useI18n();
   const reduce = !!useReducedMotion();
   const ready = useAppReady();
   const sectionRef = useRef<HTMLElement>(null);
@@ -136,40 +175,61 @@ function DesktopHero({ children }: HeroProps) {
     const timer = window.setTimeout(() => setPrev(null), 1600);
     return () => window.clearTimeout(timer);
   }, [prev, index]);
-  const goTo = (i: number) => {
-    if (i === indexRef.current) return;
-    setPrev(indexRef.current);
-    indexRef.current = i;
-    setIndex(i);
-  };
 
   // ── Kaydırma ilerlemesi: bölüm üst barın altına değdiğinde 0, sahne bırakılırken 1 ──
   const barH = useRef(56);
   const { scrollYProgress: p } = useScroll({ target: sectionRef, offset: ['start 56px', 'end end'] });
 
-  // ── Ölçüm: dinlenmede carousel sağ sütundaki yuvada; kilitte sahnenin ortasında. ──
-  // Yuvanın merkezi ve ölçeği motion değerlerinde tutulur (React çizimi yok).
+  // ── Ölçüm: geniş ekranda dinlenmedeki carousel sağ sütundaki yuvada; kilitte sahnenin ortasında. ──
+  // Yuvanın merkezi, ölçeği ve görünürlüğü motion değerlerinde (React çizimi yok).
   const dx = useMotionValue(0);
-  const dy = useMotionValue(0);
-  const s0 = useMotionValue(0.6);
-  const [geo, setGeo] = useState({ sceneW: 960, card: 360, slotH: 480 });
+  const dy = useMotionValue(ENTER_Y);
+  const s0 = useMotionValue(ENTER_SCALE);
+  const atRest = useMotionValue(0); // 1: dinlenmede görünür (geniş ekran)
+  const restGap = useMotionValue(0); // dinlenmede alt şeridin ek inişi (ekran px)
+  const [geo, setGeo] = useState({ sceneW: 960, card: 360, restW: 0 });
   useLayoutEffect(() => {
     const sticky = stickyRef.current;
-    const slot = slotRef.current;
-    if (!sticky || !slot) return;
+    if (!sticky) return;
     barH.current = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--bar-h'), 10) || 56;
     const measure = () => {
       const sr = sticky.getBoundingClientRect();
-      const r = slot.getBoundingClientRect();
       const gutter = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gutter'), 10) || 40;
       const sceneW = Math.min(820, sr.width - gutter * 2);
       // Kart boyu: genişlikten ve yükseklikten (başlık + alt şerit payı), hangisi darsa.
       const ratio = sceneW < 600 ? 0.6 : 0.42; // dar ekranda komşular kenardan taşabilir
       const card = Math.round(Math.max(150, Math.min(400, sceneW * ratio, (sr.height - 250) / 1.12)));
-      // Tek sütunda (telefon, tablet) yuva metnin altında küçük durur: yüksekliği de ölçekle.
       const full = card * 1.12 + 76;
-      const slotH = Math.round(window.matchMedia('(max-width: 1023px)').matches ? full * Math.min(1, r.width / sceneW) : full);
-      setGeo((g) => (g.sceneW === sceneW && g.card === card && g.slotH === slotH ? g : { sceneW, card, slotH }));
+      const slot = slotRef.current;
+      const wide = !window.matchMedia('(max-width: 1023px)').matches && !!slot;
+      let restW = 0;
+      const main = sticky.querySelector<HTMLElement>('[data-hero-main]');
+      if (wide && slot && main) {
+        // Carousel metin bloğuyla aynı yükseklikte: öndeki kartın üst kenarı başlığın harf üstünde,
+        // alt şeridin alt kenarı düğme satırının alt kenarında. Genişlik sınırlıysa (kartlar daha kısa)
+        // alt şerit aradaki boşluk kadar aşağı iner. Yuva ve metin bloğu alta yaslı (aynı alt çizgi);
+        // ölçüler dönüşümden etkilenmesin diye offsetHeight ve yuvanın alt kenarıyla hesaplanır.
+        const r = slot.getBoundingClientRect();
+        const titleSize = parseFloat(getComputedStyle(main.querySelector('h1') ?? main).fontSize) || 60;
+        const top = r.bottom - main.offsetHeight + titleSize * 0.13; // satır yüksekliği payı → harf üstü
+        const barTop = r.bottom - BAR_H;
+        const sc = Math.max(0.3, Math.min(1, r.width / (card * SPREAD), (barTop - top) / ((BAR_TOP - CARD_TOP) * card)));
+        const sceneTop = top - CARD_TOP * card * sc;
+        restGap.set(Math.max(0, barTop - (sceneTop + BAR_TOP * card * sc)));
+        restW = Math.round(card * SPREAD * sc);
+        // Sağ kenar sütunun (ve üst şeritteki sayıların) sağ kenarında.
+        dx.set(r.right - restW / 2 - (sr.left + sr.width / 2));
+        dy.set(sceneTop + (full * sc) / 2 - (sr.top + sr.height / 2));
+        s0.set(sc);
+        atRest.set(1);
+      } else {
+        dx.set(0);
+        dy.set(ENTER_Y);
+        s0.set(ENTER_SCALE);
+        atRest.set(0);
+        restGap.set(0);
+      }
+      setGeo((g) => (g.sceneW === sceneW && g.card === card && g.restW === restW ? g : { sceneW, card, restW }));
       // Evre oranları: kaydırma mesafesi D = bölüm − sabit alan; bırakma = sabit alan kadar.
       const section = sectionRef.current;
       if (section) {
@@ -179,16 +239,15 @@ function DesktopHero({ children }: HeroProps) {
         const next = { move: (PRE * vh) / D, lock: ((PRE + MOVE) * vh) / D, release, hold: release - (HOLD * vh) / D };
         setPhases((cur) => (Math.abs(cur.move - next.move) + Math.abs(cur.lock - next.lock) + Math.abs(cur.release - next.release) + Math.abs(cur.hold - next.hold) < 1e-4 ? cur : next));
       }
-      dx.set(r.left + r.width / 2 - (sr.left + sr.width / 2));
-      dy.set(r.top + r.height / 2 - (sr.top + sr.height / 2));
-      s0.set(Math.min(1, r.width / sceneW));
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(sticky);
-    ro.observe(slot);
+    if (slotRef.current) ro.observe(slotRef.current);
+    const main = sticky.querySelector('[data-hero-main]');
+    if (main) ro.observe(main);
     return () => ro.disconnect();
-  }, [dx, dy, s0, span]);
+  }, [span, dx, dy, s0, atRest, restGap]);
 
   // ── Sahne dönüşümleri ──
   const LOCK_SHIFT = 34; // kilitte başlık üstte yer alsın diye carousel biraz aşağıda durur
@@ -201,21 +260,25 @@ function DesktopHero({ children }: HeroProps) {
     const t = moveT(p.get());
     return s0.get() + (1 - s0.get()) * t;
   });
+  // Geniş ekranda hep görünür; dar ekranda metin büyük ölçüde söndükten sonra belirir.
+  const sceneOpacity = useTransform(() => (atRest.get() ? 1 : clamp01(((p.get() - ph.current.move) / (ph.current.lock - ph.current.move) - 0.45) / 0.5)));
+  const scenePointer = useTransform(sceneOpacity, (v) => (v > 0.5 ? 'auto' : 'none'));
   // Bırakma: bütün sahne geriye çekilir ve kararır; içerik sayfası üstüne kapanır.
   const recedeScale = useTransform(() => 1 - outT(p.get()) * 0.07);
   const recedeY = useTransform(() => -outT(p.get()) * 36);
   const dim = useTransform(() => outT(p.get()) * 0.55);
   // Alt şerit (makine adı, oklar) ters ölçeklenir: yazı her evrede gerçek boyutunda kalır.
   const barScale = useTransform(sceneScale, (v) => 1 / Math.max(0.3, v));
+  // Dinlenmedeki ek iniş geçişte sıfırlanır; sahnenin ölçeği kaymayı da ölçeklediği için ona bölünür.
+  const barY = useTransform(() => (restGap.get() * (1 - moveT(p.get()))) / Math.max(0.3, sceneScale.get()));
   const headIn = (v: number) => clamp01((v - (ph.current.lock - (ph.current.lock - ph.current.move) * 0.35)) / ((ph.current.lock - ph.current.move) * 0.35));
   const headOpacity = useTransform(() => headIn(p.get()));
   const headY = useTransform(() => (1 - headIn(p.get())) * 12);
   const headPointer = useTransform(headOpacity, (v) => (v > 0.5 ? 'auto' : 'none'));
-  const footOpacity = useTransform(() => 1 - clamp01(p.get() / (ph.current.move + (ph.current.lock - ph.current.move) * 0.4)));
   const scrub = useTransform(() => clamp01((p.get() - ph.current.lock) / (ph.current.hold - ph.current.lock)));
   const lockBar = useTransform(scrub, (v) => `scaleX(${v})`);
 
-  // Kendiliğinden dönme yalnızca dinlenmede; kilitte carousel'i kaydırma sürer.
+  // Kendiliğinden dönme yalnızca dinlenmede (geniş ekran); kilitte carousel'i kaydırma sürer.
   const [resting, setResting] = useState(true);
   useMotionValueEvent(p, 'change', (v) => {
     setResting(v < ph.current.move);
@@ -230,7 +293,12 @@ function DesktopHero({ children }: HeroProps) {
     if (!active) return;
     let timer = 0;
     let gliding = false;
+    let lastY = window.scrollY;
+    let dir = 1;
     const onScroll = () => {
+      const y = window.scrollY;
+      if (y !== lastY) dir = y > lastY ? 1 : -1;
+      lastY = y;
       window.clearTimeout(timer);
       timer = window.setTimeout(() => {
         if (gliding) {
@@ -241,10 +309,17 @@ function DesktopHero({ children }: HeroProps) {
         const { move, lock, release } = ph.current;
         let target: number | null = null;
         const eps = 0.004;
-        // Geçiş: kilide doğru üçte birden fazla gelinmişse kilide, değilse başa.
-        if (v > move + eps && v < lock - eps) target = v > move + (lock - move) * 0.3 ? lock : 0;
-        // Bırakma: sayfa üçte birden fazla yükseldiyse tam açılır, değilse carousel'e döner.
-        else if (v > release + eps && v < 1 - eps) target = v > release + (1 - release) * 0.5 ? 1 : release;
+        // Yöne duyarlı: kaydırılan yönde azıcık ilerlemek yeter, sayfa geri çekilmez.
+        // Geçiş: aşağı inerken %12'yi geçtiyse kilide; yukarı çıkarken %88'in altındaysa başa.
+        if (v > move + eps && v < lock - eps) {
+          const t = (v - move) / (lock - move);
+          target = dir > 0 ? (t > 0.12 ? lock : 0) : (t < 0.88 ? 0 : lock);
+        }
+        // Bırakma: aşağı inerken içerik sayfası tam açılır; yukarı çıkarken carousel'e döner.
+        else if (v > release + eps && v < 1 - eps) {
+          const t = (v - release) / (1 - release);
+          target = dir > 0 ? (t > 0.08 ? 1 : release) : (t < 0.92 ? release : 1);
+        }
         if (target == null) return;
         const el = sectionRef.current;
         if (!el) return;
@@ -290,13 +365,13 @@ function DesktopHero({ children }: HeroProps) {
 
         <div className={s.layout}>
           <div className={s.copy}>{children(p, phases)}</div>
-          {/* Carousel'in dinlenmedeki yeri: yalnızca ölçü için. */}
-          <div ref={slotRef} className={s.slot} style={{ height: geo.slotH }} aria-hidden="true" />
+          {/* Carousel'in dinlenmedeki sütunu (geniş ekran): yalnızca ölçü için (genişlik ve alt çizgi). */}
+          <div ref={slotRef} className={s.slot} aria-hidden="true" />
         </div>
 
         <motion.div
           className={s.scene}
-          style={{ width: geo.sceneW, x: sceneX, y: sceneY, scale: sceneScale }}
+          style={{ width: geo.sceneW, x: sceneX, y: sceneY, scale: sceneScale, opacity: sceneOpacity, pointerEvents: scenePointer, ...(geo.restW ? { ['--rest-w' as string]: `${geo.restW}px` } : null) }}
         >
           <motion.div className={s.lockHead} style={{ opacity: headOpacity, y: headY, pointerEvents: headPointer }}>
             <Link to="/k/makineler" className={s.lockAll}>
@@ -311,7 +386,7 @@ function DesktopHero({ children }: HeroProps) {
             transition={{ type: 'spring', bounce: 0, duration: 1, delay: 0.25 }}
           >
             {machines.length > 0 ? (
-              <MachineCarousel items={machines} cardSize={geo.card} autoplay={resting} scrub={scrub} scrubSpan={span} barScale={barScale} active={active && sceneVisible} />
+              <MachineCarousel items={machines} cardSize={geo.card} autoplay={resting && geo.restW > 0} scrub={scrub} scrubSpan={span} barScale={barScale} barY={barY} active={active && sceneVisible} />
             ) : (
               <div className={s.sceneSkeleton} style={{ height: geo.card * 1.12 + 76 }} />
             )}
@@ -321,28 +396,6 @@ function DesktopHero({ children }: HeroProps) {
           </motion.div>
         </motion.div>
 
-        <motion.div className={s.footer} style={{ opacity: footOpacity }}>
-          <div className={s.caption} aria-live="polite">
-            <AnimatePresence mode="popLayout" initial={false}>
-              <motion.span
-                key={index}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ type: 'spring', bounce: 0, duration: 0.6 }}
-              >
-                {slides[index] ? pick(slides[index]) : null}
-              </motion.span>
-            </AnimatePresence>
-          </div>
-          <div className={s.bars} role="tablist" aria-label="Görseller">
-            {slideCount > 1 && slides.map((sl, i) => (
-              <button key={sl.key} role="tab" aria-selected={i === index} aria-label={pick(sl)} className={s.bar} onClick={() => goTo(i)}>
-                <span key={i === index ? `on-${index}` : 'off'} className={s.barFill} data-on={i === index || undefined} data-done={i < index || undefined} />
-              </button>
-            ))}
-          </div>
-        </motion.div>
         </motion.div>
         <motion.div className={s.dim} style={{ opacity: dim }} aria-hidden="true" />
       </div>

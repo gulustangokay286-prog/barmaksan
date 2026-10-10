@@ -65,12 +65,13 @@ export function machineContent(slug) {
     const description = f[`summary_${code}`];
     if (description) fallback[code] = { title: f[`name_${code}`], description, features: [], specifications: [], applications: [], productUrl: '', updatedAt: f.updated_at, author: null, changeNote: '' };
   }
-  if (!row) return { revision: 0, profiles: fallback, gallery: null, maintenance: [], updatedAt: f.updated_at, author: null };
+  if (!row) return { revision: 0, profiles: fallback, gallery: null, maintenance: [], links: [], updatedAt: f.updated_at, author: null };
   const active = new Set(db.prepare('SELECT public_id FROM documents WHERE folder_id=? AND archived_at IS NULL').all(f.id).map((d) => d.public_id));
   const gallery = JSON.parse(row.gallery_json);
   const maintenance = JSON.parse(row.maintenance_json);
   for (const c of maintenance) for (const t of c.topics) for (const v of Object.values(t.translations)) v.documents = v.documents.filter((id) => active.has(id));
-  return { revision: row.revision, profiles: JSON.parse(row.profiles_json), gallery: gallery?.filter((id) => active.has(id)) ?? null, maintenance, updatedAt: row.updated_at, author: row.author };
+  const links = JSON.parse(row.links_json ?? '[]').filter((l) => !l.document || active.has(l.document));
+  return { revision: row.revision, profiles: JSON.parse(row.profiles_json), gallery: gallery?.filter((id) => active.has(id)) ?? null, maintenance, links, updatedAt: row.updated_at, author: row.author };
 }
 
 export function saveMachineContent(slug, input, author) {
@@ -139,11 +140,54 @@ export function saveMachineContent(slug, input, author) {
     const actual = db.prepare('SELECT revision FROM machine_content WHERE folder_id=?').get(f.id)?.revision ?? 0;
     if (actual !== input.revision) throw new HttpError(409, 'İçerik başka bir yerde değişti. Yenileyin.');
     db.prepare(`INSERT INTO machine_content(folder_id,revision,profiles_json,gallery_json,maintenance_json,updated_at,author) VALUES(?,?,?,?,?,?,?) ON CONFLICT(folder_id) DO UPDATE SET revision=excluded.revision,profiles_json=excluded.profiles_json,gallery_json=excluded.gallery_json,maintenance_json=excluded.maintenance_json,updated_at=excluded.updated_at,author=excluded.author`).run(f.id, revision, JSON.stringify(profiles), JSON.stringify(gallery), JSON.stringify(maintenance), at, author || null);
-    const content = { revision, profiles, gallery, maintenance, updatedAt: at, author: author || null };
+    const content = { revision, profiles, gallery, maintenance, links: previous.links, updatedAt: at, author: author || null };
     db.prepare('INSERT INTO machine_content_history(folder_id,revision,snapshot_json,note,author,created_at) VALUES(?,?,?,?,?,?)').run(f.id, revision, JSON.stringify(content), text(input.note, 500), author || null, at);
     db.prepare('UPDATE folders SET updated_at=? WHERE id=?').run(at, f.id);
     activity(f.id, 'machine.content.updated', author, { revision, languages: Object.keys(profiles), note: text(input.note, 500) });
     reindexFolder(f.id);
+    return content;
+  })();
+}
+
+/**
+ * Belge kartlarındaki video bağlantıları ("Bakım videosunu izle"). Her bağlantı bir belge türüne
+ * bağlıdır ve ya bir adres (YouTube vb.) ya da bu makineye yüklenmiş bir video belgesidir.
+ * Yalnızca bağlantılar değişir; açıklamalar, galeri ve bakım içeriği olduğu gibi kalır.
+ */
+export function saveMachineLinks(slug, input, author) {
+  record(input);
+  const f = machine(slug);
+  const previous = machineContent(slug);
+  if (input.revision !== previous.revision) throw new HttpError(409, 'İçerik başka bir yerde değişti. Sayfayı yenileyip tekrar deneyin.');
+  const types = new Set(db.prepare("SELECT slug FROM doc_types WHERE media_kind = 'document'").all().map((r) => r.slug));
+  const videos = new Set(db.prepare(`SELECT d.public_id FROM documents d JOIN document_versions v ON v.id=d.current_version_id JOIN files fi ON fi.id=v.file_id
+    WHERE d.folder_id=? AND d.archived_at IS NULL AND fi.mime LIKE 'video/%'`).all(f.id).map((r) => r.public_id));
+  const ids = new Set();
+  const links = list(input.links ?? [], 30).map((value) => {
+    record(value);
+    const id = idOf(value.id);
+    if (ids.has(id)) throw new HttpError(400, 'Bağlantı kimliği tekrar ediyor');
+    ids.add(id);
+    const type = text(value.type, 80);
+    if (!types.has(type)) throw new HttpError(400, 'Belge türü geçersiz');
+    const url = value.url ? safeUrl(value.url) : '';
+    const document = value.document ? text(value.document, 80) : '';
+    if (!url === !document) throw new HttpError(400, 'Bir bağlantı girin ya da bir video yükleyin');
+    if (document && !videos.has(document)) throw new HttpError(400, 'Video bu makineye yüklenmiş olmalı');
+    return { id, type, title: text(value.title, 120) || 'Bakım videosunu izle', url: url || null, document: document || null };
+  });
+  const at = now();
+  const revision = previous.revision + 1;
+  return db.transaction(() => {
+    const actual = db.prepare('SELECT revision FROM machine_content WHERE folder_id=?').get(f.id)?.revision ?? 0;
+    if (actual !== input.revision) throw new HttpError(409, 'İçerik başka bir yerde değişti. Yenileyin.');
+    db.prepare(`INSERT INTO machine_content(folder_id,revision,profiles_json,gallery_json,maintenance_json,links_json,updated_at,author) VALUES(?,?,?,?,?,?,?,?)
+      ON CONFLICT(folder_id) DO UPDATE SET revision=excluded.revision,links_json=excluded.links_json,updated_at=excluded.updated_at,author=excluded.author`)
+      .run(f.id, revision, JSON.stringify(previous.profiles), JSON.stringify(previous.gallery), JSON.stringify(previous.maintenance), JSON.stringify(links), at, author || null);
+    const content = { ...previous, revision, links, updatedAt: at, author: author || null };
+    db.prepare('INSERT INTO machine_content_history(folder_id,revision,snapshot_json,note,author,created_at) VALUES(?,?,?,?,?,?)').run(f.id, revision, JSON.stringify(content), 'Video bağlantıları', author || null, at);
+    db.prepare('UPDATE folders SET updated_at=? WHERE id=?').run(at, f.id);
+    activity(f.id, 'machine.content.updated', author, { revision, links: links.length, note: 'Video bağlantıları' });
     return content;
   })();
 }

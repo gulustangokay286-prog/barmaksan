@@ -9,11 +9,29 @@
 /* Kenar çubuğu sabit konumlu bir panel; içerik onun genişliği kadar içeriden başlar.
  * Panel ve bu boşluk tek değerden sürülür (Shell.tsx): içerik yerinde daralır/genişler.
  * overflow-x: clip — kayarken taşan içerik yatay kaydırma çubuğu açmasın (sticky'yi bozmaz). */
+/* Kenar çubuğu açıkken içerik onun genişliği kadar içeriden başlar. Aç/kapa animasyonu View
+ * Transition ile (styles/motion.css): içerik bir kez dizilir, hareket ekran kartında oynar. */
 .body {
   min-height: calc(100dvh - var(--bar-h));
-  padding-left: var(--sidebar-w);
   overflow-x: clip;
 }
+@media (min-width: 1024px) {
+  /* Kenar çubuğu sütunu + içerik sütunu. Yalnızca ilk sütunun genişliği geçiş yapar. */
+  .body {
+    display: grid;
+    grid-template-columns: 0px minmax(0, 1fr);
+    transition: grid-template-columns 380ms cubic-bezier(0.25, 1, 0.3, 1);
+  }
+  .shell:not([data-sidebar-closed]) .body {
+    grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+    transition-duration: 440ms;
+  }
+  .body > main { grid-column: 2; min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .body { transition: none !important; }
+}
+
 .sidebarToggle { flex: none; }
 
 /* Üç çizgi. Açılırken çizgiler sağdan, kapanırken soldan kısa bir dalga yapar (sırayla). */
@@ -93,11 +111,115 @@
   min-width: 0;
   height: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  /* Sol: konum izi · sağ: arama, dil, tema, hesap (tek sıra). */
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 16px;
   padding: 0 var(--gutter) 0 var(--gutter);
 }
+/*
+ * Masaüstü: üst bar içerik kabıyla hizalı (kab: --page-max + --gutter, içerik sütununda ortalı).
+ * Logolar her durumda içeriğin sol kenarında (kenar çubuğu açıkken çubuğun sağında); sağdaki
+ * düğmeler içeriğin sağ kenarında. --edge: kabın kenar boşluğu, üst barın genişliğinden (cqw) hesaplanır. Geçiş
+ * yalnızca kenar çubuğu açılıp kapanırken (html[data-sidebar-moving]); sütun geçişiyle aynı süre
+ * ve eğride. Pencere boyutu değişince anında yerine oturur.
+ */
+@media (min-width: 1024px) {
+  .topbar {
+    container-type: inline-size;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .topbar > * {
+    --edge: max(var(--gutter), (100cqw - var(--sidebar-w) - var(--page-max)) / 2);
+    --bar-ease: cubic-bezier(0.25, 1, 0.3, 1);
+  }
+  .shell[data-sidebar-closed] .topbar > * {
+    --edge: max(var(--gutter), (100cqw - var(--page-max)) / 2);
+  }
+  .brandArea {
+    --brand-w: 197px; /* BrandLockup compact genişliği */
+    position: relative;
+    width: calc(var(--sidebar-w) + var(--edge) + var(--brand-w) + 24px);
+    padding-left: calc(var(--sidebar-w) + var(--edge));
+    border-right-color: transparent;
+  }
+  /* Kenar çubuğunun sınır çizgisi üst barda da sürer (logolar artık çubuğun üstünde değil). */
+  .topbar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--sidebar-w) - 1px);
+    width: 1px;
+    background: var(--bar-line);
+    pointer-events: none;
+    transition: opacity 320ms var(--ease-out);
+  }
+  .shell[data-sidebar-closed] .topbar::before {
+    opacity: 0;
+  }
+  :global(html[data-sidebar-moving]) .brandArea {
+    transition:
+      width 440ms var(--bar-ease),
+      padding-left 440ms var(--bar-ease);
+  }
+  .brandArea > .sidebarToggle {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    translate: 0 -50%;
+    /* Yazı gizliyken 34px yuvarlak; görünürken hap ("Menü"). */
+    width: auto;
+    min-width: 34px;
+    gap: 12px;
+    padding: 0 8px;
+  }
+  /* "Menü" yazısı: menü düğmesiyle logolar arasında yer varsa (kenar çubuğu açıkken ya da geniş
+   * ekranda) görünür; dar ekranda kapalıyken logolara çarpmasın diye gizli. */
+  .menuLabel {
+    display: none;
+    padding-right: 4px;
+    font-size: 13.5px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .shell:not([data-sidebar-closed]) .menuLabel {
+    display: inline;
+  }
+  @container (min-width: 1440px) {
+    .menuLabel {
+      display: inline;
+    }
+  }
+  .shell[data-sidebar-closed] .brandArea {
+    /* Logolar içeriğin sol kenarında; dar ekranda menü düğmesine çarpmaz. */
+    padding-left: max(54px, var(--edge));
+    width: calc(max(54px, var(--edge)) + var(--brand-w) + 24px);
+  }
+  :global(html[data-sidebar-moving]) .shell[data-sidebar-closed] .brandArea {
+    transition-duration: 380ms;
+  }
+  .topbarInner {
+    padding-left: var(--gutter);
+    padding-right: var(--edge);
+  }
+  :global(html[data-sidebar-moving]) .topbarInner {
+    transition: padding 440ms var(--bar-ease);
+  }
+  :global(html[data-sidebar-moving]) .shell[data-sidebar-closed] .topbarInner {
+    transition-duration: 380ms;
+  }
+}
+@media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
+  :global(html[data-sidebar-moving]) .brandArea,
+  :global(html[data-sidebar-moving]) .topbarInner {
+    transition: none;
+  }
+}
+.topSearch { display: flex; width: 240px; margin-right: 4px; }
+.topSearch > * { width: 100%; }
+@media (max-width: 1279px) { .topSearch { width: 200px; } }
+
 .topLeft {
   display: flex;
   align-items: center;
@@ -110,8 +232,101 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  justify-self: end;
+  gap: 6px;
 }
+/*
+ * Masaüstü: sağdaki düğmeler ana sayfa üst şeridindeki sayılarla aynı sütunlarda (Home ölçer ve
+ * --st-* değişkenlerini yazar; ölçülmeden önce Türkçe metne göre varsayılanlar):
+ * dil ↔ "42 makine", tema ↔ "20 doküman", Giriş yap ↔ "95 sürüm · 75 medya" (bütün genişlik).
+ */
+@media (min-width: 1024px) {
+  .topRight {
+    display: grid;
+    grid-template-columns: auto var(--st-w1, 72px) var(--st-w2, 86px) var(--st-w3, 156px);
+    column-gap: var(--st-gap, 22px);
+    justify-items: center;
+  }
+  /* Sütunlar açıkça: arama kabın dışına alındığında da düğmeler yerinde kalır. */
+  .topRight > .hideSm {
+    grid-column: 2;
+  }
+  .topRight > .themeCell {
+    grid-column: 3;
+  }
+  .topRight > :last-child {
+    grid-column: 4;
+    justify-self: stretch;
+    display: flex;
+    justify-content: center;
+  }
+  /* Dil ile tema arasında ince ayraç: sütun aralığının tam ortasında. */
+  .themeCell {
+    position: relative;
+    justify-self: stretch;
+    justify-content: center;
+  }
+  .themeCell::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: calc(var(--st-gap, 22px) / -2);
+    width: 1px;
+    height: 20px;
+    translate: -0.5px -50%;
+    background: color-mix(in srgb, var(--on-bar) 32%, transparent);
+  }
+  /* Arama (kaydırınca belirir; diğer sayfalarda hep görünür): yer varsa "Giriş yap"ın sağında,
+   * içerik kabının dışındaki boşlukta, o boşluğa göre genişlikte. Yer yoksa dil düğmesinin solunda
+   * yalnızca büyüteç (ortadaki başlığa çarpmaz). */
+  .topRight {
+    position: relative;
+  }
+  .topSearch {
+    width: 34px;
+    margin-right: 0;
+  }
+  .topSearch [data-search-trigger][data-variant] {
+    justify-content: center;
+    padding: 0;
+  }
+  .topSearch [data-search-trigger][data-variant] > :last-child {
+    display: none;
+  }
+}
+@container (min-width: 1420px) {
+  .shell[data-sidebar-closed] .topSearch {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 12px);
+    translate: 0 -50%;
+    width: min(240px, var(--edge) - 28px);
+  }
+  .shell[data-sidebar-closed] .topSearch [data-search-trigger][data-variant] {
+    justify-content: flex-start;
+    padding: 0 14px 0 12px;
+  }
+  .shell[data-sidebar-closed] .topSearch [data-search-trigger][data-variant] > :last-child {
+    display: block;
+  }
+}
+@container (min-width: 1684px) {
+  .topSearch {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 12px);
+    translate: 0 -50%;
+    width: min(240px, var(--edge) - 28px);
+  }
+  .topSearch [data-search-trigger][data-variant] {
+    justify-content: flex-start;
+    padding: 0 14px 0 12px;
+  }
+  .topSearch [data-search-trigger][data-variant] > :last-child {
+    display: block;
+  }
+}
+
 .sep {
   width: 1px;
   height: 20px;
@@ -165,7 +380,7 @@
 }
 .crumbCurrent {
   padding: 4px 6px;
-  font-weight: 600;
+  font-weight: 540;
   color: var(--on-bar);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -208,13 +423,26 @@
 .backBtn:active {
   transform: scale(0.92);
 }
+/* Ana sayfa başlığı: hero'daki büyük başlık kaybolunca barın tam ortasında belirir (iOS büyük başlık). */
 .homeTitle {
-  position: relative;
-  display: inline-flex;
-  min-width: 0;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-size: 14.5px;
+  font-weight: 540;
+  letter-spacing: -0.01em;
+  color: var(--on-bar);
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: opacity 260ms var(--ease-out), transform 520ms var(--ease-spring);
+}
+.homeTitle[data-hidden] {
+  opacity: 0;
+  transform: translate(-50%, -20%);
 }
 .crumbCurrent[data-quiet] {
-  font-weight: 500;
+  font-weight: 460;
   color: var(--on-bar-2);
 }
 
@@ -222,8 +450,8 @@
 .langWrap {
   position: relative;
 }
-.langButton { width: auto; gap: 5px; padding-inline: 8px; }
-.langCode { font-size: 11px; font-weight: 600; }
+.iconBtn.langButton { width: auto; gap: 5px; padding: 0 11px 0 9px; }
+.langCode { font-size: 12px; font-weight: 540; letter-spacing: 0.03em; }
 .iconBtn[data-open] {
   color: var(--on-bar);
   background: var(--bar-fill);
@@ -270,7 +498,7 @@
 }
 .compactTitle {
   font-size: 15px;
-  font-weight: 620;
+  font-weight: 540;
   letter-spacing: -0.012em;
   white-space: nowrap;
   overflow: hidden;
@@ -287,7 +515,7 @@
   border-radius: 8px;
   color: var(--on-bar-2);
   font-size: 14px;
-  font-weight: 520;
+  font-weight: 460;
   transition: color var(--t-fast), background-color var(--t-fast);
 }
 .back:hover {
@@ -330,7 +558,7 @@
   justify-content: center;
   width: 34px;
   height: 34px;
-  border-radius: 9px;
+  border-radius: 999px;
   color: var(--on-bar-2);
   transition: color var(--t-fast), background-color var(--t-fast);
 }
@@ -356,23 +584,24 @@
  * Üst barla aynı koyu ton. Seçim basıldığı anda görünür (animasyon beklemez);
  * açılıp kapanma saf CSS; hover'da zemin yok, yalnızca metin belirginleşir. */
 
+/* Grid'in ilk sütunu: üst barın altında yapışık, ekran yüksekliğinde. Sütun daraldıkça kırpılır. */
 .sidebar {
-  position: fixed;
+  grid-column: 1;
+  position: sticky;
   z-index: 20;
   top: var(--bar-h);
-  left: 0;
-  bottom: 0;
-  width: var(--sidebar-w);
+  align-self: start;
+  height: calc(100dvh - var(--bar-h));
+  overflow: hidden;
   background-color: var(--side-bg);
   background-image: var(--chrome-texture);
   background-size: 420px 420px;
   background-position: 0 calc(-1 * var(--bar-h));
   color: var(--side-ink);
-  border-right: 1px solid var(--side-line);
-  contain: layout paint;
-  will-change: transform;
 }
+/* Panelin içi hep tam genişlikte: sütun açılırken yeniden dizilmez, yalnızca görünür olur. */
 .sidebarInner {
+  width: var(--sidebar-w);
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -403,7 +632,7 @@
   padding: 0 10px;
   border-radius: 8px;
   font-size: 14px;
-  font-weight: 520;
+  font-weight: 460;
   color: var(--side-ink);
   transition: color 90ms linear;
 }
@@ -437,7 +666,7 @@
   align-items: center;
   height: 100%;
   font-size: 12.5px;
-  font-weight: 650;
+  font-weight: 580;
   color: var(--side-ink-3);
   border-radius: 6px;
   transition: color 90ms linear;
@@ -564,7 +793,7 @@
 .treeLink[data-active] {
   color: var(--side-ink-strong);
   background: var(--side-fill);
-  font-weight: 560;
+  font-weight: 500;
 }
 /* Altın çubuk yeni seçilen satırda içeri doğru büyür; eskisi anında söner. */
 .treeLink[data-active]::before {
@@ -616,7 +845,7 @@
   align-self: flex-start;
   margin-top: 6px;
   font-size: 12.5px;
-  font-weight: 560;
+  font-weight: 500;
   color: var(--side-ink);
 }
 .footAdmin:hover {
@@ -635,7 +864,7 @@
   padding: 0 10px;
   border-radius: 7px;
   font-size: 13px;
-  font-weight: 520;
+  font-weight: 460;
   color: var(--side-ink);
 }
 .editToggle:hover {
@@ -812,11 +1041,19 @@
 .tabbar {
   display: none;
 }
+/* Mobil menü: hep bellekte; açılıp kapanma CSS geçişiyle (transform + opacity, bileşik katman). */
 .scrim {
   position: fixed;
   inset: 0;
   z-index: 60;
   background: var(--scrim-solid);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 280ms var(--ease-out);
+}
+.scrim[data-open] {
+  opacity: 1;
+  pointer-events: auto;
 }
 .sheet {
   position: fixed;
@@ -834,6 +1071,20 @@
   border-radius: var(--r-xl) var(--r-xl) 0 0;
   box-shadow: var(--shadow-float);
   touch-action: none;
+  transform: translateY(100%);
+  visibility: hidden;
+  will-change: transform;
+  transition: transform 420ms cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 420ms;
+}
+.sheet[data-open] {
+  transform: translateY(0);
+  visibility: visible;
+  transition: transform 460ms cubic-bezier(0.32, 0.72, 0, 1), visibility 0s;
+}
+/* Sürüklerken parmağı birebir izler (geçiş yok). */
+.sheet[data-dragging] { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .sheet, .sheet[data-open], .scrim { transition-duration: 1ms; }
 }
 .sheetHead :global(.t-headline) {
   color: var(--side-ink-strong);
@@ -842,11 +1093,29 @@
   color: var(--side-ink) !important;
 }
 .sheetHead {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 12px 8px 20px;
+  padding: 20px 10px 8px 20px;
   cursor: grab;
+}
+.grabber {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 36px;
+  height: 5px;
+  margin-left: -18px;
+  border-radius: 3px;
+  background: currentColor;
+  opacity: .25;
+}
+.sheetActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  cursor: default;
 }
 .sheetBody {
   flex: 1;
@@ -876,7 +1145,7 @@
   background: var(--bar-bg-solid);
   box-shadow: var(--shadow-float);
   font-size: 13.5px;
-  font-weight: 540;
+  font-weight: 500;
   color: var(--on-bar);
 }
 .toast svg {
@@ -910,10 +1179,38 @@
 }
 
 @media (max-width: 767px) {
+  /* Sabit çubuklar kaydırmada arka planı her karede yeniden bulanıklaştırmaz. */
+  .topbar {
+    --blur-bar: none;
+    background-color: var(--bar-bg-solid);
+  }
+  .tabbar .tabGroup {
+    background: var(--bar-bg-solid);
+    box-shadow: inset 0 0 0 1px var(--bar-line), 0 8px 24px rgba(0, 0, 0, .18);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .tabbar .tab { color: var(--on-bar-2); }
+  .tabbar .tab[data-active] { color: var(--on-bar); }
+  .tabbar .tabPill {
+    filter: none;
+  }
+  .tabbar .tabPill > i {
+    background: color-mix(in srgb, var(--bar-bg-solid) 84%, var(--on-bar));
+  }
+  .tabbar .tabMenu {
+    background: var(--bar-bg-solid);
+    color: var(--on-bar);
+  }
+  .tabbar .tabMenu[data-open] {
+    background: color-mix(in srgb, var(--bar-bg-solid) 84%, var(--on-bar));
+  }
   .searchSlot,
+  .topSearch,
   .hideSm,
   .sep,
-  .topbar[data-home] .crumbs {
+  .topbar[data-home] .crumbs,
+  .homeTitle {
     display: none;
   }
   .searchMobile {
@@ -965,7 +1262,7 @@
     justify-content: center;
     gap: 3px;
     font-size: 10.5px;
-    font-weight: 560;
+    font-weight: 500;
     letter-spacing: 0.01em;
     color: var(--on-bar-3);
     transition: color var(--t-fast), transform 120ms var(--ease-out);
@@ -1006,64 +1303,127 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
+  /* Cam şerit: içerik altından hafifçe görünür, kenarda ince ışık çizgisi. */
   .tabGroup {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     flex: 1;
     min-width: 0;
     height: 64px;
     padding: 6px;
-    gap: 2px;
-    border: 1px solid color-mix(in srgb, var(--surface) 75%, transparent);
+    gap: 4px;
     border-radius: 40px;
-    background: color-mix(in srgb, var(--canvas) 94%, transparent);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    background: color-mix(in srgb, var(--canvas) 78%, transparent);
+    -webkit-backdrop-filter: blur(18px) saturate(1.6);
+    backdrop-filter: blur(18px) saturate(1.6);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--surface) 70%, transparent), 0 0 0 .5px rgba(0, 0, 0, .06), 0 10px 30px rgba(0, 0, 0, .1);
+    transition: opacity 240ms var(--ease-out), transform 460ms var(--ease-spring);
   }
+  .tabGroup[data-dim] { opacity: .55; transform: scale(.97); }
+  /* Menü açıkken tab bar sayfanın üstünde kalır: aynı düğme (çarpı) kapatır. */
+  .tabbar { z-index: 62; }
+  .sheetBody { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+  /*
+   * Sekmeler içerikleri kadar + kalan yeri eşit paylaşır. Etkin olunca esneme kuralı değişmez:
+   * genişlik yalnızca etiket açıldıkça kesintisiz büyür (ani zıplama yok).
+   */
+  .tabGroup { position: relative; }
   .tab {
-    flex: 1;
+    position: relative;
+    z-index: 1;
+    flex: 1 1 auto;
+    display: flex;
     flex-direction: row;
-    gap: 8px;
-    min-width: 42px;
-    height: 50px;
-    padding: 0 10px;
+    align-items: center;
+    justify-content: center;
+    min-width: 46px;
+    height: 52px;
+    padding: 0 14px;
     border-radius: 30px;
-    color: var(--ink-2);
-    font-size: 12px;
+    color: var(--ink-3);
+    font-size: 13px;
+    font-weight: 500;
     letter-spacing: -.01em;
     white-space: nowrap;
-    transition: background-color 160ms ease, color 160ms ease;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 220ms var(--ease-out);
   }
-  .tab svg { flex-shrink: 0; }
-  .tab > span { display: none; }
-  .tab[data-active] {
-    flex: 1.7;
+  .tab > svg { position: relative; flex-shrink: 0; transition: transform 140ms var(--ease-out); }
+  .tab:active > svg { transform: scale(.9); }
+  .tab[data-active] { color: var(--ink); }
+  /* Sekme ikonları kendi animasyonlarını oynatmaz: gezinirken titreme/çarpılma olmaz. */
+  .tabbar .ai, .tabbar .ai > * { animation: none !important; }
+  /*
+   * Hap: sekmeden bir tık büyük (üst/alt 3px, yanlar 2px). Üç parça: yuvarlak uçlar sabit, yalnızca
+   * orta ölçeklenir. Gölge kabın filtresinde; parçalar ayrı ayrı gölgelenmez.
+   */
+  .tabPill {
+    position: absolute;
+    top: 3px;
+    left: 0;
+    z-index: 0;
+    width: 0;
+    height: 58px;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .05)) drop-shadow(0 4px 8px rgba(0, 0, 0, .07));
+    transition: opacity 200ms var(--ease-out);
+    will-change: transform;
+    pointer-events: none;
+  }
+  .tabPill > i {
+    position: absolute;
+    top: 0;
+    height: 100%;
     background: var(--surface);
-    color: var(--ink);
-    box-shadow: 0 1px 5px rgba(0,0,0,.04);
+    will-change: transform;
   }
-  .tab[data-active] > span { display: block; max-width: 94px; overflow: hidden; text-overflow: ellipsis; }
-  .tabAdd {
+  .tabPill > i:nth-child(1) { left: 0; width: 29px; border-radius: 29px 0 0 29px; }
+  .tabPill > i:nth-child(2) { left: 28px; right: 28px; transform-origin: 0 50%; }
+  .tabPill > i:nth-child(3) { right: 0; width: 29px; border-radius: 0 29px 29px 0; }
+  .tabLabel { position: relative; display: block; overflow: hidden; padding-left: 8px; white-space: nowrap; }
+  /* Menü: üç çizgi, açılınca yaylanarak çarpıya döner. */
+  .tabMenu {
     flex: none;
     display: grid;
     place-items: center;
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: #111;
+    background: #141416;
     color: #fff;
-    box-shadow: 0 4px 16px rgba(0,0,0,.16);
-    transition: transform 120ms ease;
+    box-shadow: 0 0 0 .5px rgba(255, 255, 255, .08) inset, 0 8px 22px rgba(0, 0, 0, .22);
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 460ms var(--ease-spring), background-color 200ms var(--ease-out);
   }
-  .tabAdd:active { transform: scale(.95); }
+  .tabMenu:active { transform: scale(.9); transition-duration: 120ms; }
+  .tabMenu[data-open] { background: #2a2a2e; }
+  .menuGlyph { position: relative; display: block; width: 22px; height: 16px; }
+  .menuGlyph > span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform 560ms var(--ease-spring), opacity 180ms var(--ease-out), width 560ms var(--ease-spring);
+  }
+  .menuGlyph > span:nth-child(1) { top: 0; }
+  .menuGlyph > span:nth-child(2) { top: 7px; width: 72%; left: auto; right: 0; }
+  .menuGlyph > span:nth-child(3) { top: 14px; }
+  .tabMenu[data-open] .menuGlyph > span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .tabMenu[data-open] .menuGlyph > span:nth-child(2) { opacity: 0; transform: scaleX(.2); }
+  .tabMenu[data-open] .menuGlyph > span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
   .content { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+  /* Üstte menü düğmesi yok (alttaki menü düğmesi var); iç sayfalarda geri düğmesi kenara yaslanır. */
+  .sidebarToggle { display: none; }
+  .topbar:not([data-home]) { grid-template-columns: minmax(0, 1fr); }
+  .topbar:not([data-home]) .brandArea { display: none; }
+  .topbar:not([data-home]) .topbarInner { padding-left: 6px; }
 }
 @media (max-width: 360px) {
   .tabbar { left: 10px; right: 10px; gap: 8px; }
-  .tabAdd { width: 56px; height: 56px; }
-  .tabGroup { height: 60px; padding: 4px; }
-  .tab { padding-inline: 7px; gap: 5px; }
-  .tab[data-active] > span { max-width: 72px; }
+  .tabMenu { width: 58px; height: 58px; }
+  .tabGroup { height: 58px; padding: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .menuGlyph > span, .tab, .tabGroup { transition-duration: 1ms; }
 }

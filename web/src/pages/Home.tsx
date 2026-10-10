@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { motion, useMotionValueEvent, useTransform, type MotionValue, type Variants } from 'motion/react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue, type Variants } from 'motion/react';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { Icon } from '../components/Icon';
 import { DocThumb, FolderTrail, MachineTile, docHref } from '../components/Docs';
@@ -13,8 +13,9 @@ import { useI18n } from '../lib/i18n';
 import { useBootstrap, useChromeActions, useDocTypes, usePageChrome } from '../lib/ui';
 import { folderQuery, prefetchDoc, prefetchFolder, recentQuery } from '../lib/query';
 import { useSectionSettle } from '../lib/settle';
+import { useMediaQuery } from '../lib/viewport';
 import { markMorph } from '../lib/morph';
-import { formatNumber, shortTitle } from '../lib/format';
+import { formatNumber, formatRelative, shortTitle, versionLabel } from '../lib/format';
 import { DateStamp } from '../components/DateStamp';
 import h from './home.module.css';
 import p from './pages.module.css';
@@ -73,10 +74,10 @@ function HeroContent({ progress, phases }: { progress: MotionValue<number>; phas
   const { t, lang } = useI18n();
   const { data: boot } = useBootstrap();
   const { setTitleVisible } = useChromeActions();
-  // Metin, carousel ortaya inerken sola çekilip söner (carousel'den önce yol açar).
+  // Metin, carousel büyüyüp ortaya gelirken yukarı çekilip söner (carousel'e yol açar).
   const fadeEnd = phases.move + (phases.lock - phases.move) * 0.55;
   const opacity = useTransform(progress, [phases.move, fadeEnd], [1, 0]);
-  const x = useTransform(progress, [phases.move, fadeEnd], [0, -64]);
+  const y = useTransform(progress, [phases.move, fadeEnd], [0, -48]);
   const pointerEvents = useTransform(opacity, (v) => (v < 0.4 ? 'none' : 'auto'));
 
   // Büyük arama söndükçe üst bardaki arama belirir (arama hiç kaybolmaz).
@@ -94,38 +95,141 @@ function HeroContent({ progress, phases }: { progress: MotionValue<number>; phas
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progress, setTitleVisible, phases]);
 
+  // Arama düğmesi açıklamanın ilk satırının sonuna kadar uzanır (--lead-line1).
+  const leadRef = useRef<HTMLParagraphElement>(null);
+  useLayoutEffect(() => {
+    const p = leadRef.current;
+    if (!p) return;
+    const measure = () => {
+      const range = document.createRange();
+      range.selectNodeContents(p);
+      const rects = [...range.getClientRects()];
+      if (!rects.length) return;
+      const top = rects[0].top;
+      const right = Math.max(...rects.filter((r) => Math.abs(r.top - top) < 4).map((r) => r.right));
+      p.parentElement?.style.setProperty('--lead-line1', `${Math.round(right - p.getBoundingClientRect().left)}px`);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(p);
+    return () => ro.disconnect();
+  }, [lang, boot]);
+
+  // Üst bardaki dil, tema ve hesap düğmeleri bu sayıların sütunlarına oturur (Shell.module.css .topRight).
+  const statsRef = useRef<HTMLDListElement>(null);
+  useLayoutEffect(() => {
+    const dl = statsRef.current;
+    if (!dl) return;
+    const root = document.documentElement.style;
+    const measure = () => {
+      const [a, b, c, d] = [...dl.children] as HTMLElement[];
+      if (!d) return;
+      root.setProperty('--st-w1', `${a.offsetWidth}px`);
+      root.setProperty('--st-w2', `${b.offsetWidth}px`);
+      root.setProperty('--st-w3', `${d.offsetLeft + d.offsetWidth - c.offsetLeft}px`);
+      root.setProperty('--st-gap', `${b.offsetLeft - a.offsetLeft - a.offsetWidth}px`);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(dl);
+    return () => ro.disconnect();
+  }, [boot]);
+
   const machines = boot ? formatNumber(boot.stats.machines, lang) : '42';
   const lead = lang === 'tr'
     ? <>Barmaksan Uğur Promilling’in <b>{machines} makinesine</b> ve şirketine ait bütün dosyalar tek yerde: teknik fiş, çizim, yedek parça listesi, kılavuz, sertifika, katalog, fotoğraf ve video. Her dosya <b>her zaman en güncel sürümüyle</b> açılır; paylaştığınız bağlantı hep doğru dosyayı gösterir.</>
     : <>Every file for Barmaksan Uğur Promilling’s <b>{machines} machines</b> and the company in one place: technical sheets, drawings, spare part lists, manuals, certificates, catalogues, photos and films. Every file <b>always opens in its latest version</b>; a shared link always shows the right file.</>;
 
   return (
-    <motion.div className={h.heroContent} data-reveal-host style={{ opacity, x, pointerEvents }}>
-      <h1 className={h.heroTitle}>{t('library')}</h1>
-      <p className={h.heroLead}>{lead}</p>
-      <div className={h.heroSearchWrap}>
-        <SearchTrigger variant="hero" />
-      </div>
-      {boot && (
-        <dl className={h.heroStats}>
-          <div><dt>{t('machine')}</dt><dd>{formatNumber(boot.stats.machines, lang)}</dd></div>
-          <div><dt>{t('documents')}</dt><dd>{formatNumber(boot.stats.documents, lang)}</dd></div>
-          <div><dt>{t('versions')}</dt><dd>{formatNumber(boot.stats.versions, lang)}</dd></div>
-          <div><dt>{t('mediaItems')}</dt><dd>{formatNumber(boot.stats.media, lang)}</dd></div>
-        </dl>
-      )}
+    <motion.div className={h.heroContent} data-reveal-host style={{ opacity, y }}>
+      {/* Üst şerit: solda son güncellenen belge (canlı), sağda kütüphanenin sayıları. */}
+      <motion.div className={h.heroTop} style={{ pointerEvents }}>
+        <RecentTicker />
+        {boot && (
+          <dl ref={statsRef} className={h.heroStats}>
+            <div><dt>{t('machine')}</dt><dd>{formatNumber(boot.stats.machines, lang)}</dd></div>
+            <div><dt>{t('documents')}</dt><dd>{formatNumber(boot.stats.documents, lang)}</dd></div>
+            <div><dt>{t('versions')}</dt><dd>{formatNumber(boot.stats.versions, lang)}</dd></div>
+            <div><dt>{t('mediaItems')}</dt><dd>{formatNumber(boot.stats.media, lang)}</dd></div>
+          </dl>
+        )}
+      </motion.div>
+      <motion.div className={h.heroMain} data-hero-main style={{ pointerEvents }}>
+        <h1 className={h.heroTitle}>{t('library')}</h1>
+        <p ref={leadRef} className={h.heroLead}>{lead}</p>
+        <div className={h.heroActions}>
+          <SearchTrigger variant="hero" />
+        </div>
+      </motion.div>
     </motion.div>
+  );
+}
+
+/**
+ * Son güncellenen belgeler sırayla akar: kütüphanenin "her dosya en güncel sürümüyle" sözünün
+ * canlı kanıtı. Üzerine gelince ya da odaklanınca durur; hareketi azalt açıksa yalnızca yer değiştirir.
+ */
+function RecentTicker() {
+  const { pick, lang, locale } = useI18n();
+  const reduce = useReducedMotion();
+  const { data } = useQuery(recentQuery(6, locale));
+  const docs = data ?? [];
+  const [i, setI] = useState(0);
+  const paused = useRef(false);
+  useEffect(() => {
+    if (docs.length < 2) return;
+    const id = window.setInterval(() => {
+      if (!paused.current) setI((v) => (v + 1) % docs.length);
+    }, 4800);
+    return () => window.clearInterval(id);
+  }, [docs.length]);
+  const doc = docs.length ? docs[i % docs.length] : null;
+  const v = doc?.current;
+  return (
+    <div
+      className={h.ticker}
+      onPointerEnter={() => { paused.current = true; }}
+      onPointerLeave={() => { paused.current = false; }}
+      onFocus={() => { paused.current = true; }}
+      onBlur={() => { paused.current = false; }}
+    >
+      <span className={h.tickerLabel}>{lang === 'tr' ? 'Son güncellenen' : 'Latest update'}</span>
+      <span className={h.tickerWindow}>
+        <AnimatePresence mode="popLayout" initial={false}>
+          {doc && (
+            <motion.span
+              key={doc.id}
+              className={h.tickerItem}
+              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduce ? { opacity: 0 } : { opacity: 0, y: -14 }}
+              transition={{ type: 'spring', bounce: 0, duration: 0.7 }}
+            >
+              <Link
+                to={docHref(doc)}
+                className={h.tickerLink}
+                onPointerEnter={() => prefetchDoc(doc.id, v?.file?.id, v?.file?.kind)}
+              >
+                {pick(doc.title)}
+              </Link>
+              {v && <span className={h.tickerMeta}>{versionLabel(v.no, lang)} · {formatRelative(v.createdAt, lang)}</span>}
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </span>
+    </div>
   );
 }
 
 // ── Bölüm başlığı ───────────────────────────────────────────────────────────
 
 function SectionHead({ title, count, lead, link }: { title: string; count?: number | null; lead?: ReactNode; link?: { to: string; label: string } }) {
+  const mobile = useMediaQuery('(max-width: 767px)');
   return (
     <motion.header
       className={h.head}
-      initial={{ opacity: 0, y: 18 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={mobile ? false : { opacity: 0, y: 18 }}
+      whileInView={mobile ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.6 }}
       transition={{ duration: 0.7, ease }}
     >
@@ -156,6 +260,7 @@ const rowIn: Variants = {
 };
 
 function RecentSection() {
+  const mobile = useMediaQuery('(max-width: 767px)');
   const { t, lang, locale } = useI18n();
   const recent = useQuery(recentQuery(6, locale));
   const week = useMemo(() => {
@@ -182,7 +287,7 @@ function RecentSection() {
           )}
         </div>
         {recent.data ? (
-          <motion.ol className={h.recentList} variants={listIn} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
+          <motion.ol className={h.recentList} variants={listIn} initial={mobile ? false : 'hidden'} whileInView={mobile ? undefined : 'show'} viewport={{ once: true, amount: 0.2 }}>
             {recent.data.map((d) => (
               <motion.li key={d.id} variants={rowIn}>
                 <RecentRow doc={d} />
@@ -341,6 +446,7 @@ const cardsIn: Variants = { hidden: {}, show: { transition: { staggerChildren: 0
 const cardIn: Variants = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 0.8, ease } } };
 
 function CorporateSection({ collections }: { collections: Collection[] }) {
+  const mobile = useMediaQuery('(max-width: 767px)');
   const { lang } = useI18n();
   const docs = useCollectionDocs(collections.map((c) => c.slug));
   return (
@@ -351,7 +457,7 @@ function CorporateSection({ collections }: { collections: Collection[] }) {
           ? 'Sertifikalar, kataloglar, şirket profilleri ve müşteriye gönderilecek dosyalar; hepsi en güncel sürümüyle.'
           : 'Certificates, catalogues, company profiles and files for customers; all in their latest version.'}
       />
-      <motion.ul className={h.stacks} variants={cardsIn} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
+      <motion.ul className={h.stacks} variants={cardsIn} initial={mobile ? false : 'hidden'} whileInView={mobile ? undefined : 'show'} viewport={{ once: true, amount: 0.2 }}>
         {collections.map((c, i) => (
           <motion.li key={c.id} variants={cardIn}>
             <StackCard c={c} docs={docs[i]?.docs} />
@@ -396,6 +502,7 @@ function StackCard({ c, docs }: { c: Collection; docs?: Doc[] }) {
 // ── Medya: koleksiyonlar kendi görselleriyle, bento ızgarada ────────────────
 
 function MediaSection({ collections }: { collections: Collection[] }) {
+  const mobile = useMediaQuery('(max-width: 767px)');
   const { t, lang } = useI18n();
   const { data: boot } = useBootstrap();
   // En kalabalık koleksiyon büyük karede.
@@ -411,7 +518,7 @@ function MediaSection({ collections }: { collections: Collection[] }) {
           : 'Photos and films in original resolution. Nothing is compressed; what you download is what was shot.'}
         link={{ to: '/medya', label: t('mediaLibrary') }}
       />
-      <motion.ul className={h.bento} variants={cardsIn} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }}>
+      <motion.ul className={h.bento} variants={cardsIn} initial={mobile ? false : 'hidden'} whileInView={mobile ? undefined : 'show'} viewport={{ once: true, amount: 0.15 }}>
         {ordered.map((c, i) => (
           <motion.li key={c.id} variants={cardIn}>
             <MediaTile c={c} docs={docs[i]?.docs} large={i === 0} />

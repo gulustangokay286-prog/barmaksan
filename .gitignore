@@ -20,3 +20,7 @@ data/seed-cache/
 # Files exceeding GitHub 100MB limit (>95MB)
 data/storage/originals/db/db12d4ab626da00425a1ba037681787ddc0776436dc1d7b2ac2ca901143073b1.pdf
 data/storage/originals/f4/f458cf8a595985548591e6e8928b7ecdfc722c6d52df8c286dcbdf9fd577c28c.pdf
+
+# Kullanıcı veritabanı: kişisel veri ve şifre özetleri — asla depoya girmez
+data/users.db
+data/users.db-*

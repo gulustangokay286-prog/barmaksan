@@ -1,7 +1,10 @@
-// Kaydedilenler: kullanıcının sık açtığı belgeler. Yalnızca bu tarayıcıda (localStorage);
-// sunucuya gitmez. Belgenin kalıcı kimliği saklanır, görüntü için başlık ve klasör de.
-import { useCallback, useSyncExternalStore } from 'react';
-import type { Doc, Name } from './api';
+// Kaydedilenler: üyelerin sık açtığı belgeler, hesapta (sunucuda) tutulur: her cihazda aynı liste.
+// Üye değilse kaydetmek giriş/kayıt penceresini açar. Eskiden bu tarayıcıda (localStorage) biriken
+// kayıtlar ilk girişte hesaba taşınır. Belgenin kalıcı kimliği saklanır, görüntü için başlık ve klasör de.
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { account, type Doc, type Name } from './api';
+import { gate, useSession } from './session';
 
 export type Bookmark = {
   id: string;
@@ -73,20 +76,44 @@ function subscribe(fn: () => void) {
 
 const EMPTY: Bookmark[] = [];
 
+const savedKey = ['saved'] as const;
+const snapshot = (doc: Doc): Bookmark => ({
+  id: doc.id, title: doc.title, type: doc.type,
+  folder: { slug: doc.folder.slug, kind: doc.folder.kind, name: doc.folder.name },
+  thumb: doc.current?.file?.thumb ?? null, savedAt: new Date().toISOString(),
+});
+
 export function useBookmarks() {
-  const list = useSyncExternalStore(subscribe, read, () => EMPTY);
+  const { isMember } = useSession();
+  const qc = useQueryClient();
+  const { data } = useQuery({ queryKey: savedKey, queryFn: () => account.saved<Bookmark>(), enabled: isMember, staleTime: 30_000 });
+  const list = isMember ? (data ?? EMPTY).filter(isBookmark) : EMPTY;
+  const local = useSyncExternalStore(subscribe, read, () => EMPTY);
+
+  // Bu tarayıcıda kalmış eski kayıtlar ilk girişte hesaba taşınır.
+  useEffect(() => {
+    if (!isMember || !local.length) return;
+    let cancelled = false;
+    void (async () => {
+      for (const b of [...local].reverse()) await account.save(b.id, b).catch(() => undefined);
+      if (!cancelled) { write([]); await qc.invalidateQueries({ queryKey: savedKey }); }
+    })();
+    return () => { cancelled = true; };
+  }, [isMember, local, qc]);
+
   const has = useCallback((id: string) => list.some((b) => b.id === id), [list]);
   const add = useCallback((doc: Doc) => {
-    const cur = read();
-    if (cur.some((b) => b.id === doc.id)) return;
-    write([{
-      id: doc.id, title: doc.title, type: doc.type,
-      folder: { slug: doc.folder.slug, kind: doc.folder.kind, name: doc.folder.name },
-      thumb: doc.current?.file?.thumb ?? null, savedAt: new Date().toISOString(),
-    }, ...cur].slice(0, 200));
-  }, []);
-  const remove = useCallback((id: string) => write(read().filter((b) => b.id !== id)), []);
-  const toggle = useCallback((doc: Doc) => (read().some((b) => b.id === doc.id) ? remove(doc.id) : add(doc)), [add, remove]);
-  const clear = useCallback(() => write([]), []);
-  return { list, has, add, remove, toggle, clear };
+    if (!isMember) { gate.open('saved'); return; }
+    const item = snapshot(doc);
+    qc.setQueryData<Bookmark[]>(savedKey, (cur = []) => [item, ...cur.filter((b) => b.id !== item.id)]);
+    void account.save(item.id, item).catch(() => qc.invalidateQueries({ queryKey: savedKey }));
+  }, [isMember, qc]);
+  const remove = useCallback((id: string) => {
+    if (!isMember) return;
+    qc.setQueryData<Bookmark[]>(savedKey, (cur = []) => cur.filter((b) => b.id !== id));
+    void account.unsave(id).catch(() => qc.invalidateQueries({ queryKey: savedKey }));
+  }, [isMember, qc]);
+  const toggle = useCallback((doc: Doc) => (list.some((b) => b.id === doc.id) ? remove(doc.id) : add(doc)), [list, add, remove]);
+  const clear = useCallback(() => { for (const b of list) remove(b.id); }, [list, remove]);
+  return { list, has, add, remove, toggle, clear, isMember };
 }

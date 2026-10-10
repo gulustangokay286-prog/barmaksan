@@ -30,7 +30,7 @@
   font-family: var(--font-display);
   font-size: 28px;
   line-height: 32px;
-  font-weight: 680;
+  font-weight: 580;
   letter-spacing: -0.022em;
 }
 .loginLead {
@@ -99,7 +99,7 @@
 }
 .topTitle {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 540;
 }
 .topRight {
   display: flex;
@@ -153,7 +153,7 @@
   padding: 0 10px;
   border-radius: 8px;
   font-size: 14px;
-  font-weight: 520;
+  font-weight: 460;
   color: var(--side-ink);
   transition: color 90ms linear;
 }
@@ -179,7 +179,7 @@
   background: var(--on-bar);
   color: #161618;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 540;
   transition: opacity var(--t-fast), transform 120ms var(--ease-out);
 }
 .uploadBtn:hover {
@@ -217,7 +217,7 @@
   font-family: var(--font-display);
   font-size: 30px;
   line-height: 34px;
-  font-weight: 680;
+  font-weight: 580;
   letter-spacing: -0.024em;
 }
 .pageLead {
@@ -245,7 +245,7 @@
   padding: 0 16px;
   border-radius: 9px;
   font-size: 14px;
-  font-weight: 560;
+  font-weight: 500;
   white-space: nowrap;
   transition: opacity var(--t-fast), background-color var(--t-fast), transform 120ms var(--ease-out);
 }
@@ -286,7 +286,7 @@
   padding: 0 8px;
   border-radius: 7px;
   font-size: 13.5px;
-  font-weight: 540;
+  font-weight: 500;
   color: var(--ink-2);
   white-space: nowrap;
   transition: color var(--t-fast), background-color var(--t-fast);
@@ -304,7 +304,7 @@
 }
 .field > span {
   font-size: 13px;
-  font-weight: 560;
+  font-weight: 500;
   color: var(--ink-2);
 }
 .field input,
@@ -389,7 +389,7 @@
   font-family: var(--font-display);
   font-size: 30px;
   line-height: 34px;
-  font-weight: 680;
+  font-weight: 580;
   letter-spacing: -0.024em;
   font-variant-numeric: tabular-nums;
 }
@@ -439,7 +439,7 @@
 }
 .cardHead h2 {
   font-size: 16px;
-  font-weight: 650;
+  font-weight: 580;
   letter-spacing: -0.01em;
 }
 .cardLead {
@@ -533,7 +533,7 @@
   gap: 8px;
   min-width: 0;
   font-size: 14px;
-  font-weight: 560;
+  font-weight: 500;
   color: var(--ink);
 }
 .activityTitle a,
@@ -550,7 +550,7 @@
 .versionChip {
   flex: none;
   font-size: 12.5px;
-  font-weight: 500;
+  font-weight: 460;
   color: var(--ink-3);
 }
 .activityMeta {
@@ -572,7 +572,7 @@
 .dayHead {
   margin-bottom: 4px;
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 580;
 }
 .skelList {
   display: flex;
@@ -651,7 +651,7 @@
   padding: 10px 8px;
   border-bottom: 1px solid var(--line);
   font-size: 12.5px;
-  font-weight: 500;
+  font-weight: 460;
   color: var(--ink-3);
 }
 .row {
@@ -722,7 +722,7 @@
 }
 .bulkCount {
   margin-right: 8px;
-  font-weight: 600;
+  font-weight: 540;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -736,7 +736,7 @@
   padding: 0 14px;
   border-radius: 9px;
   font-size: 14px;
-  font-weight: 560;
+  font-weight: 500;
   white-space: nowrap;
   transition: background-color var(--t-fast), color var(--t-fast);
 }
@@ -778,7 +778,7 @@
 }
 .docTitle {
   font-size: 14px;
-  font-weight: 560;
+  font-weight: 500;
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
@@ -846,7 +846,7 @@
   top: 0;
   height: 56px;
   background: var(--surface);
-  font-weight: 500;
+  font-weight: 460;
 }
 .matrix tbody tr:last-child td {
   border-bottom: 0;
@@ -866,7 +866,7 @@
   gap: 1px;
 }
 .matrixMachine a {
-  font-weight: 560;
+  font-weight: 500;
   color: var(--ink);
 }
 .matrixMachine a:hover {
@@ -880,7 +880,7 @@
 .matrixType {
   display: block;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 540;
   color: var(--ink);
 }
 .matrixTotal {
@@ -918,7 +918,7 @@
   color: var(--ink-3);
 }
 .legend b {
-  font-weight: 600;
+  font-weight: 540;
   color: var(--ink-2);
 }
 
@@ -944,7 +944,7 @@
 }
 .folderName {
   font-size: 14px;
-  font-weight: 560;
+  font-weight: 500;
   color: var(--ink);
 }
 .folderEn {
@@ -987,7 +987,7 @@
 .dialogTitle {
   padding: 20px 22px 4px;
   font-size: 18px;
-  font-weight: 650;
+  font-weight: 580;
   letter-spacing: -0.012em;
 }
 .dialogBody {
@@ -1021,7 +1021,7 @@
   background: var(--bar-bg-solid);
   box-shadow: var(--shadow-float);
   font-size: 13.5px;
-  font-weight: 540;
+  font-weight: 500;
   color: var(--on-bar);
 }
 .toast svg {
@@ -1073,7 +1073,7 @@
 .danger[data-armed],
 .textBtn[data-armed] {
   color: var(--danger);
-  font-weight: 600;
+  font-weight: 540;
 }
 .textBtn {
   display: inline-flex;
@@ -1089,7 +1089,7 @@
   display: block;
   margin: 16px 0 8px;
   font-size: 13px;
-  font-weight: 560;
+  font-weight: 500;
   color: var(--ink-2);
 }
 .emptyNote {
@@ -1148,7 +1148,7 @@ a.stat:active {
   gap: 7px;
   height: 40px;
   font-size: 14px;
-  font-weight: 560;
+  font-weight: 500;
   color: var(--ink-3);
   transition: color var(--t-fast);
 }
@@ -1224,7 +1224,7 @@ button.docTitle {
   font-family: var(--font-display);
   font-size: 21px;
   line-height: 26px;
-  font-weight: 660;
+  font-weight: 580;
   letter-spacing: -0.016em;
   text-wrap: balance;
 }
@@ -1268,7 +1268,7 @@ button.docTitle {
 }
 .sectionHead h3 {
   font-size: 15px;
-  font-weight: 650;
+  font-weight: 580;
   letter-spacing: -0.008em;
 }
 .sectionCount {
@@ -1295,7 +1295,7 @@ button.docTitle {
 }
 .docHeroFile {
   font-size: 14px;
-  font-weight: 560;
+  font-weight: 500;
   word-break: break-word;
 }
 .docHeroMeta {
@@ -1312,7 +1312,7 @@ button.docTitle {
 }
 .docHeroLinks a,
 .docHeroLinks button {
-  font-weight: 560;
+  font-weight: 500;
   color: var(--ink-2);
   transition: color var(--t-fast);
 }
@@ -1330,19 +1330,20 @@ button.docTitle {
 }
 .versionList li {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-columns: 78px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   padding: 10px 0;
   border-bottom: 1px solid var(--line);
 }
 .vNo {
+  white-space: nowrap;
   font-size: 14px;
   color: var(--ink-3);
   font-variant-numeric: tabular-nums;
 }
 .versionList li[data-current] .vNo {
-  font-weight: 650;
+  font-weight: 580;
   color: var(--ink);
 }
 .vBody {
@@ -1418,7 +1419,7 @@ button.docTitle {
 .machineName {
   font-size: 14px;
   line-height: 19px;
-  font-weight: 600;
+  font-weight: 540;
   color: var(--ink);
   text-wrap: balance;
 }
@@ -1573,7 +1574,7 @@ button.folderName:hover {
   text-underline-offset: 3px;
 }
 .folderRow[data-kind='section'] .folderName {
-  font-weight: 650;
+  font-weight: 580;
 }
 .folderActions {
   display: flex;
@@ -1603,7 +1604,7 @@ button.folderName:hover {
   border-radius: 10px;
   box-shadow: 0 0 0 1px var(--line-strong);
   font-size: 14px;
-  font-weight: 540;
+  font-weight: 500;
   color: var(--ink-2);
   transition: box-shadow var(--t-fast), color var(--t-fast);
 }
@@ -1701,7 +1702,7 @@ button.folderName:hover {
 }
 .reName {
   font-size: 14px;
-  font-weight: 560;
+  font-weight: 500;
 }
 .reSource {
   font-size: 12.5px;
@@ -1768,7 +1769,7 @@ button.folderName:hover {
   border-top: 1px solid var(--line-strong);
   border-bottom: 1px solid var(--line);
   font-size: 12.5px;
-  font-weight: 500;
+  font-weight: 460;
   color: var(--ink-3);
 }
 .typeList {
@@ -1803,7 +1804,7 @@ button.folderName:hover {
 .typeShort {
   margin-left: 8px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 460;
   color: var(--ink-3);
 }
 .iconGrid {
@@ -1859,7 +1860,7 @@ button.folderName:hover {
   border-radius: 10px;
   background: var(--fill);
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 580;
   color: var(--ink-2);
 }
 
@@ -1977,7 +1978,7 @@ button.folderName:hover {
 .sidebar { background: var(--surface); border-color: var(--line); }
 .navLink { height: 42px; padding-inline: 12px; color: var(--ink-2); border-radius: 10px; }
 .navLink:hover { color: var(--ink); background: var(--fill-hover); }
-.navLink[aria-current='page'] { color: var(--ink); background: var(--fill); font-weight: 650; }
+.navLink[aria-current='page'] { color: var(--ink); background: var(--fill); font-weight: 580; }
 .navGroup + .navGroup, .sideFoot { border-color: var(--line); }
 .uploadBtn { background: var(--ink); color: var(--ink-inverse); height: 44px; }
 .page { max-width: 1320px; }
@@ -2001,9 +2002,9 @@ button.folderName:hover {
 .sheetFoot .danger { font-size: 12.5px; }
 .sheetBody [hidden] { display: none !important; }
 .editorNav { position: sticky; top: 0; z-index: 2; display: flex; gap: 5px; padding: 14px 0; margin-bottom: 6px; background: var(--surface); border-bottom: 1px solid var(--line); overflow-x: auto; }
-.editorTab { display: flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 13px; border-radius: 9px; color: var(--ink-3); font-size: 13px; font-weight: 550; white-space: nowrap; }
+.editorTab { display: flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 13px; border-radius: 9px; color: var(--ink-3); font-size: 13px; font-weight: 500; white-space: nowrap; }
 .editorTab:hover { color: var(--ink); background: var(--fill-hover); }
-.editorTab[aria-pressed='true'] { color: var(--ink); background: var(--fill); font-weight: 650; }
+.editorTab[aria-pressed='true'] { color: var(--ink); background: var(--fill); font-weight: 580; }
 .editorTab > span { color: var(--ink-3); font-size: 11px; }
 .sheet[data-wide] .sectionHead h3 { font-size: 18px; }
 .sheet[data-wide] .form { gap: 20px; }

@@ -1,60 +1,226 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { useLocation } from 'react-router';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
 import { Icon } from './Icon';
 import { DateStamp } from './DateStamp';
 import { CollapsibleFolder } from './CollapsibleFolder';
 import { useI18n } from '../lib/i18n';
 import { useUi } from '../lib/ui';
+import { useViewportActive } from '../lib/viewport';
 import { Link } from '../lib/link';
 import { type Doc, type FileInfo, type MachineProfile, type MaintenanceCategory, type TechnicalTable, pdfPageLink } from '../lib/api';
 import s from './MachineContent.module.css';
 
+// ── Makine galerisi ─────────────────────────────────────────────────────────
+// Ana sayfadaki hero'nun dili: etkin görsel yavaşça yakınlaşıp kayar (Ken Burns). Geçişte yeni
+// görsel geldiği yönden bir perde gibi açılır, içindeki fotoğraf yaylı (hafif zıplayan) bir
+// yaklaşmayla oturur; giden görsel paralaksla geri çekilir. Görsel çözülmeden (decode) geçiş
+// başlamaz: yarım yüklenmiş kare ya da köşede beyaz parlama olmaz. Yalnızca transform, opacity
+// ve clip-path; bulanıklık filtresi yok. Otomatik ilerleme, oynat düğmesindeki halkanın kendi
+// animasyonuna bağlı: halka dolunca sıradaki görsele geçilir, durunca galeri de durur.
+
+const GALLERY_MS = 5200;
+const decoded = new Map<string, Promise<void>>();
+/** Görseli indirip çözer; aynı adres için tek söz (promise). */
+function decodeImage(src: string) {
+  let ready = decoded.get(src);
+  if (!ready) {
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = src;
+    ready = img.decode().catch(() => undefined);
+    decoded.set(src, ready);
+  }
+  return ready;
+}
+const sourceOf = (file: FileInfo) => (file.kind === 'pdf' ? pdfPageLink(file) : file.preview ?? file.thumb ?? file.raw);
+const isWide = (file?: FileInfo | null) => !!(file?.width && file.height && file.width / file.height > 1.5);
+const EASE_SHEET: [number, number, number, number] = [0.32, 0.72, 0, 1];
+
+const slideVariants = {
+  enter: (d: number) => ({ clipPath: d > 0 ? 'inset(0% 0% 0% 100% round 18px)' : 'inset(0% 100% 0% 0% round 18px)', zIndex: 2 }),
+  center: { clipPath: 'inset(0% 0% 0% 0% round 18px)', zIndex: 2, transition: { duration: 0.78, ease: EASE_SHEET } },
+  exit: { zIndex: 1, transition: { duration: 0.78 } },
+};
+const imageVariants = {
+  enter: (d: number) => ({ x: `${d * 26}%`, scale: 1.16, opacity: 1 }),
+  center: { x: '0%', scale: 1, opacity: 1, transition: { type: 'spring' as const, bounce: 0.34, duration: 0.95 } },
+  exit: (d: number) => ({ x: `${d * -18}%`, scale: 0.94, opacity: 0.45, transition: { duration: 0.78, ease: EASE_SHEET } }),
+};
+const fadeVariants = {
+  enter: { opacity: 0 },
+  center: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.2 } },
+};
+
 export function MachineGallery({ photos, cover, name }: { photos: Doc[]; cover: FileInfo | null; name: string }) {
   const { lang } = useI18n();
+  const tr = lang === 'tr';
   const { lightbox, setLightbox } = useUi();
   const reduce = useReducedMotion();
-  const [index, setIndex] = useState(0);
-  const [direction, setDirection] = useState(1);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const thumbsRef = useRef<HTMLDivElement>(null);
+  const inView = useViewportActive(rootRef);
+  const [{ index, dir }, setShown] = useState({ index: 0, dir: 1 });
   const [playing, setPlaying] = useState(true);
-  const dragged = useRef(false);
+  const [hold, setHold] = useState(false);
+  const ticket = useRef(0);
+  const drag = useRef<{ x: number; t: number; moved: boolean } | null>(null);
+  const dragX = useMotionValue(0);
+  const suppressClick = useRef(false);
   const count = photos.length;
-  const active = index % Math.max(count, 1);
+  const active = count ? index % count : 0;
   const current = photos[active];
   const file = current ? current.current?.file : cover;
-  const go = (delta: number) => { if (count < 2) return; setDirection(delta > 0 ? 1 : -1); setIndex((i) => (i + delta + count) % count); };
-  const source = file?.kind === 'pdf' ? pdfPageLink(file) : file?.preview ?? file?.thumb ?? file?.raw;
+  const source = file ? sourceOf(file) : null;
+  // Sahne oranı galerinin çoğunluğundan: geniş render'lar kırpılmadan tam oturur, sahne zıplamaz.
+  const wide = count ? photos.filter((d) => isWide(d.current?.file)).length * 2 > count : isWide(cover);
+
+  const show = (target: number, d: number) => {
+    if (count < 2) return;
+    const next = ((target % count) + count) % count;
+    const f = photos[next]?.current?.file;
+    const id = ++ticket.current;
+    const commit = () => { if (id === ticket.current) setShown({ index: next, dir: d }); };
+    if (f) void decodeImage(sourceOf(f)).then(commit); else commit();
+  };
+  const step = (d: number) => show(active + d, d);
+
+  // Komşular önceden çözülür: oklarla ya da kaydırarak geçişte bekleme olmaz.
   useEffect(() => {
-    const next = photos[(index + 1) % Math.max(count, 1)]?.current?.file;
-    if (!next) return;
-    const preload = new Image(); preload.src = next.kind === 'pdf' ? pdfPageLink(next) : next.preview ?? next.thumb ?? next.raw;
-  }, [index, photos, count]);
+    if (count < 2) return;
+    for (const d of [1, -1]) {
+      const f = photos[(active + d + count) % count]?.current?.file;
+      if (f) void decodeImage(sourceOf(f));
+    }
+  }, [active, photos, count]);
+
+  // Etkin küçük resim şeridin içinde görünür kalsın (sayfa kaymadan).
   useEffect(() => {
-    if (count < 2 || !playing || lightbox) return;
-    const timer = window.setInterval(() => { if (!document.hidden) { setDirection(1); setIndex((i) => (i + 1) % count); } }, 4000);
-    return () => window.clearInterval(timer);
-  }, [count, playing, lightbox]);
-  return <div className={s.gallery}>
-    <button className={s.stage} data-panorama={file?.width && file.height && file.width / file.height > 1.5 || undefined} data-media-id={current?.id} disabled={!current || !file} onPointerDown={() => { dragged.current = false; }} onClick={() => { if (dragged.current || !current) return; setLightbox({ items: photos, index: active }); }} aria-label={lang === 'tr' ? `${name}: galeriyi aç` : `${name}: open gallery`}>
-      <AnimatePresence initial={false} custom={direction} mode="popLayout">
-        {file && source ? <motion.img key={`${current?.id ?? 'cover'}:${file.cacheKey}`} src={source} alt={current ? (lang === 'tr' ? current.title.tr : current.title.en || current.title.tr) : name} decoding="async" draggable={false} custom={direction}
-          variants={{
-            enter: (dir: number) => ({ opacity: 0, x: reduce ? 0 : dir * 70, scale: reduce ? 1 : .94, rotateY: reduce ? 0 : dir * -7, filter: reduce ? 'none' : 'blur(10px)' }),
-            center: { opacity: 1, x: 0, scale: 1, rotateY: 0, filter: 'blur(0px)' },
-            exit: (dir: number) => ({ opacity: 0, x: reduce ? 0 : dir * -70, scale: reduce ? 1 : 1.04, rotateY: reduce ? 0 : dir * 7, filter: reduce ? 'none' : 'blur(10px)' }),
-          }}
-          transition={{ duration: reduce ? .1 : .48, ease: [.22, 1, .36, 1] }}
-          initial="enter" animate="center" exit="exit"
-          drag={count > 1 ? 'x' : false} dragConstraints={{ left: 0, right: 0 }} dragElastic={.25} dragSnapToOrigin onDragEnd={(_, info) => { dragged.current = Math.abs(info.offset.x) > 7; if (Math.abs(info.offset.x) > 40 || Math.abs(info.velocity.x) > 450) go(info.offset.x < 0 ? 1 : -1); }} /> : <Icon name="parts" size={44} />}
-      </AnimatePresence>
+    const strip = thumbsRef.current;
+    const el = strip?.children[active] as HTMLElement | undefined;
+    if (!strip || !el) return;
+    const left = el.offsetLeft - (strip.clientWidth - el.offsetWidth) / 2;
+    strip.scrollTo({ left, behavior: reduce ? 'auto' : 'smooth' });
+  }, [active, reduce]);
+
+  const running = playing && !hold && !lightbox && inView && count > 1;
+
+  // Sürükleme: parmağı dirençle izler, bırakınca hız ve mesafeye göre geçer ya da yerine yaylanır.
+  const onPointerDown = (e: PointerEvent<HTMLButtonElement>) => {
+    if (count < 2 || e.button !== 0) return;
+    drag.current = { x: e.clientX, t: performance.now(), moved: false };
+  };
+  const onPointerMove = (e: PointerEvent<HTMLButtonElement>) => {
+    const d = drag.current;
+    if (!d) return;
+    const dx = e.clientX - d.x;
+    if (!d.moved && Math.abs(dx) > 8) { d.moved = true; e.currentTarget.setPointerCapture(e.pointerId); }
+    if (d.moved) dragX.set(dx * 0.42);
+  };
+  const onPointerUp = (e: PointerEvent<HTMLButtonElement>) => {
+    const d = drag.current;
+    drag.current = null;
+    if (!d?.moved) return;
+    suppressClick.current = true;
+    window.setTimeout(() => { suppressClick.current = false; }, 60);
+    const dx = e.clientX - d.x;
+    const v = dx / Math.max(16, performance.now() - d.t);
+    if (Math.abs(dx) > 56 || Math.abs(v) > 0.45) step(dx < 0 ? 1 : -1);
+    animate(dragX, 0, { type: 'spring', bounce: 0.3, duration: 0.6 });
+  };
+
+  const alt = current ? (tr ? current.title.tr : current.title.en || current.title.tr) : name;
+  const motionless = !!reduce;
+  return <div ref={rootRef} className={s.gallery}>
+    <div className={s.frame}>
+    <button
+      className={s.stage}
+      data-wide={wide || undefined}
+      data-media-id={current?.id}
+      disabled={!current || !file}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      onPointerEnter={(e) => { if (e.pointerType === 'mouse') setHold(true); }}
+      onPointerLeave={(e) => { if (e.pointerType === 'mouse') setHold(false); }}
+      onClick={() => { if (suppressClick.current || !current) return; setLightbox({ items: photos, index: active }); }}
+      aria-label={tr ? `${name}: galeriyi aç` : `${name}: open gallery`}
+    >
+      <motion.span className={s.track} style={{ x: dragX }}>
+        <AnimatePresence initial={false} custom={dir}>
+          {file && source ? (
+            <motion.span
+              key={`${current?.id ?? 'cover'}:${file.cacheKey}:${source}`}
+              className={s.slide}
+              data-fit={isWide(file) ? 'cover' : 'contain'}
+              custom={dir}
+              variants={motionless ? fadeVariants : slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+            >
+              <span className={s.drift} data-run={!motionless && running || undefined}>
+                <motion.img
+                  src={source}
+                  alt={alt}
+                  draggable={false}
+                  custom={dir}
+                  variants={motionless ? undefined : imageVariants}
+                />
+              </span>
+            </motion.span>
+          ) : <span className={s.placeholder}><Icon name="parts" size={44} /></span>}
+        </AnimatePresence>
+      </motion.span>
     </button>
+    {count > 1 && <button
+      className={s.playChip}
+      onClick={() => setPlaying((p) => !p)}
+      aria-label={playing ? (tr ? 'Galeriyi duraklat' : 'Pause gallery') : (tr ? 'Galeriyi oynat' : 'Play gallery')}
+      aria-pressed={playing}
+    >
+      {playing && <svg className={s.ring} viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" pathLength={1} />
+        <circle
+          key={`${active}:${dir}`}
+          className={s.ringFill}
+          cx="20" cy="20" r="17"
+          pathLength={1}
+          data-run={running || undefined}
+          style={{ animationDuration: `${GALLERY_MS}ms` }}
+          onAnimationEnd={() => step(1)}
+        />
+      </svg>}
+      <Icon name={playing ? 'pause' : 'play'} size={14} strokeWidth={1.9} />
+    </button>}
+    </div>
     {count > 1 && <div className={s.galleryControls}>
-      <button onClick={() => go(-1)} aria-label={lang === 'tr' ? 'Önceki görsel' : 'Previous image'}><Icon name="chevronLeft" size={18} /></button>
-      <span aria-live="off">{active + 1} / {count}</span>
-      <button onClick={() => setPlaying((p) => !p)} aria-label={playing ? (lang === 'tr' ? 'Galeriyi duraklat' : 'Pause gallery') : (lang === 'tr' ? 'Galeriyi oynat' : 'Play gallery')} aria-pressed={playing}><Icon name={playing ? 'pause' : 'play'} size={15} /></button>
-      <button onClick={() => go(1)} aria-label={lang === 'tr' ? 'Sonraki görsel' : 'Next image'}><Icon name="chevronRight" size={18} /></button>
+      <button className={s.ctl} data-nudge="left" onClick={() => step(-1)} aria-label={tr ? 'Önceki görsel' : 'Previous image'}><Icon name="chevronLeft" size={18} /></button>
+      <span className={s.counter} aria-live="off">
+        <AnimatePresence mode="popLayout" initial={false} custom={dir}>
+          <motion.span
+            key={active}
+            className="tabular"
+            custom={dir}
+            variants={{ enter: (d: number) => ({ y: d * 12, opacity: 0 }), center: { y: 0, opacity: 1 }, exit: (d: number) => ({ y: d * -12, opacity: 0 }) }}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ type: 'spring', bounce: 0.3, duration: 0.5 }}
+          >{active + 1}</motion.span>
+        </AnimatePresence>
+        <span className={s.counterTotal}>/ {count}</span>
+      </span>
+      <button className={s.ctl} data-nudge="right" onClick={() => step(1)} aria-label={tr ? 'Sonraki görsel' : 'Next image'}><Icon name="chevronRight" size={18} /></button>
     </div>}
-    {count > 1 && <div className={s.thumbs}>{photos.map((d, i) => <button key={d.id} data-active={i === active || undefined} onClick={() => { setDirection(i >= active ? 1 : -1); setIndex(i); }} aria-label={`${lang === 'tr' ? 'Görsel' : 'Image'} ${i + 1}`} aria-pressed={i === active}><img key={d.current?.file?.cacheKey} src={d.current?.file?.thumb ?? d.current?.file?.preview ?? ''} alt="" /></button>)}</div>}
+    {count > 1 && <div ref={thumbsRef} className={s.thumbs}>{photos.map((d, i) => (
+      <button key={d.id} data-active={i === active || undefined} onClick={() => i !== active && show(i, i > active ? 1 : -1)} onPointerEnter={() => { const f = d.current?.file; if (f) void decodeImage(sourceOf(f)); }} aria-label={`${tr ? 'Görsel' : 'Image'} ${i + 1}`} aria-pressed={i === active}>
+        <img key={d.current?.file?.cacheKey} src={d.current?.file?.thumb ?? d.current?.file?.preview ?? ''} alt="" loading="lazy" draggable={false} />
+        {i === active && <motion.span layoutId={`gallery-thumb-${name}`} className={s.thumbRing} transition={{ type: 'spring', bounce: 0.32, duration: 0.55 }} />}
+      </button>
+    ))}</div>}
   </div>;
 }
 

@@ -33,3 +33,4 @@ export function useViewportActive(ref: RefObject<HTMLElement | null>) {
   }, [ref]);
   return active;
 }
+

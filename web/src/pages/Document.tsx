@@ -14,7 +14,8 @@ import { useI18n } from '../lib/i18n';
 import { useDocTypes, usePageChrome, useUi } from '../lib/ui';
 import { docQuery } from '../lib/query';
 import { useBookmarks } from '../lib/bookmarks';
-import { formatDateTime, formatDuration, languageLabel, shortTitle } from '../lib/format';
+import { gate, signInHref, useSession } from '../lib/session';
+import { formatDateTime, formatDuration, languageLabel, shortTitle, versionLabel } from '../lib/format';
 import { useLargeTitle } from '../lib/useLargeTitle';
 import NotFound from './NotFound';
 import p from './pages.module.css';
@@ -33,14 +34,15 @@ export default function DocumentPage() {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const ready = useRouteReady();
   const { data: d, isLoading, error } = useQuery(docQuery(id));
+  const session = useSession();
   const back = d?.crumbs.at(-1);
   const vParam = Number(params.get('v'));
   const viewingOld = !!d?.versions.some((v) => v.no === vParam && v.no !== d.current?.no);
   const hrefOf = (c: { kind: string; slug: string }) => (c.kind === 'machine' ? `/m/${c.slug}` : `/k/${c.slug}`);
   usePageChrome(
-    d ? `${pick(d.title)}${viewingOld ? ` · v${vParam}` : ''}` : null,
+    d ? `${pick(d.title)}${viewingOld ? ` · ${versionLabel(vParam, lang)}` : ''}` : null,
     back ? { to: hrefOf(back), label: pick(back.name) } : null,
-    d ? [...d.crumbs.map((c) => ({ label: pick(c.name), to: hrefOf(c) })), ...(viewingOld && back?.kind === 'machine' ? [{ label: lang === 'tr' ? 'Eski sürümler' : 'Older versions', to: `${hrefOf(back)}#eski-surumler` }] : [])] : null,
+    d ? [...d.crumbs.map((c) => ({ label: pick(c.name), to: hrefOf(c) })), ...(viewingOld && back?.kind === 'machine' ? [{ label: lang === 'tr' ? 'Eski sürümler' : 'Older versions', to: `${hrefOf(back)}#belgeler` }] : [])] : null,
   );
   useLargeTitle(titleRef, [d?.id, ready]);
 
@@ -54,12 +56,14 @@ export default function DocumentPage() {
   const viewing = d.versions.find((v) => v.no === vParam) ?? d.versions[0];
   const isCurrent = viewing?.no === d.current?.no;
   const type = types.get(d.type);
+  // Belge türündeki içerik (PDF vb.) misafir ya da üye oturumu ister; görsel/video herkese açık.
+  const locked = type?.media === 'document' && !session.isViewer && !session.loading;
 
   return (
     <div className={`${p.page} fade-in`}>
       <div className={p.docLayout}>
         <div className={p.viewer}>
-          {viewing?.file && <StableViewer key={d.id} file={viewing.file} doc={d} />}
+          {locked ? <LockedViewer d={d} /> : viewing?.file && <StableViewer key={d.id} file={viewing.file} doc={d} />}
         </div>
 
         <aside className={p.panel}>
@@ -74,7 +78,7 @@ export default function DocumentPage() {
             {viewing && (
               <p className={dc.meta}>
                 {[
-                  type?.versioned ? `v${viewing.no}` : null,
+                  type?.versioned ? versionLabel(viewing.no, lang) : null,
                   <DateStamp key="date" iso={viewing.createdAt} author={viewing.author} format="long" />,
                   viewing.file?.ext.toUpperCase(),
                   languageLabel(d.language),
@@ -85,7 +89,7 @@ export default function DocumentPage() {
 
           {!isCurrent && d.current && (
             <p className={dc.old}>
-              {lang === 'tr' ? `Eski bir sürüme (v${viewing?.no}) bakıyorsunuz.` : `You are viewing an older version (v${viewing?.no}).`}{' '}
+              {lang === 'tr' ? `Eski bir sürüme (${versionLabel(viewing?.no ?? 0, lang)}) bakıyorsunuz.` : `You are viewing an older version (${versionLabel(viewing?.no ?? 0, lang)}).`}{' '}
               <Link to={`/dokuman/${d.id}`} preventScrollReset replace>{t('goCurrent')}</Link>
             </p>
           )}
@@ -96,6 +100,7 @@ export default function DocumentPage() {
             <section id="gecmis" style={{ scrollMarginTop: 80 }}>
               <h2 className={dc.h2}>{t('versionHistory')}</h2>
               <Timeline d={d} viewing={viewing?.no} />
+              <HiddenVersions d={d} />
             </section>
           )}
 
@@ -134,6 +139,37 @@ function PanelActions({ d, viewing, isCurrent }: { d: DocDetail; viewing?: Versi
   );
 }
 
+function HiddenVersions({ d }: { d: DocDetail }) {
+  const { lang } = useI18n();
+  if (!d.hiddenVersions) return null;
+  const tr = lang === 'tr';
+  return (
+    <p className={dc.hidden}>
+      <Icon name="lock" size={14} strokeWidth={1.7} />
+      <span>{tr ? `${d.hiddenVersions} eski sürüm üyelere açık.` : `${d.hiddenVersions} older version${d.hiddenVersions > 1 ? 's are' : ' is'} available to members.`}</span>
+      <Link to={signInHref('kayit', `/dokuman/${d.id}#gecmis`)}>{tr ? 'Hesap oluştur' : 'Create account'}</Link>
+    </p>
+  );
+}
+
+/** Kilitli belge: küçük resim bulanık bir önizleme olur; tek düğme kapıyı açar. */
+function LockedViewer({ d }: { d: DocDetail }) {
+  const { lang } = useI18n();
+  const tr = lang === 'tr';
+  const thumb = d.current?.file?.thumb;
+  return (
+    <div className={dc.locked}>
+      {thumb && <div className={dc.lockedBackdrop} aria-hidden="true"><img className={dc.lockedPreview} src={thumb} alt="" /></div>}
+      <div className={dc.lockedCard}>
+        <span className={dc.lockedBadge}><Icon name="lock" size={22} strokeWidth={1.5} /></span>
+        <p className={dc.lockedTitle}>{tr ? 'Belgeyi görüntülemek için' : 'To view this document'}</p>
+        <p className={dc.lockedLead}>{tr ? 'Giriş yapın ya da e-postanızı bırakıp misafir olarak devam edin.' : 'Sign in, or leave your e-mail to continue as a guest.'}</p>
+        <button className={dc.lockedButton} onClick={() => gate.open('document')}>{tr ? 'Belgeyi aç' : 'Open document'}</button>
+      </div>
+    </div>
+  );
+}
+
 function Timeline({ d, viewing }: { d: DocDetail; viewing?: number }) {
   const { t, lang } = useI18n();
   const { hash } = useLocation();
@@ -148,7 +184,7 @@ function Timeline({ d, viewing }: { d: DocDetail; viewing?: number }) {
     const current = v.no === d.current?.no;
     return (
       <li key={v.no} className={dc.version} data-current={current || undefined} data-viewing={v.no === viewing || undefined}>
-        <span className={dc.vNo}>v{v.no}</span>
+        <span className={dc.vNo}>{versionLabel(v.no, lang)}</span>
         <span className={dc.vBody}>
           <span className={dc.vNote}>{v.note || (lang === 'tr' ? 'İlk yayın' : 'First release')}</span>
           <span className={dc.vMeta}><DateStamp iso={v.createdAt} author={v.author} format="short" />{v.author ? ` · ${v.author}` : ''}</span>

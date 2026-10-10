@@ -3,52 +3,131 @@
  * Bölümler numaralı (01–04); her bölüm başlığı bir kilit noktasıdır ([data-settle]).
  */
 
-/* ── Giriş metni (sahnenin üstünde) ───────────────────────────────────────── */
+/* ── Giriş metni: sahnenin bütün alanı, sayfanın 12 sütunu ───────────────────
+ * Üstte ince şerit (son güncellenen belge + sayılar, altında kıl çizgi); sol altta başlık,
+ * açıklama ve iki düğme (1–6. sütun). Sağ altta carousel (Hero). Katman tıklama yutmaz;
+ * yalnızca şerit ve blok tıklanır. */
 
 .heroContent {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  max-width: 580px;
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: auto minmax(0, 1fr);
+  column-gap: var(--grid-gap);
+  min-height: 0;
   color: #fff;
+  pointer-events: none;
   will-change: transform, opacity;
+}
+.heroTop {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 32px;
+  min-width: 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+.heroMain {
+  grid-column: 1 / span 7;
+  grid-row: 2;
+  align-self: end;
+  min-width: 0;
+  max-width: 680px;
+}
+
+/* Son güncellenen: etiket + akan satır (belge adı, sürüm, zaman). */
+.ticker {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.tickerLabel {
+  flex: none;
+  color: rgba(255, 255, 255, 0.55);
+}
+.tickerWindow {
+  position: relative;
+  display: block;
+  min-width: 0;
+  height: 20px;
+  overflow: hidden;
+}
+.tickerItem {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.tickerLink {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  color: #fff;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 160ms var(--ease-out);
+}
+.tickerLink:hover {
+  text-decoration-color: rgba(255, 255, 255, 0.6);
+}
+.tickerLink:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+.tickerMeta {
+  flex: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-variant-numeric: tabular-nums;
 }
 .heroTitle {
   margin-top: 0;
   font-family: var(--font-display);
-  font-size: clamp(44px, 4.1vw, 60px);
-  line-height: 1.04;
+  font-size: clamp(50px, 5.5vw, 84px);
+  line-height: 1.02;
   white-space: normal;
   overflow-wrap: anywhere;
-  font-weight: 700;
-  letter-spacing: -0.037em;
+  font-weight: 580;
+  letter-spacing: -0.04em;
   color: #fff;
 }
 .heroLead {
-  margin-top: 16px;
+  margin-top: 36px;
   max-width: 56ch;
-  font-size: 16px;
-  line-height: 25px;
-  color: rgba(255, 255, 255, 0.78);
+  font-size: 18px;
+  line-height: 29px;
+  color: rgba(255, 255, 255, 0.76);
   text-wrap: pretty;
 }
 .heroLead b {
-  font-weight: 600;
+  font-weight: 540;
   color: #fff;
 }
-.heroSearchWrap {
-  width: 100%;
-  margin-top: 28px;
-}
 
-/* Sayılar: tek satır, sakin; arama çubuğunun köşe yuvarlaklığına göre hafifçe içeride. */
+/* Arama düğmesi: açıklamanın ilk satırının sonuna kadar uzanır (Home ölçer: --lead-line1). */
+.heroActions {
+  display: flex;
+  width: var(--lead-line1, max-content);
+  max-width: 100%;
+  margin-top: 52px;
+}
+/* Sayılar: üst şeridin sağında; sakin. */
 .heroStats {
   display: flex;
+  flex: none;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 4px 22px;
-  margin: 20px 0 0;
-  padding-left: 4px;
+  margin: 0;
 }
 .heroStats > div {
   display: flex;
@@ -60,16 +139,57 @@
   order: -1;
   font-size: 15px;
   line-height: 20px;
-  font-weight: 650;
+  font-weight: 580;
   color: #fff;
   font-variant-numeric: tabular-nums;
 }
 .heroStats dt {
   font-size: 14px;
   line-height: 20px;
-  color: rgba(255, 255, 255, 0.62);
+  color: rgba(255, 255, 255, 0.6);
 }
 
+@media (max-width: 1023px) {
+  .heroContent {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .heroMain {
+    grid-column: 1;
+  }
+  .heroTop {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .heroStats {
+    justify-content: flex-start;
+  }
+}
+@media (max-width: 767px) {
+  .heroContent {
+    grid-template-rows: auto 1fr;
+    will-change: auto;
+  }
+  .recentList {
+    perspective: none;
+  }
+  .heroMain {
+    align-self: start;
+    margin-top: 36px;
+  }
+  .ticker,
+  .tickerMeta {
+    display: none;
+  }
+  .heroLead {
+    margin-top: 22px;
+    font-size: 16px;
+    line-height: 25px;
+  }
+  .heroActions {
+    width: 100%;
+    margin-top: 24px;
+  }
+}
 /* ── İçerik sayfası: sahnenin üstüne kapanır ─────────────────────────────── */
 
 .sheet {
@@ -90,6 +210,11 @@
 }
 .section {
   scroll-margin-top: 28px;
+}
+/* Aşağıdaki bölümler ekran dışındayken dizilmez/çizilmez; son ölçülen boy tutulur. */
+.section[data-settle] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 760px;
 }
 .section + .section {
   margin-top: var(--section-gap);
@@ -117,12 +242,12 @@
   font-family: var(--font-display);
   font-size: 34px;
   line-height: 38px;
-  font-weight: 680;
+  font-weight: 580;
   letter-spacing: -0.028em;
 }
 .headCount {
   font-size: 18px;
-  font-weight: 500;
+  font-weight: 460;
   letter-spacing: 0;
   color: var(--ink-3);
   font-variant-numeric: tabular-nums;
@@ -144,7 +269,7 @@
   padding: 0 14px;
   border-radius: 10px;
   font-size: 14px;
-  font-weight: 560;
+  font-weight: 500;
   color: var(--ink);
   background: var(--fill-hover);
   transition: background-color var(--t-fast), transform 120ms var(--ease-out);
@@ -194,7 +319,7 @@
   font-family: var(--font-display);
   font-size: 40px;
   line-height: 40px;
-  font-weight: 680;
+  font-weight: 580;
   letter-spacing: -0.03em;
   color: var(--ink);
 }
@@ -237,7 +362,7 @@
 .recentTitle {
   font-size: 15.5px;
   line-height: 21px;
-  font-weight: 600;
+  font-weight: 540;
   letter-spacing: -0.01em;
   color: var(--ink);
   white-space: nowrap;
@@ -318,7 +443,7 @@
   padding: 0 12px 0 16px;
   border-radius: 0 8px 8px 0;
   font-size: 14.5px;
-  font-weight: 520;
+  font-weight: 460;
   text-align: left;
   color: var(--ink-2);
   transition: color var(--t-fast), background-color var(--t-fast);
@@ -328,7 +453,7 @@
 }
 .catLink[data-active] {
   color: var(--ink);
-  font-weight: 620;
+  font-weight: 540;
   background: var(--fill-hover);
 }
 .catLink[data-active]::before {
@@ -350,7 +475,7 @@
 }
 .catCount {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 460;
   color: var(--ink-3);
   font-variant-numeric: tabular-nums;
 }
@@ -374,7 +499,7 @@
 .catHead h3 {
   font-size: 20px;
   line-height: 26px;
-  font-weight: 640;
+  font-weight: 540;
   letter-spacing: -0.016em;
 }
 .catHead svg {
@@ -484,7 +609,7 @@
   gap: 6px;
   font-size: 17px;
   line-height: 22px;
-  font-weight: 640;
+  font-weight: 540;
   letter-spacing: -0.014em;
   color: var(--ink);
 }
@@ -589,7 +714,7 @@
 .tileName {
   font-size: 15px;
   line-height: 20px;
-  font-weight: 640;
+  font-weight: 540;
   letter-spacing: -0.01em;
 }
 .tile[data-large] .tileName {
@@ -715,9 +840,10 @@
   }
   .heroStats {
     margin-top: 16px;
-    gap: 4px 16px;
+    gap: 4px 12px;
   }
   .sheet {
+    margin-top: 0;
     padding: 40px 0 72px;
     border-radius: 22px 22px 0 0;
   }
@@ -761,6 +887,12 @@
     left: 10px;
     bottom: 10px;
     padding: 8px 11px;
+  }
+  .tileLabel,
+  .tilePlay {
+    background: rgba(16, 16, 18, 0.82);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }
 

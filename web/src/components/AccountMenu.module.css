@@ -1,0 +1,74 @@
+/* Üst bar koyu çerçevede durur: renkler --on-bar ailesinden. Menü açık zeminli kart. */
+.placeholder { display: inline-block; width: 34px; height: 34px; }
+.signIn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 14px 0 11px;
+  border-radius: 999px;
+  background: var(--bar-fill);
+  color: var(--on-bar);
+  font-size: 13.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 160ms var(--ease-out), transform 460ms var(--ease-spring);
+}
+.signIn:hover { background: var(--bar-fill-hover); }
+.signIn:active { transform: scale(0.95); }
+.wrap { position: relative; }
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #1d1d1f;
+  font-size: 13px;
+  font-weight: 540;
+  letter-spacing: 0.02em;
+  transition: transform 460ms var(--ease-spring), box-shadow 160ms var(--ease-out);
+}
+.avatar[data-guest] { background: var(--bar-fill-hover); color: var(--on-bar); }
+.avatar:hover { box-shadow: 0 0 0 3px var(--bar-fill); }
+.avatar:active { transform: scale(0.92); }
+.menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  padding: 6px;
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--line), 0 18px 48px rgba(0, 0, 0, 0.16);
+  transform-origin: 90% 0;
+}
+.who { display: flex; align-items: center; gap: 10px; padding: 10px 10px 12px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.big { display: grid; flex: none; place-items: center; width: 38px; height: 38px; border-radius: 999px; background: var(--fill); font-size: 14px; font-weight: 540; }
+.whoText { display: flex; flex-direction: column; min-width: 0; }
+.whoText strong { overflow: hidden; font-size: 14px; font-weight: 500; white-space: nowrap; text-overflow: ellipsis; }
+.whoText small { overflow: hidden; font-size: 12px; color: var(--ink-3); white-space: nowrap; text-overflow: ellipsis; }
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--ink);
+  text-align: left;
+  transition: background-color 140ms var(--ease-out);
+}
+.item:hover { background: var(--fill-hover); }
+.item svg { color: var(--ink-3); }
+@media (max-width: 767px) {
+  .signIn span { display: none; }
+  .signIn { width: 34px; padding: 0; justify-content: center; }
+}

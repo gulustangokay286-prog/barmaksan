@@ -6,7 +6,7 @@
   margin-bottom: 8px;
   font-size: 13px;
   line-height: 16px;
-  font-weight: 650;
+  font-weight: 580;
   color: var(--gold-ink);
 }
 .crumbs {
@@ -76,7 +76,7 @@
 }
 .sectionCount {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 460;
   letter-spacing: 0;
   color: var(--ink-3);
   font-variant-numeric: tabular-nums;

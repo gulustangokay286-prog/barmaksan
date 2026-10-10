@@ -1,7 +1,8 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { useLocation } from 'react-router';
-import { AnimatePresence, animate, motion, useDragControls, useMotionValue, useReducedMotion, useTransform, type MotionValue, type PanInfo } from 'motion/react';
+import { AnimatePresence, motion, useTransform } from 'motion/react';
 import { Icon } from './Icon';
+import { AccountMenu } from './AccountMenu';
 import { BrandLockup, Button } from './ui';
 import { SearchTrigger } from './SearchTrigger';
 import { topSearchReveal } from '../lib/reveal';
@@ -304,7 +305,7 @@ function LangMenu({ placement = 'down' }: { placement?: 'down' | 'up' }) {
         aria-label={lang === 'tr' ? 'Dil' : 'Language'}
         title={lang === 'tr' ? 'Dil' : 'Language'}
       >
-        <Icon name="translate" size={19} strokeWidth={1.5} />
+        <Icon name="translate" size={17} strokeWidth={1.5} />
         <span className={s.langCode}>{locale.toUpperCase()}</span>
       </button>
       <AnimatePresence>
@@ -400,14 +401,14 @@ function SidebarFoot() {
   );
 }
 
-// Panel sadece transform ile kayar; içerik genişliği tıklama anında bir kez değişir.
-const SIDEBAR_EASE = { duration: 0.22, ease: [0.22, 1, 0.36, 1] } as const;
-
-const Sidebar = memo(function Sidebar({ open, hidden }: { open: MotionValue<number>; hidden: boolean }) {
-  const x = useTransform(open, (v) => `${(v - 1) * 100}%`);
-  const visibility = useTransform(open, (v) => (v <= 0.001 ? 'hidden' : 'visible'));
+/*
+ * Masaüstü kenar çubuğu: içerikle aynı CSS grid'in ilk sütunu. Aç/kapa yalnızca o sütunun genişliğini
+ * değiştirir (0 ↔ 264px); panel ve içerik aynı düzen hesabında, ortak kenarı paylaşır: aralarında
+ * boşluk, çizgi ya da kopma olamaz. Panelin içi 264px sabit; sütun açıldıkça görünür (yeniden dizilmez).
+ */
+const Sidebar = memo(function Sidebar({ open }: { open: boolean }) {
   return (
-    <motion.aside id="desktop-sidebar" className={s.sidebar} style={{ x, visibility }} inert={hidden}>
+    <aside id="desktop-sidebar" className={s.sidebar} data-open={open || undefined} inert={!open} aria-hidden={!open || undefined}>
       <div className={s.sidebarInner}>
         <div className={s.sidebarScroll}>
           <PrimaryNav />
@@ -415,7 +416,7 @@ const Sidebar = memo(function Sidebar({ open, hidden }: { open: MotionValue<numb
         </div>
         <SidebarFoot />
       </div>
-    </motion.aside>
+    </aside>
   );
 });
 
@@ -473,17 +474,12 @@ function useCrumbs(): Crumb[] {
   }, [pathname, title, back, trail, t, pick, bySlug, byId]);
 }
 
-/** Ana sayfa: hero görünürken bugünün tarihi; aşağı inince "Bilgi Kütüphanesi". */
+/** Ana sayfa başlığı: barın ortasında; hero başlığı ekrandan çıkınca belirir. */
 function HomeTitle() {
   const { titleVisible } = useChromeState();
-  const { t, lang } = useI18n();
-  const today = useMemo(() => new Intl.DateTimeFormat(lang === 'tr' ? 'tr-TR' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date()), [lang]);
-  const label = titleVisible ? today : t('library');
-  return (
-    <span className={s.homeTitle}>
-      <span className={s.crumbCurrent} data-quiet={titleVisible || undefined}>{label}</span>
-    </span>
-  );
+  const { t } = useI18n();
+  // Hero'daki büyük başlık görünürken gizli; kaydırınca barın ortasında yükselerek belirir.
+  return <span className={s.homeTitle} data-hidden={titleVisible || undefined} aria-hidden={titleVisible || undefined}>{t('library')}</span>;
 }
 
 /** Geri: uygulama içinde geçmiş varsa bir önceki ekran, yoksa bir üst klasör. */
@@ -509,7 +505,7 @@ function Crumbs() {
   const { pathname } = useLocation();
   const ref = useRef<HTMLElement>(null);
   useEffect(() => { if (ref.current) ref.current.scrollLeft = ref.current.scrollWidth; }, [pathname, crumbs]);
-  if (pathname === '/') return <nav className={s.crumbs} aria-label="Konum"><HomeTitle /></nav>;
+  if (pathname === '/') return null;
   return (
     <nav ref={ref} className={s.crumbs} aria-label="Konum">
       <ol>
@@ -536,8 +532,9 @@ function Topbar({ expanded, onToggle, desktop }: { expanded: boolean; onToggle: 
   return (
     <header className={s.topbar} data-home={pathname === '/' || undefined}>
       <div className={s.brandArea}>
-        <button className={`${s.iconBtn} ${s.sidebarToggle}`} onClick={() => { setPlayed(true); onToggle(); }} aria-expanded={expanded} aria-controls={desktop ? 'desktop-sidebar' : 'mobile-sidebar'} aria-label={lang === 'tr' ? (expanded ? 'Kenar çubuğunu kapat' : 'Kenar çubuğunu aç') : (expanded ? 'Close sidebar' : 'Open sidebar')} title={lang === 'tr' ? (expanded ? 'Kenar çubuğunu kapat' : 'Kenar çubuğunu aç') : (expanded ? 'Close sidebar' : 'Open sidebar')}>
+        <button className={`${s.iconBtn} ${s.sidebarToggle}`} onClick={() => { setPlayed(true); onToggle(); }} aria-expanded={expanded} aria-controls={desktop ? 'desktop-sidebar' : 'mobile-sidebar'} aria-label={lang === 'tr' ? 'Menü' : 'Menu'} title={lang === 'tr' ? (expanded ? 'Kenar çubuğunu kapat' : 'Kenar çubuğunu aç') : (expanded ? 'Close sidebar' : 'Open sidebar')}>
           <MenuGlyph open={expanded} played={played} />
+          <span className={s.menuLabel} aria-hidden="true">{lang === 'tr' ? 'Menü' : 'Menu'}</span>
         </button>
         <Link to="/" className={s.brand} aria-label={t('library')}>
           <BrandLockup compact />
@@ -549,99 +546,224 @@ function Topbar({ expanded, onToggle, desktop }: { expanded: boolean; onToggle: 
           {pathname !== '/' && <span className={s.backDesk}><BackButton /></span>}
           <Crumbs />
         </div>
+        {/* Sağda tek sıra, hepsi 34px: arama · dil · tema · hesap. */}
         <div className={s.topRight}>
-          <div className={s.searchSlot}><SearchField /></div>
+          <div className={s.topSearch}><SearchField /></div>
           <button className={s.searchMobile} data-search-trigger="mobile" onClick={(e) => openSearch('', e.currentTarget)} aria-label={t('search')}>
             <Icon name="search" size={20} />
           </button>
-          <div className={s.hideSm}><ThemeToggle /></div>
           <div className={s.hideSm}><LangMenu /></div>
+          <div className={`${s.hideSm} ${s.themeCell}`}><ThemeToggle /></div>
+          <AccountMenu />
         </div>
       </div>
+      {/* Barın tamamına göre (ekranın tam ortası) konumlanır, içerik sütununa göre değil. */}
+      {pathname === '/' && <HomeTitle />}
     </header>
   );
 }
 
 // ── Mobil ───────────────────────────────────────────────────────────────────
 
+/**
+ * Mobil gezinme: üç sekme (Ana sayfa, Medya, Kaydedilenler) ve sağda menü düğmesi.
+ *
+ * Geçiş FLIP ile ve yalnızca transform/opacity'yle yapılır (Web Animations API → bileşik katman):
+ * sekmeler yeni düzene anında geçer, ikonlar ve hap eski yerlerinden yaylanarak kayar. Yeni sayfa
+ * aynı anda çizilirken ana iş parçacığı meşgul olsa bile animasyon durup kalmaz. Hap üç parçadır
+ * (sol uç, orta, sağ uç): genişlik değişirken yalnızca orta ölçeklenir, yuvarlak uçlar çarpılmaz.
+ * Menü düğmesi klasörler, kurumsal sayfalar ve ayarların olduğu sayfayı açar; açıkken çarpıya döner.
+ */
+type TabGeometry = { icons: number[]; pill: { x: number; w: number } | null; label: { el: HTMLElement; x: number } | null };
+const PILL_CAP = 28;
+const TAB_MS = 680;
+/** Yumuşak yavaşlama: aşma/geri tepme yok, sona doğru iyice süzülür. */
+const TAB_EASE = 'cubic-bezier(0.25, 1, 0.3, 1)';
+
 function TabBar() {
   const { t, lang } = useI18n();
-  const { openSearch, setNavOpen, navOpen, editor, setUpload } = useUi();
+  const { setNavOpen, navOpen } = useUi();
   const { pathname } = useLocation();
+  const groupRef = useRef<HTMLDivElement>(null);
+  const pillRef = useRef<HTMLSpanElement>(null);
+  const before = useRef<TabGeometry | null>(null);
   const tabs = [
-    { key: 'home', icon: 'home', label: t('home'), to: '/', active: pathname === '/' && !navOpen },
-    { key: 'folders', icon: 'folder', label: t('folders'), onClick: () => setNavOpen(!navOpen), active: navOpen || /^\/(k|m|dokuman)\//.test(pathname) },
-    { key: 'media', icon: 'images', label: t('media'), to: '/medya', active: pathname.startsWith('/medya') && !navOpen },
-    { key: 'saved', icon: 'bookmark', label: t('saved'), to: '/kaydedilenler', active: pathname.startsWith('/kaydedilenler') && !navOpen },
+    { key: 'home', icon: 'home', label: t('home'), to: '/', active: pathname === '/' },
+    { key: 'media', icon: 'images', label: t('media'), to: '/medya', active: pathname.startsWith('/medya') },
+    { key: 'saved', icon: 'bookmark', label: t('saved'), to: '/kaydedilenler', active: pathname.startsWith('/kaydedilenler') },
   ];
-  const add = () => {
-    setNavOpen(false);
-    if (editor) setUpload({ mode: 'new', folder: activeSlugOf(pathname) ?? '' });
-    else openSearch();
+  const activeIndex = tabs.findIndex((tab) => tab.active);
+  const committed = useRef(activeIndex);
+
+  /** Görünen geometri (süren animasyonlar dahil): yeni geçişin başlangıç noktası. */
+  const capture = (): TabGeometry | null => {
+    const group = groupRef.current;
+    const pill = pillRef.current;
+    if (!group || !pill) return null;
+    const gx = group.getBoundingClientRect().left;
+    const icons = [...group.querySelectorAll<SVGElement>('[data-tab] > svg')].map((el) => el.getBoundingClientRect().left - gx);
+    const pr = pill.getBoundingClientRect();
+    const right = (pill.lastElementChild as HTMLElement).getBoundingClientRect().right;
+    const labelEl = group.querySelector<HTMLElement>('[data-tab-label]');
+    return {
+      icons,
+      pill: pill.style.opacity === '0' || !pill.style.width ? null : { x: pr.left - gx, w: right - pr.left },
+      label: labelEl ? { el: labelEl, x: labelEl.getBoundingClientRect().left - gx } : null,
+    };
   };
+  // Etkin sekme değişiyorsa, DOM henüz eski hâlindeyken başlangıç geometrisi alınır.
+  if (committed.current !== activeIndex && !before.current) before.current = capture();
+
+  useLayoutEffect(() => {
+    committed.current = activeIndex;
+    const group = groupRef.current;
+    const pill = pillRef.current;
+    const from = before.current;
+    before.current = null;
+    if (!group || !pill) return;
+    const parts = [pill, ...Array.from(pill.children)] as HTMLElement[];
+    const icons = [...group.querySelectorAll<SVGElement>('[data-tab] > svg')];
+    for (const el of [...parts, ...icons]) el.getAnimations().forEach((a) => a.cancel());
+
+    const gx = group.getBoundingClientRect().left;
+    const tab = activeIndex >= 0 ? group.querySelectorAll<HTMLElement>('[data-tab]')[activeIndex] : null;
+    const to = tab ? { x: tab.offsetLeft - 2, w: tab.offsetWidth + 4 } : null;
+    if (to) {
+      pill.style.width = `${to.w}px`;
+      pill.style.transform = `translateX(${to.x}px)`;
+    }
+    pill.style.opacity = to ? '1' : '0';
+    if (!from || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const opts: KeyframeAnimationOptions = { duration: TAB_MS, easing: TAB_EASE };
+    icons.forEach((icon, i) => {
+      const dx = (from.icons[i] ?? 0) - (icon.getBoundingClientRect().left - gx);
+      if (Math.abs(dx) > 0.5) icon.animate([{ transform: `translateX(${dx}px)` }, { transform: 'none' }], opts);
+    });
+    if (to && from.pill) {
+      const [, middle, right] = parts;
+      const span = (w: number) => Math.max(1, w - PILL_CAP * 2);
+      pill.animate([{ transform: `translateX(${from.pill.x}px)` }, { transform: `translateX(${to.x}px)` }], opts);
+      right.animate([{ transform: `translateX(${from.pill.w - to.w}px)` }, { transform: 'none' }], opts);
+      middle.animate([{ transform: `scaleX(${span(from.pill.w) / span(to.w)})` }, { transform: 'none' }], opts);
+    } else if (to) {
+      pill.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 280, easing: 'ease-out' });
+    }
+    const label = group.querySelector<HTMLElement>('[data-tab-label]');
+    label?.animate([{ opacity: 0, transform: 'translateX(-4px)' }, { opacity: 1, transform: 'none' }], { duration: 460, delay: 120, easing: TAB_EASE, fill: 'backwards' });
+    // Giden etiket bir an yerinde kalıp söner; anında yok olmaz.
+    if (from.label && !from.label.el.isConnected) {
+      const ghost = from.label.el.cloneNode(true) as HTMLElement;
+      ghost.removeAttribute('data-tab-label');
+      ghost.style.cssText = `position:absolute;left:${from.label.x}px;top:50%;transform:translateY(-50%);pointer-events:none;z-index:1;color:var(--ink-3)`;
+      group.appendChild(ghost);
+      ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 240, easing: 'ease-out' }).onfinish = () => ghost.remove();
+    }
+  }, [activeIndex]);
+
+  const menuLabel = lang === 'tr' ? (navOpen ? 'Menüyü kapat' : 'Menü') : (navOpen ? 'Close menu' : 'Menu');
   return <nav className={s.tabbar} aria-label={lang === 'tr' ? 'Ana gezinme' : 'Main navigation'}>
-    <div className={s.tabGroup}>
-      {tabs.map((tab) => {
-        const inner = <><Icon name={tab.icon} size={23} strokeWidth={tab.active ? 1.9 : 1.6} /><span>{tab.label}</span></>;
-        return tab.to
-          ? <Link key={tab.key} to={tab.to} className={s.tab} data-active={tab.active || undefined} aria-label={tab.label} aria-current={tab.active ? 'page' : undefined} onClick={() => setNavOpen(false)}>{inner}</Link>
-          : <button key={tab.key} className={s.tab} data-active={tab.active || undefined} aria-label={tab.label} aria-expanded={navOpen} aria-controls="mobile-sidebar" onClick={tab.onClick}>{inner}</button>;
-      })}
+    <div ref={groupRef} className={s.tabGroup} data-dim={navOpen || undefined}>
+      <span ref={pillRef} className={s.tabPill} aria-hidden="true"><i /><i /><i /></span>
+      {tabs.map((tab) => (
+        <Link key={tab.key} to={tab.to} className={s.tab} data-tab data-active={tab.active || undefined} aria-label={tab.label} aria-current={tab.active ? 'page' : undefined} onClick={() => setNavOpen(false)}>
+          <Icon name={tab.icon} size={23} strokeWidth={1.7} />
+          {tab.active && <span className={s.tabLabel} data-tab-label>{tab.label}</span>}
+        </Link>
+      ))}
     </div>
-    <button className={s.tabAdd} onClick={add} aria-label={editor ? t('upload') : t('search')}><Icon name="plus" size={30} strokeWidth={1.4} /></button>
+    <button
+      className={s.tabMenu}
+      data-open={navOpen || undefined}
+      onClick={() => setNavOpen(!navOpen)}
+      aria-label={menuLabel}
+      aria-expanded={navOpen}
+      aria-controls="mobile-sidebar"
+    >
+      <span className={s.menuGlyph} aria-hidden="true"><span /><span /><span /></span>
+    </button>
   </nav>;
 }
 
+/**
+ * Mobil menü (alttan sayfa). İlk açılışta bir kez oluşturulur, sonra bellekte kalır: her açılışta
+ * ağaç yeniden kurulmaz. Açılma/kapanma CSS geçişiyle (bileşik katman); sürükleyerek kapatma
+ * doğrudan transform'u izler, bırakınca hız ve mesafeye göre kapanır ya da yerine döner.
+ */
 function NavSheet() {
-  const { navOpen, setNavOpen } = useUi();
-  const { t } = useI18n();
-  const controls = useDragControls();
+  const { navOpen, setNavOpen, openSearch, editor, setUpload } = useUi();
+  const { t, lang } = useI18n();
+  const { pathname } = useLocation();
+  const title = lang === 'tr' ? 'Menü' : 'Menu';
+  const [mounted, setMounted] = useState(false);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ y: number; t: number; dy: number; v: number } | null>(null);
   const close = () => setNavOpen(false);
-  const onDragEnd = (_: unknown, info: PanInfo) => {
-    const projected = info.offset.y + (info.velocity.y / 1000) * (0.998 / (1 - 0.998));
-    if (projected > 220) close();
-  };
+  useEffect(() => { if (navOpen) setMounted(true); }, [navOpen]);
   useEffect(() => {
     if (!navOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setNavOpen(false);
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [navOpen, setNavOpen]);
+  if (!mounted) return null;
+
+  const onDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if ((e.target as Element).closest('button')) return;
+    drag.current = { y: e.clientY, t: performance.now(), dy: 0, v: 0 };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    sheetRef.current?.setAttribute('data-dragging', '');
+  };
+  const onMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    const sheet = sheetRef.current;
+    if (!d || !sheet) return;
+    const raw = e.clientY - d.y;
+    const dy = raw < 0 ? raw * 0.15 : raw;
+    const now = performance.now();
+    d.v = (dy - d.dy) / Math.max(1, now - d.t);
+    d.dy = dy;
+    d.t = now;
+    sheet.style.transform = `translateY(${dy}px)`;
+  };
+  const onUp = () => {
+    const d = drag.current;
+    const sheet = sheetRef.current;
+    drag.current = null;
+    if (!sheet) return;
+    sheet.removeAttribute('data-dragging');
+    sheet.style.transform = '';
+    if (d && d.dy + d.v * 220 > 200) close();
+  };
+
   return (
-    <AnimatePresence>
-      {navOpen && (
-        <>
-          <motion.div className={s.scrim} onClick={close} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} />
-          <motion.div
-            id="mobile-sidebar"
-            className={s.sheet}
-            role="dialog"
-            aria-modal="true"
-            aria-label={t('folders')}
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%', transition: { type: 'spring', bounce: 0, duration: 0.3 } }}
-            transition={spring.base}
-            drag="y"
-            dragListener={false}
-            dragControls={controls}
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: 0.04, bottom: 0.9 }}
-            onDragEnd={onDragEnd}
-          >
-            <div className={s.sheetHead} onPointerDown={(e) => controls.start(e)}>
-              <span className="t-headline">{t('folders')}</span>
-              <Button variant="ghost" icon="close" aria-label={t('close')} onClick={close} />
-            </div>
-            <div className={s.sheetBody}>
-              <PrimaryNav onNavigate={close} />
-              <Tree onNavigate={close} />
-              <SheetControls />
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+    <>
+      <div className={s.scrim} data-open={navOpen || undefined} onClick={close} aria-hidden="true" />
+      <div
+        ref={sheetRef}
+        id="mobile-sidebar"
+        className={s.sheet}
+        data-open={navOpen || undefined}
+        role="dialog"
+        aria-modal={navOpen || undefined}
+        aria-label={title}
+        inert={!navOpen}
+      >
+        <div className={s.sheetHead} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
+          <span className={s.grabber} aria-hidden="true" />
+          <span className="t-headline">{title}</span>
+          <div className={s.sheetActions}>
+            {editor && <Button variant="ghost" icon="upload" aria-label={t('upload')} onClick={() => { close(); setUpload({ mode: 'new', folder: activeSlugOf(pathname) ?? '' }); }} />}
+            <Button variant="ghost" icon="search" aria-label={t('search')} onClick={() => { close(); openSearch(); }} />
+          </div>
+        </div>
+        <div className={s.sheetBody}>
+          <PrimaryNav onNavigate={close} />
+          <Tree onNavigate={close} />
+          <SheetControls />
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -720,22 +842,24 @@ export function Shell({ children, overlays }: { children: ReactNode; overlays?: 
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem('bk.sidebar.closed') === 'true'; } catch { return false; }
   });
-  const reduced = useReducedMotion();
-  const open = useMotionValue(collapsed ? 0 : 1);
-  const sideW = useMemo(() => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-w')) || 264, []);
+  const moveTimer = useRef(0);
   const toggleSidebar = () => {
     if (!desktop) { setNavOpen(!navOpen); return; }
     const next = !collapsed;
     try { localStorage.setItem('bk.sidebar.closed', String(next)); } catch { /* private mode */ }
+    // Üst bardaki hizalama kaymaları yalnızca bu geçişte canlandırılır (pencere boyutu değişince değil).
+    const html = document.documentElement;
+    html.dataset.sidebarMoving = '';
+    window.clearTimeout(moveTimer.current);
+    moveTimer.current = window.setTimeout(() => { delete html.dataset.sidebarMoving; }, 520);
     setCollapsed(next);
-    if (reduced) open.set(next ? 0 : 1);
-    else animate(open, next ? 0 : 1, SIDEBAR_EASE);
   };
+  const open = desktop && !collapsed;
   return (
-    <div className={s.shell} data-sidebar-closed={collapsed || !desktop || undefined}>
+    <div className={s.shell} data-sidebar-closed={!open || undefined}>
       <Topbar expanded={desktop ? !collapsed : navOpen} onToggle={toggleSidebar} desktop={desktop} />
-      <div className={s.body} style={{ paddingLeft: desktop && !collapsed ? sideW : 0 }}>
-        {desktop && <Sidebar open={open} hidden={collapsed} />}
+      <div className={s.body}>
+        {desktop && <Sidebar open={open} />}
         <main className={s.content}>
           <RouteCurtain />
           {children}

@@ -1,5 +1,5 @@
-// Düzenleme ve yönetim uçları. İstekler `X-Editor-Key` başlığıyla gelir: e-posta + şifre
-// girişinin oturum jetonu ya da sunucunun düzenleme anahtarı (EDITOR_KEY).
+// Düzenleme ve yönetim uçları. Yetki: yönetici rolündeki hesabın HttpOnly oturum çerezi ya da
+// (yalnızca sunucu tarafı araçlar için) `X-Editor-Key` başlığında sunucunun düzenleme anahtarı.
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { Router } from 'express';
@@ -9,8 +9,9 @@ import { ingest, pruneOrphanFiles } from '../media.js';
 import * as cmd from '../commands.js';
 import * as q from '../queries.js';
 import * as auth from '../auth.js';
+import { isAdmin, login, logout, viewerOf } from '../accounts.js';
 import { HttpError } from '../commands.js';
-import { addLanguage, contentHistory, saveMachineContent } from '../content.js';
+import { addLanguage, contentHistory, saveMachineContent, saveMachineLinks } from '../content.js';
 
 export const editorRoutes = Router();
 
@@ -42,30 +43,32 @@ function keyMatches(given) {
 }
 
 function requireEditor(req, res, next) {
+  const viewer = viewerOf(req);
+  if (isAdmin(viewer)) {
+    const a = viewer.account;
+    req.editorUser = { id: a.id, email: a.email, name: [a.firstName, a.lastName].filter(Boolean).join(' ') || null };
+    return next();
+  }
   if (tooManyFailures(req.ip)) return res.status(429).json({ error: 'Çok fazla deneme. Bir dakika sonra tekrar deneyin.' });
   const given = req.get('x-editor-key');
-  // Oturum jetonu (e-posta + şifre girişi) ya da sunucunun düzenleme anahtarı.
-  const user = auth.sessionUser(given);
-  if (!user && !keyMatches(given)) {
-    recordFailure(req.ip);
+  // Oturum yoksa yalnızca sunucunun düzenleme anahtarı geçerli ("session" yer tutucusu sayılmaz).
+  if (!given || given === 'session' || !keyMatches(given)) {
+    if (given && given !== 'session') recordFailure(req.ip);
     return res.status(401).json({ error: 'Oturum geçersiz. Yeniden giriş yapın.' });
   }
-  req.editorUser = user;
+  req.editorUser = null;
   next();
 }
 
 // Giriş: e-posta + şifre → oturum jetonu.
+// Yönetim girişi: yalnızca yönetici rolü. Jeton yanıtta dönmez; HttpOnly çerezde kalır. Arayüz
+// eski akışla uyum için "session" yer tutucusunu saklar (gizli değildir).
 editorRoutes.post('/auth/login', (req, res) => {
-  if (tooManyFailures(req.ip)) return res.status(429).json({ error: 'Çok fazla deneme. Bir dakika sonra tekrar deneyin.' });
-  const result = auth.login(req.body?.email, req.body?.password);
-  if (!result) {
-    recordFailure(req.ip);
-    return res.status(401).json({ error: 'E-posta ya da şifre yanlış' });
-  }
-  res.json(result);
+  const account = login(req, res, req.body ?? {}, { adminOnly: true });
+  res.json({ token: 'session', user: { email: account.email, name: [account.first_name, account.last_name].filter(Boolean).join(' ') || null } });
 });
 editorRoutes.post('/auth/logout', (req, res) => {
-  auth.logout(req.get('x-editor-key'));
+  logout(req, res);
   res.status(204).end();
 });
 
@@ -73,6 +76,7 @@ const author = (req) => req.editorUser?.name || req.editorUser?.email || (typeof
 
 editorRoutes.post('/languages', requireEditor, (req, res) => res.status(201).json(addLanguage(req.body, author(req))));
 editorRoutes.put('/machines/:slug/content', requireEditor, (req, res) => res.json(saveMachineContent(req.params.slug, req.body, author(req))));
+editorRoutes.put('/machines/:slug/links', requireEditor, (req, res) => res.json(saveMachineLinks(req.params.slug, req.body, author(req))));
 editorRoutes.get('/admin/machines/:slug/history', requireEditor, (req, res) => res.json(contentHistory(req.params.slug)));
 
 async function ingestUpload(req) {
@@ -197,7 +201,7 @@ editorRoutes.get('/admin/me', requireEditor, (req, res) => res.json(req.editorUs
 editorRoutes.get('/admin/users', requireEditor, (_req, res) => res.json(auth.listUsers()));
 editorRoutes.post('/admin/users', requireEditor, (req, res) => res.status(201).json(auth.createUser(req.body ?? {})));
 editorRoutes.patch('/admin/users/:id', requireEditor, (req, res) => {
-  res.json(auth.updateUser(req.params.id, req.body ?? {}, req.editorUser, req.get('x-editor-key')));
+  res.json(auth.updateUser(req.params.id, req.body ?? {}, req.editorUser, viewerOf(req)?.tokenHash));
 });
 editorRoutes.delete('/admin/users/:id', requireEditor, (req, res) => res.json(auth.deleteUser(req.params.id, req.editorUser)));
 

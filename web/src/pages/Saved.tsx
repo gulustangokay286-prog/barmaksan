@@ -1,4 +1,4 @@
-// Kaydedilenler: kullanıcının yıldızladığı belgeler. Veri yalnızca bu tarayıcıda.
+// Kaydedilenler: üyenin kaydettiği belgeler (hesapta, her cihazda aynı). Üye değilse davet.
 // Liste güncel bilgiyle gösterilir: her kayıt için belge yeniden çekilir (önbellekten, anında).
 import { AnimatePresence, motion } from 'motion/react';
 import { useQueries } from '@tanstack/react-query';
@@ -12,6 +12,7 @@ import { useI18n } from '../lib/i18n';
 import { useDocTypes, usePageChrome } from '../lib/ui';
 import { docQuery, prefetchDoc } from '../lib/query';
 import { useBookmarks, type Bookmark } from '../lib/bookmarks';
+import { signInHref, useSession } from '../lib/session';
 import { shortTitle } from '../lib/format';
 import { spring } from '../lib/motion';
 import p from './pages.module.css';
@@ -20,7 +21,26 @@ import sv from './saved.module.css';
 export default function Saved() {
   const { t, lang } = useI18n();
   const { list, remove, clear } = useBookmarks();
+  const { isMember, loading } = useSession();
   usePageChrome(t('saved'), { to: '/', label: t('home') });
+  const tr = lang === 'tr';
+
+  if (!loading && !isMember) {
+    return (
+      <div className={`${p.page} fade-in`}>
+        <PageHeader title={t('saved')} lead={tr ? 'Sık açtığınız belgeleri tek yerde toplayın; her cihazda aynı liste.' : 'Keep the documents you open most in one place, on every device.'} />
+        <motion.div className={sv.empty} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={spring.base}>
+          <span className={sv.emptyIcon}><Icon name="bookmark" size={26} strokeWidth={1.3} /></span>
+          <p className={sv.emptyTitle}>{tr ? 'Kaydedilenler üyelere özel' : 'Saved is for members'}</p>
+          <p className={sv.emptyHint}>{tr ? 'Ücretsiz bir hesapla belgeleri kaydedin; eski sürümler de açılır.' : 'Save documents with a free account; older versions open too.'}</p>
+          <div className={sv.gateActions}>
+            <Link to={signInHref('kayit', '/kaydedilenler')} className={sv.gatePrimary}>{tr ? 'Hesap oluştur' : 'Create account'}</Link>
+            <Link to={signInHref('giris', '/kaydedilenler')} className={sv.gateSecondary}>{tr ? 'Giriş yap' : 'Sign in'}</Link>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className={`${p.page} fade-in`}>

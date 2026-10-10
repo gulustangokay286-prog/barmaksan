@@ -25,7 +25,7 @@ const wrapDist = (d: number, n: number) => mod(d + n / 2, n) - n / 2;
 // Apple'ın kaydırma yavaşlama projeksiyonu.
 const project = (v: number, rate = 0.995) => ((v / 1000) * rate) / (1 - rate);
 
-export function MachineCarousel({ items, cardSize, autoplay = true, scrub, scrubSpan = 6, barScale, active = true }: {
+export function MachineCarousel({ items, cardSize, autoplay = true, scrub, scrubSpan = 6, barScale, barY, active = true }: {
   items: CarouselItem[];
   /** Kart boyu (px). Verilmezse kapsayıcının genişliğinden hesaplanır. */
   cardSize?: number;
@@ -37,6 +37,8 @@ export function MachineCarousel({ items, cardSize, autoplay = true, scrub, scrub
   scrubSpan?: number;
   /** Carousel dışarıdan ölçekleniyorsa alt şeridin ters ölçeği (yazı okunur kalsın). */
   barScale?: MotionValue<number>;
+  /** Alt şeridin ek dikey kayması (yerleşimle hizalamak için). */
+  barY?: MotionValue<number>;
 }) {
   const { pick, lang } = useI18n();
   const reduce = useReducedMotion();
@@ -212,7 +214,7 @@ export function MachineCarousel({ items, cardSize, autoplay = true, scrub, scrub
         ) : null)}
       </div>
 
-      <motion.div className={s.bar} style={barScale ? { scale: barScale } : undefined}>
+      <motion.div className={s.bar} style={barScale || barY ? { scale: barScale, y: barY } : undefined}>
         <button className={s.arrow} onClick={() => { pauseFor(AUTO_MS * 2); step(-1); }} aria-label={lang === 'tr' ? 'Önceki makine' : 'Previous machine'}>
           <Icon name="chevronLeft" size={18} />
         </button>

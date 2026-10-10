@@ -48,7 +48,7 @@
   min-width: 0;
   font-size: 14px;
   line-height: 19px;
-  font-weight: 560;
+  font-weight: 500;
   color: var(--ink);
 }
 .meta {
@@ -111,7 +111,7 @@
 .colourName {
   font-size: 13.5px;
   line-height: 18px;
-  font-weight: 560;
+  font-weight: 500;
   color: var(--ink);
 }
 .hex {

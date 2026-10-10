@@ -2,6 +2,8 @@ import { forwardRef, useCallback, useRef, useState, type ButtonHTMLAttributes, t
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react';
 import { Icon, type IconName } from './Icon';
 import { useTheme } from '../lib/theme';
+import { useI18n } from '../lib/i18n';
+import { versionLabel } from '../lib/format';
 import s from './ui.module.css';
 
 // ── Logolar ─────────────────────────────────────────────────────────────────
@@ -78,9 +80,10 @@ export function Segmented<T extends string>({ value, options, onChange, id, size
 // ── Sürüm: yalnızca numara. "Güncel" kutusu yok; güncel olmayan açıkça yazılır. ──
 
 export function VersionTag({ no, current = true, label }: { no: number; current?: boolean; label?: string }) {
+  const { lang } = useI18n();
   return (
     <span className={s.version} data-old={!current || undefined}>
-      <span className="mono">v{no}</span>
+      <span>{versionLabel(no, lang)}</span>
       {label && <span className={s.versionLabel}>{label}</span>}
     </span>
   );

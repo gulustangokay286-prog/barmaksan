@@ -65,7 +65,7 @@
 .title {
   font-size: 15.5px;
   line-height: 21px;
-  font-weight: 600;
+  font-weight: 540;
   letter-spacing: -0.01em;
   color: var(--ink);
   white-space: nowrap;
@@ -152,7 +152,7 @@
   margin-top: 18px;
   font-size: 19px;
   line-height: 24px;
-  font-weight: 640;
+  font-weight: 540;
   letter-spacing: -0.014em;
   color: var(--ink);
 }
@@ -172,7 +172,7 @@
   padding: 0 14px;
   border-radius: 10px;
   font-size: 14px;
-  font-weight: 560;
+  font-weight: 500;
   color: var(--ink);
   background: var(--fill-hover);
   transition: background-color var(--t-fast);
@@ -189,3 +189,11 @@
     opacity: 1;
   }
 }
+
+.gateActions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 18px; }
+.gatePrimary, .gateSecondary { display: inline-flex; align-items: center; height: 42px; padding: 0 20px; border-radius: 999px; font-size: 14px; font-weight: 500; transition: background-color 160ms var(--ease-out), transform 460ms var(--ease-spring); }
+.gatePrimary { background: var(--ink); color: var(--ink-inverse); }
+.gatePrimary:hover { background: color-mix(in srgb, var(--ink) 86%, transparent); }
+.gateSecondary { background: var(--fill); color: var(--ink); }
+.gateSecondary:hover { background: color-mix(in srgb, var(--fill) 100%, #000 5%); }
+.gatePrimary:active, .gateSecondary:active { transform: scale(0.96); }

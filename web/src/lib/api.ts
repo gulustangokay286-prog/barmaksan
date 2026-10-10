@@ -34,7 +34,9 @@ export type MachineProfile = ContentStamp & { title: string; description: string
 export type MaintenanceTranslation = ContentStamp & { title: string; description: string; steps: string[]; warning: string; videos: { title: string; url: string }[]; documents: string[] };
 export type MaintenanceTopic = { id: string; translations: Record<string, MaintenanceTranslation> };
 export type MaintenanceCategory = { id: string; titles: Record<string, string>; topics: MaintenanceTopic[] };
-export type MachineContent = { revision: number; profiles: Record<string, MachineProfile>; gallery: string[] | null; maintenance: MaintenanceCategory[]; updatedAt: string; author: string | null };
+/** Belge kartındaki video bağlantısı: ya bir adres (YouTube vb.) ya da makineye yüklenmiş bir video belgesi. */
+export type MachineLink = { id: string; type: string; title: string; url: string | null; document: string | null };
+export type MachineContent = { revision: number; profiles: Record<string, MachineProfile>; gallery: string[] | null; maintenance: MaintenanceCategory[]; links?: MachineLink[]; updatedAt: string; author: string | null };
 
 export type Doc = {
   id: string;
@@ -52,7 +54,8 @@ export type Doc = {
   excerpt?: { text: string; highlights: [number, number][] } | null;
 };
 
-export type DocDetail = Doc & { crumbs: Crumb[]; versions: Version[] };
+/** hiddenVersions: üye olmayana gösterilmeyen eski sürüm sayısı. */
+export type DocDetail = Doc & { crumbs: Crumb[]; versions: Version[]; hiddenVersions?: number };
 
 export type FolderKind = 'section' | 'category' | 'machine' | 'collection';
 export type Crumb = { slug: string; kind: FolderKind; name: Name };
@@ -206,11 +209,34 @@ const json = (body: unknown): RequestInit => ({ body: JSON.stringify(body), head
 /** Yönetim okumaları: anahtar GET isteklerinde de gönderilir. */
 const adminGet = <T,>(path: string) => request<T>(path, { headers: { 'X-Editor-Key': editorKey.get() ?? '' } });
 
+// ── Hesap ───────────────────────────────────────────────────────────────────
+export type Account = {
+  email: string; role: 'member' | 'admin'; firstName: string | null; lastName: string | null; company: string | null;
+  jobTitle: string | null; phone: string | null; country: string | null; profileComplete: boolean; marketing: boolean; google: boolean; hasPassword: boolean;
+};
+export type Viewer = { kind: 'anonymous' } | { kind: 'guest'; guest: { email: string; name: string | null } } | { kind: 'account'; account: Account };
+export type RegisterInput = { email: string; password: string; firstName: string; lastName: string; company?: string; jobTitle?: string; phone?: string; country?: string; kvkk: boolean; marketing?: boolean };
+export type ProfileInput = Omit<RegisterInput, 'email' | 'password'>;
+
+export const account = {
+  me: () => request<Viewer>('/api/account/me'),
+  providers: () => request<{ google: boolean }>('/api/account/providers'),
+  login: (email: string, password: string) => request<Viewer>('/api/account/login', { method: 'POST', ...json({ email, password }) }),
+  register: (input: RegisterInput) => request<Viewer>('/api/account/register', { method: 'POST', ...json(input) }),
+  guest: (input: { email: string; name?: string; company?: string; kvkk: boolean }) => request<Viewer>('/api/account/guest', { method: 'POST', ...json(input) }),
+  logout: () => request<Viewer>('/api/account/logout', { method: 'POST' }),
+  profile: (input: ProfileInput) => request<Viewer>('/api/account/profile', { method: 'PATCH', ...json(input) }),
+  saved: <T,>() => request<T[]>('/api/account/saved'),
+  save: (id: string, item: unknown) => request<void>(`/api/account/saved/${encodeURIComponent(id)}`, { method: 'PUT', ...json(item) }),
+  unsave: (id: string) => request<void>(`/api/account/saved/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+};
+
 export const api = {
   bootstrap: () => request<Bootstrap>('/api/bootstrap'),
   folder: (slug: string) => request<Folder>(`/api/folders/${encodeURIComponent(slug)}`),
   addLanguage: (body: { code: string; label: string; nativeName: string; direction: string }) => request<{ code: string }>('/api/languages', { method: 'POST', ...json(body) }),
   saveMachineContent: (slug: string, content: MachineContent & { note?: string }) => request<MachineContent>(`/api/machines/${encodeURIComponent(slug)}/content`, { method: 'PUT', ...json(content) }),
+  saveMachineLinks: (slug: string, revision: number, links: MachineLink[]) => request<MachineContent>(`/api/machines/${encodeURIComponent(slug)}/links`, { method: 'PUT', ...json({ revision, links }) }),
   machineContentHistory: (slug: string) => adminGet<{ revision: number; note: string | null; author: string | null; createdAt: string }[]>(`/api/admin/machines/${encodeURIComponent(slug)}/history`),
   document: (id: string) => request<DocDetail>(`/api/documents/${encodeURIComponent(id)}`),
   recent: (limit = 12, language?: string) => request<Doc[]>(`/api/recent?limit=${limit}${language ? `&language=${encodeURIComponent(language)}` : ''}`),

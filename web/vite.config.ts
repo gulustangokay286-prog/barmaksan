@@ -8,7 +8,9 @@ export default defineConfig({
   server: {
     port: 5180,
     strictPort: true,
-    proxy: { '/api': api, '/files': api, '/d/': api },
+    // Host başlığı korunur (changeOrigin: false): sunucunun köken (CSRF) denetimi tarayıcının
+    // Origin'iyle aynı adresi görür; üretimde nginx de Host'u olduğu gibi iletir.
+    proxy: Object.fromEntries(['/api', '/files', '/d/'].map((path) => [path, { target: api, changeOrigin: false }])),
   },
   build: {
     target: 'es2022',

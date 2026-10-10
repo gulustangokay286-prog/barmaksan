@@ -1,0 +1,76 @@
+/*
+ * İkon animasyonları. Her ikon (components/Icon.tsx) bir tür taşır: data-anim. Animasyon, ikonun
+ * içinde bulunduğu bağlantı/düğmeye gelince, klavyeyle odaklanınca ya da öğe etkin olunca
+ * (sekme, ağaçta seçili klasör, açılan menü) bir kez oynar. Yalnızca transform ve çizgi çizimi:
+ * bileşik katmanda, düzen hesabı yok. Azaltılmış harekette hiçbiri oynamaz.
+ */
+
+.ai {
+  flex-shrink: 0;
+  overflow: visible;
+  transform-origin: 50% 50%;
+}
+.ai > * {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+:is(a, button, summary, label, [role='button'], [role='tab'], [role='menuitem'], [role='menuitemradio'], [role='option']):is(:hover, :focus-visible),
+[data-active],
+[aria-current='page'],
+[aria-current='location'],
+[aria-expanded='true'],
+[aria-selected='true'] {
+  & .ai[data-anim='pop'] { animation: ai-pop 560ms var(--ease-spring); }
+  & .ai[data-anim='hop'] { animation: ai-hop 520ms var(--ease-out); }
+  & .ai[data-anim='right'] { animation: ai-right 480ms var(--ease-out); }
+  & .ai[data-anim='left'] { animation: ai-left 480ms var(--ease-out); }
+  & .ai[data-anim='up'] { animation: ai-up 520ms var(--ease-out); }
+  & .ai[data-anim='down'] { animation: ai-down 480ms var(--ease-out); }
+  & .ai[data-anim='out'] { animation: ai-out 520ms var(--ease-out); }
+  & .ai[data-anim='turn'] { animation: ai-turn 620ms var(--ease-spring); }
+  & .ai[data-anim='spin'] { animation: ai-spin 820ms var(--ease-spring); }
+  & .ai[data-anim='swing'] { animation: ai-swing 640ms var(--ease-out); }
+  & .ai[data-anim='tilt'] { animation: ai-tilt 560ms var(--ease-out); }
+  & .ai[data-anim='rewind'] { animation: ai-rewind 760ms var(--ease-spring); }
+  & .ai[data-anim='blink'] { animation: ai-blink 420ms var(--ease-out); }
+  & .ai[data-anim='drop'] > :only-child,
+  & .ai[data-anim='drop'] > [data-i]:not([data-i='0']) { animation: ai-drop 620ms var(--ease-spring); }
+  & .ai[data-anim='tick'] > [data-i='1'] { transform-box: view-box; transform-origin: 12px 12px; animation: ai-tick 900ms var(--ease-out); }
+  & .ai[data-anim='draw'] > * { stroke-dasharray: 1; animation: ai-draw 720ms var(--ease-out) both; }
+  & .ai[data-anim='draw'] > [data-i='1'] { animation-delay: 70ms; }
+  & .ai[data-anim='draw'] > [data-i='2'] { animation-delay: 140ms; }
+  & .ai[data-anim='draw'] > [data-i='3'] { animation-delay: 210ms; }
+  & .ai[data-anim='draw'] > [data-i='4'] { animation-delay: 280ms; }
+}
+
+@keyframes ai-pop { from { transform: scale(0.78); } }
+@keyframes ai-turn { from { transform: rotate(-90deg) scale(0.86); } }
+@keyframes ai-spin { from { transform: rotate(-110deg) scale(0.9); } }
+@keyframes ai-rewind { from { transform: rotate(140deg); } }
+@keyframes ai-drop { from { transform: translateY(-4px); } }
+@keyframes ai-hop {
+  35% { transform: translateY(-3px) scale(1.04); }
+  65% { transform: translateY(0.6px) scale(0.99); }
+}
+@keyframes ai-right { 40% { transform: translateX(3px); } }
+@keyframes ai-left { 40% { transform: translateX(-3px); } }
+@keyframes ai-up { 40% { transform: translateY(-3px); } }
+@keyframes ai-down { 40% { transform: translateY(3px); } }
+@keyframes ai-out { 40% { transform: translate(2.5px, -2.5px); } }
+@keyframes ai-swing {
+  20% { transform: rotate(-14deg); }
+  45% { transform: rotate(10deg); }
+  70% { transform: rotate(-5deg); }
+}
+@keyframes ai-tilt { 35% { transform: rotate(-8deg) translateY(-1px); } }
+@keyframes ai-blink { 45% { transform: scaleY(0.12); } }
+@keyframes ai-tick { from { transform: rotate(-360deg); } }
+@keyframes ai-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ai,
+  .ai > * {
+    animation: none !important;
+  }
+}

@@ -183,6 +183,62 @@ const insertFile = db.prepare(`
           @storage_key, @thumb_key, @preview_key, @text_content)`);
 
 /**
+ * Görsele gömülü siyah şeritleri (letterbox / pillarbox) bulur ve içerik alanını döner.
+ * Şerit sayılması için bir çizginin hem ortalaması hem en parlak pikseli siyaha yakın olmalı;
+ * böylece karanlık bir sahnenin gölgeli kenarı asla kırpılmaz. Kenar başına en çok %8.
+ * @returns {Promise<{ left: number, top: number, width: number, height: number } | null>}
+ */
+export async function letterboxRegion(src) {
+  const { data, info } = await sharp(src, { failOn: 'none' }).autoOrient()
+    .resize({ width: 1600, height: 1600, fit: 'inside', withoutEnlargement: true })
+    .flatten({ background: '#ffffff' }).greyscale().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height;
+  const meta = await sharp(src, { failOn: 'none' }).autoOrient().metadata();
+  const fullW = meta.autoOrient?.width ?? meta.width, fullH = meta.autoOrient?.height ?? meta.height;
+  const isBar = (count, at) => {
+    let sum = 0, max = 0;
+    for (let i = 0; i < count; i++) { const v = data[at(i)]; sum += v; if (v > max) max = v; }
+    return sum / count < 26 && max < 72;
+  };
+  const col = (x) => isBar(H, (y) => y * W + x);
+  const row = (y) => isBar(W, (x) => y * W + x);
+  const edge = (test, limit) => { let n = 0; while (n < limit && test(n)) n++; return n === limit ? 0 : n; };
+  const lim = (d) => Math.floor(d * 0.08);
+  const sides = {
+    left: edge((i) => col(i), lim(W)),
+    right: edge((i) => col(W - 1 - i), lim(W)),
+    top: edge((i) => row(i), lim(H)),
+    bottom: edge((i) => row(H - 1 - i), lim(H)),
+  };
+  if (!sides.left && !sides.right && !sides.top && !sides.bottom) return null;
+  // Kenardaki yumuşatılmış geçiş çizgisi de gitsin: bulunan şeride bir çizgi pay eklenir.
+  const sx = fullW / W, sy = fullH / H;
+  const cut = (n, s) => (n ? Math.ceil((n + 1) * s) : 0);
+  const left = cut(sides.left, sx), right = cut(sides.right, sx);
+  const top = cut(sides.top, sy), bottom = cut(sides.bottom, sy);
+  const width = fullW - left - right, height = fullH - top - bottom;
+  if (width < fullW * 0.8 || height < fullH * 0.8) return null;
+  return { left, top, width, height };
+}
+
+/**
+ * Bir görselin küçük resmini ve önizlemesini yazar; gömülü siyah şeritler kırpılır.
+ * `suffix` verilirse dosya adına eklenir (thumb.<suffix>.webp): önbellekteki eski hâl geçersiz olur.
+ */
+export async function writeImageDerivatives(src, derivedDir, suffix = '') {
+  const region = await letterboxRegion(src).catch(() => null);
+  const base = () => {
+    const img = sharp(src, { failOn: 'none' }).autoOrient();
+    return region ? img.extract(region) : img;
+  };
+  const name = (kind) => `${derivedDir}/${kind}${suffix ? `.${suffix}` : ''}.webp`;
+  const thumb = name('thumb'), preview = name('preview');
+  await base().resize({ width: 720, height: 720, fit: 'inside', withoutEnlargement: true }).webp({ quality: 82 }).toFile(storagePath(thumb));
+  await base().resize({ width: 2400, height: 2400, fit: 'inside', withoutEnlargement: true }).webp({ quality: 88 }).toFile(storagePath(preview));
+  return { thumb, preview, region };
+}
+
+/**
  * Geçici bir dosyayı kütüphaneye alır. Aynı içerik daha önce yüklendiyse mevcut kaydı döner.
  * @param {string} tmpPath  taşınacak geçici dosya (çağrı sonrası artık yoktur)
  * @param {string} originalName
@@ -217,10 +273,9 @@ export async function ingest(tmpPath, originalName) {
       const oriented = meta.autoOrient ?? meta;
       row.width = oriented.width ?? meta.width ?? null;
       row.height = oriented.height ?? meta.height ?? null;
-      await sharp(src, { failOn: 'none' }).rotate().resize({ width: 720, height: 720, fit: 'inside', withoutEnlargement: true }).webp({ quality: 82 }).toFile(storagePath(`${derivedDir}/thumb.webp`));
-      await sharp(src, { failOn: 'none' }).rotate().resize({ width: 2400, height: 2400, fit: 'inside', withoutEnlargement: true }).webp({ quality: 88 }).toFile(storagePath(`${derivedDir}/preview.webp`));
-      row.thumb_key = `${derivedDir}/thumb.webp`;
-      row.preview_key = `${derivedDir}/preview.webp`;
+      const keys = await writeImageDerivatives(src, derivedDir);
+      row.thumb_key = keys.thumb;
+      row.preview_key = keys.preview;
     } else if (kind === 'pdf') {
       const { pageCount, text } = await pdfTextAndThumb(storagePath(storageKey), storagePath(`${derivedDir}/thumb.webp`));
       row.page_count = pageCount;

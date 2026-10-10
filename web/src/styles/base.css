@@ -99,10 +99,11 @@ mark {
   outline: none;
 }
 
-:focus-visible {
+/* Varsayılan klavye odağı. :where() → özgüllük 0: kendi odak stili olan bileşen (alan, arama) kazanır.
+ * Köşe yuvarlaklığına dokunmaz; halka öğenin kendi şeklini izler. */
+:where(:focus-visible) {
   outline: 2px solid var(--ink-2);
   outline-offset: 2px;
-  border-radius: var(--r-sm);
 }
 
 .tabular {
@@ -129,27 +130,27 @@ mark {
   font-family: var(--font-display);
   font-size: 40px;
   line-height: 44px;
-  font-weight: 700;
+  font-weight: 580;
   letter-spacing: -0.026em;
 }
 .t-title1 {
   font-family: var(--font-display);
   font-size: 28px;
   line-height: 32px;
-  font-weight: 650;
+  font-weight: 580;
   letter-spacing: -0.021em;
 }
 .t-title2 {
   font-family: var(--font-display);
   font-size: 22px;
   line-height: 28px;
-  font-weight: 600;
+  font-weight: 540;
   letter-spacing: -0.016em;
 }
 .t-headline {
   font-size: 17px;
   line-height: 22px;
-  font-weight: 600;
+  font-weight: 540;
   letter-spacing: -0.012em;
 }
 .t-callout {
@@ -164,13 +165,13 @@ mark {
 .t-caption {
   font-size: 12px;
   line-height: 16px;
-  font-weight: 500;
+  font-weight: 460;
   letter-spacing: 0.008em;
 }
 .t-eyebrow {
   font-size: 12.5px;
   line-height: 14px;
-  font-weight: 600;
+  font-weight: 540;
   color: var(--ink-3);
 }
 

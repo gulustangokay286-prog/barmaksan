@@ -1,0 +1,244 @@
+/*
+ * Giriş ekranı: solda fotoğraflı marka bölmesi (koyu, düz karartma — gradient yok), sağda sakin
+ * form. Kontroller 46px, yarıçaplar 12/999; tek vurgu siyah düğme. Mobilde marka bölmesi üstte
+ * kısa bir şerit olur.
+ */
+.screen {
+  display: grid;
+  grid-template-columns: minmax(0, 46fr) minmax(0, 54fr);
+  min-height: 100dvh;
+  background: var(--canvas);
+}
+
+/* ── Marka bölmesi ───────────────────────────────────────────────────────── */
+.brand {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 36px 44px 32px;
+  color: #fff;
+  background: #121214;
+  isolation: isolate;
+}
+.photo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.04);
+  animation: auth-drift 24s cubic-bezier(.45, 0, .55, 1) infinite alternate;
+}
+@keyframes auth-drift { to { transform: scale(1.12) translate3d(-1.5%, -1%, 0); } }
+.scrim { position: absolute; inset: 0; z-index: -1; background: rgba(12, 12, 14, 0.62); }
+.brandTop { display: flex; flex-direction: column; align-items: flex-start; }
+.logos { display: inline-flex; align-items: center; gap: 18px; border-radius: 8px; }
+.logos img { height: 40px; width: auto; }
+.logos img:last-child { height: 35px; }
+.sep { width: 1px; height: 32px; background: rgba(255, 255, 255, 0.28); }
+/* Koyu fotoğraf üstünde beyaz: siyah burada okunmaz. */
+.brandTitle {
+  margin-top: 28px;
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+.brandBottom { max-width: 460px; }
+.claim {
+  margin-top: 12px;
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 1.12;
+  font-weight: 460;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.points { display: flex; flex-direction: column; gap: 12px; margin: 28px 0 0; padding: 0; list-style: none; }
+.points li { display: flex; align-items: center; gap: 12px; font-size: 15px; color: rgba(255, 255, 255, 0.86); }
+.points svg { flex: none; color: var(--gold); }
+.legal { margin-top: 36px; font-size: 12px; color: rgba(255, 255, 255, 0.5); }
+
+/* ── Form bölmesi ────────────────────────────────────────────────────────── */
+.panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 72px 24px 48px;
+}
+.backLink {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px 8px 8px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out);
+}
+.backLink:hover { background: var(--fill-hover); color: var(--ink); }
+.card { width: min(100%, 440px); }
+.head { margin-bottom: 22px; }
+.title { font-family: var(--font-display); font-size: 30px; line-height: 1.15; font-weight: 540; letter-spacing: -0.03em; }
+.lead { margin-top: 8px; font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+
+/* Sade metin sekmeleri: animasyon yok; etkin sekme koyu yazı ve ince alt çizgi. */
+.tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--line); }
+.tab {
+  height: 41px;
+  margin-bottom: -1px;
+  padding: 0;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+  box-shadow: inset 0 -1.5px 0 transparent;
+}
+.tab:hover { color: var(--ink-2); }
+.tab[data-on] { color: var(--ink); box-shadow: inset 0 -1.5px 0 var(--ink); }
+.tab:focus-visible { outline: 2px solid var(--ink-3); outline-offset: 2px; border-radius: 4px; }
+.stage { margin-top: 22px; }
+
+.form { display: flex; flex-direction: column; gap: 14px; }
+.row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.label { display: flex; align-items: baseline; gap: 6px; font-size: 13px; font-weight: 500; color: var(--ink-2); }
+/* "isteğe bağlı" etiketin hemen yanında: iki sütunlu satırda yandaki alanın etiketine yapışmaz. */
+.label em { font-style: normal; font-size: 12px; font-weight: 400; color: var(--ink-4); }
+.input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
+}
+.input::placeholder { color: var(--ink-4); }
+.input:hover { border-color: var(--line-strong); }
+.input:focus { border-color: var(--ink-3); box-shadow: 0 0 0 4px var(--fill-hover); }
+.field[data-invalid] .input { border-color: #c4320a; box-shadow: none; }
+.passWrap { position: relative; display: block; }
+.passWrap .input { padding-right: 48px; }
+.eye { position: absolute; top: 5px; right: 5px; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; color: var(--ink-3); }
+.eye:hover { background: var(--fill-hover); color: var(--ink); }
+.slash { position: absolute; width: 20px; height: 1.6px; border-radius: 1px; background: currentColor; transform: rotate(-45deg); }
+.caps { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #b54708; }
+
+.rules { display: flex; flex-direction: column; gap: 8px; margin-top: -4px; }
+.meter { display: grid; grid-template-columns: repeat(3, 1fr) auto; align-items: center; gap: 4px; }
+.meter i { height: 4px; border-radius: 2px; background: var(--fill); transition: background-color 240ms var(--ease-out); }
+.meter span { min-width: 44px; padding-left: 6px; font-size: 12px; color: var(--ink-3); text-align: right; }
+.meter[data-score='1'] i:nth-child(-n+1),
+.meter[data-score='2'] i:nth-child(-n+2) { background: var(--ink-3); }
+.meter[data-score='3'] i { background: var(--ink); }
+.rules ul { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; padding: 0; list-style: none; }
+.rules li { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink-3); }
+.rules li[data-ok] { color: var(--ink); }
+
+.check { position: relative; display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: var(--ink-2); cursor: pointer; }
+.check input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.box {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 6px;
+  color: transparent;
+  background: var(--surface);
+  transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out), color 160ms var(--ease-out), transform 420ms var(--ease-spring);
+}
+.check input:checked + .box { background: var(--ink); border-color: var(--ink); color: var(--ink-inverse); }
+.check input:focus-visible + .box { box-shadow: 0 0 0 4px var(--fill-hover); }
+.check:active .box { transform: scale(0.9); }
+
+.submit {
+  display: grid;
+  place-items: center;
+  height: 48px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--ink-inverse);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  transition: background-color 160ms var(--ease-out), transform 460ms var(--ease-spring), opacity 160ms;
+}
+.submit:hover { background: color-mix(in srgb, var(--ink) 86%, transparent); }
+.submit:active { transform: scale(0.97); transition-duration: 120ms; }
+.submit:disabled { opacity: 0.7; cursor: progress; }
+.spinner { width: 18px; height: 18px; border: 2px solid rgba(255, 255, 255, 0.35); border-top-color: #fff; border-radius: 50%; animation: auth-spin 0.8s linear infinite; }
+@keyframes auth-spin { to { transform: rotate(360deg); } }
+
+.google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 48px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  transition: background-color 160ms var(--ease-out), transform 460ms var(--ease-spring);
+}
+.google:hover { background: var(--fill-hover); }
+.google:active { transform: scale(0.97); }
+.or { display: flex; align-items: center; gap: 12px; font-size: 12.5px; color: var(--ink-3); }
+.or::before, .or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+.error { padding: 10px 12px; border-radius: 10px; background: rgba(196, 50, 10, 0.07); font-size: 13.5px; color: #a32a08; }
+.alert { margin-top: 16px; padding: 10px 12px; border-radius: 10px; background: rgba(196, 50, 10, 0.07); font-size: 13.5px; color: #a32a08; }
+.foot { margin-top: 4px; font-size: 14px; color: var(--ink-2); text-align: center; }
+.hint { font-size: 12.5px; color: var(--ink-3); text-align: center; }
+.linkBtn { padding: 0; font: inherit; font-weight: 500; color: var(--ink); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+.linkBtn:hover { text-decoration-color: var(--ink); }
+.compare { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding: 14px; border-radius: 14px; background: var(--fill); font-size: 13px; color: var(--ink-2); }
+.compare p { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.compare svg { flex: none; color: var(--ink-3); }
+
+.noticeScrim { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px; background: rgba(20, 20, 22, 0.42); }
+.notice { display: flex; flex-direction: column; gap: 16px; width: min(100%, 560px); max-height: min(80dvh, 720px); padding: 24px; border-radius: 22px; background: var(--surface); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2); }
+.notice h2 { font-family: var(--font-display); font-size: 19px; font-weight: 540; letter-spacing: -0.015em; }
+.noticeBody { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; font-size: 14px; line-height: 1.6; color: var(--ink-2); }
+.noticeBody strong { font-weight: 500; color: var(--ink); }
+.noticeDraft { font-size: 12.5px; color: var(--ink-3); }
+
+/* ── Duyarlı ─────────────────────────────────────────────────────────────── */
+@media (max-width: 959px) {
+  .screen { grid-template-columns: minmax(0, 1fr); }
+  .brand { min-height: 180px; padding: 20px 20px 18px; }
+  .brandBottom { max-width: none; }
+  .claim { font-size: 22px; margin-top: 6px; }
+  .logos img { height: 32px; }
+  .logos img:last-child { height: 28px; }
+  .sep { height: 26px; }
+  .brandTitle { margin-top: 16px; font-size: 22px; }
+  .points, .legal { display: none; }
+  .panel { justify-content: flex-start; padding: 24px 16px 40px; }
+  .backLink { position: static; align-self: flex-start; margin-bottom: 12px; }
+  .title { font-size: 26px; }
+}
+@media (max-width: 420px) {
+  .row { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { .photo { animation: none; } }

@@ -10,7 +10,7 @@ export function SearchTrigger({ variant }: { variant: 'hero' | 'bar' }) {
   const { lang } = useI18n();
   const { openSearch } = useUi();
   const placeholder = variant === 'hero'
-    ? (lang === 'tr' ? 'Makine, belge ya da parça kodu ara' : 'Search machines, documents or part codes')
+    ? (lang === 'tr' ? 'Kütüphanede ara' : 'Search the library')
     : (lang === 'tr' ? 'Ara…' : 'Search…');
   return (
     <button
@@ -22,7 +22,7 @@ export function SearchTrigger({ variant }: { variant: 'hero' | 'bar' }) {
       aria-label={lang === 'tr' ? 'Kütüphanede ara' : 'Search the library'}
       aria-haspopup="dialog"
     >
-      <span className={s.icon}><Icon name="search" size={variant === 'hero' ? 20 : 16} strokeWidth={variant === 'hero' ? 1.7 : 1.6} /></span>
+      <span className={s.icon}><Icon name="search" size={variant === 'hero' ? 20 : 16} strokeWidth={variant === 'hero' ? 1.8 : 1.6} /></span>
       <span className={s.placeholder}>{placeholder}</span>
     </button>
   );

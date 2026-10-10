@@ -12,6 +12,7 @@ import Media from './pages/Media';
 import Recent from './pages/Recent';
 import Saved from './pages/Saved';
 import NotFound from './pages/NotFound';
+import AuthPage, { CompleteProfile } from './pages/Auth';
 import AdminRoot from './admin/AdminRoot';
 import AdminOverview from './admin/Overview';
 import AdminDocuments from './admin/Documents';
@@ -27,16 +28,22 @@ import { I18nProvider } from './lib/i18n';
 import { ChromeProvider, UiProvider } from './lib/ui';
 import { docQuery, folderQuery, queryClient, recentQuery, warm } from './lib/query';
 import { SplashGate, warmUp } from './lib/splash';
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/grid.css';
 import './styles/motion.css';
+import './styles/icons.css';
 
 // Veri ve ilk görsel, React çizilmeden istenir; perde gerçek ilerlemeyi gösterir.
 void warmUp();
 
 // Yükleyiciler hiçbir zaman beklemez: sayfa anında açılır, veri varsa gösterir, yoksa iskelet çizer.
 const router = createBrowserRouter([
+  // Giriş ekranı kabuğun (kenar çubuğu, üst bar) dışında: tam ekran.
+  { path: 'giris', element: <AuthPage /> },
+  { path: 'giris/tamamla', element: <CompleteProfile /> },
   {
     element: <Root />,
     children: [

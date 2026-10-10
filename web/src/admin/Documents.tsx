@@ -14,7 +14,7 @@ import { Link } from '../lib/link';
 import { api, downloadLink, type DocDetail, type DocLanguage, type TreeNode } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { useBootstrap, useDocTypes, useUi } from '../lib/ui';
-import { formatDate, formatSize, languageLabel } from '../lib/format';
+import { formatDate, formatSize, languageLabel, versionLabel } from '../lib/format';
 import { ConfirmButton, PageHead, Section, Sheet, useRun } from './shared';
 import { LanguageOptions } from '../components/LanguageOptions';
 import a from './admin.module.css';
@@ -162,7 +162,7 @@ export default function AdminDocuments() {
               </span>
               <span className={a.dim} role="cell">{pick(tp?.name)}</span>
               <span className={a.dim} role="cell">{languageLabel(d.language) || '—'}</span>
-              <span className={a.dim} role="cell">{tp?.versioned && v ? `v${v.no}` : '—'}</span>
+              <span className={a.dim} role="cell">{tp?.versioned && v ? versionLabel(v.no, lang) : '—'}</span>
               <span className={a.dim} role="cell">
                 {d.archivedAt ? <DateStamp iso={d.archivedAt} /> : v ? <DateStamp iso={v.createdAt} author={v.author} /> : '—'}
                 {!d.archivedAt && v?.author ? <span className={a.author}>{v.author}</span> : null}
@@ -396,7 +396,7 @@ function DocumentSheet({ id, onClose }: { id: string | null; onClose: () => void
                 const current = v.no === d.current?.no;
                 return (
                   <li key={v.no} data-current={current || undefined}>
-                    <span className={a.vNo}>v{v.no}</span>
+                    <span className={a.vNo}>{versionLabel(v.no, lang)}</span>
                     <span className={a.vBody}>
                       <span className={a.vNote}>{v.note || (tr ? 'İlk sürüm' : 'First version')}</span>
                       <span className={a.vMeta}>
@@ -412,7 +412,7 @@ function DocumentSheet({ id, onClose }: { id: string | null; onClose: () => void
                           label={tr ? 'Buna dön' : 'Restore'}
                           confirm={tr ? 'Yeni sürüm olarak yayınla' : 'Publish as new version'}
                           busy={busy === `restore-${v.no}`}
-                          onConfirm={() => run(`restore-${v.no}`, () => api.restoreVersion(d.id, v.no), tr ? `v${v.no} yeniden yayınlandı` : `v${v.no} republished`)}
+                          onConfirm={() => run(`restore-${v.no}`, () => api.restoreVersion(d.id, v.no), tr ? `${versionLabel(v.no, lang)} yeniden yayınlandı` : `${versionLabel(v.no, lang)} republished`)}
                         />
                       )}
                     </span>

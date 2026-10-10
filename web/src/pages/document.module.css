@@ -5,7 +5,7 @@
   align-items: center;
   gap: 2px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 460;
   color: var(--ink-3);
   border-radius: 4px;
   transition: color var(--t-fast);
@@ -18,7 +18,7 @@
   font-family: var(--font-display);
   font-size: 28px;
   line-height: 33px;
-  font-weight: 650;
+  font-weight: 580;
   letter-spacing: -0.02em;
   text-wrap: balance;
 }
@@ -35,7 +35,7 @@
   color: var(--ink-2);
 }
 .old a {
-  font-weight: 600;
+  font-weight: 540;
   color: var(--ink);
   text-decoration: underline;
   text-decoration-color: var(--line-strong);
@@ -57,7 +57,7 @@
   background: var(--ink);
   color: var(--ink-inverse);
   font-size: 14px;
-  font-weight: 560;
+  font-weight: 500;
   transition: opacity var(--t-fast), transform 120ms var(--ease-out);
 }
 .open:hover {
@@ -68,7 +68,7 @@
 }
 .action {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 460;
   color: var(--ink-2);
   border-radius: 4px;
   transition: color var(--t-fast);
@@ -90,7 +90,7 @@
   margin-bottom: 8px;
   font-size: 15px;
   line-height: 20px;
-  font-weight: 600;
+  font-weight: 540;
   letter-spacing: -0.008em;
   color: var(--ink);
 }
@@ -112,7 +112,7 @@
   border-bottom: 1px solid var(--line);
   font-size: 14px;
   line-height: 20px;
-  font-weight: 500;
+  font-weight: 460;
   color: var(--ink-2);
   text-align: left;
   transition: color var(--t-fast);
@@ -144,19 +144,20 @@
 }
 .version {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-columns: 78px minmax(0, 1fr);
   gap: 10px;
   padding: 12px 0;
   border-bottom: 1px solid var(--line);
 }
 .vNo {
+  white-space: nowrap;
   font-size: 14px;
   line-height: 20px;
   color: var(--ink-3);
   font-variant-numeric: tabular-nums;
 }
 .version[data-current] .vNo {
-  font-weight: 650;
+  font-weight: 580;
   color: var(--ink);
 }
 .vBody {
@@ -183,7 +184,7 @@
 }
 .vLinks a,
 .vLinks button {
-  font-weight: 500;
+  font-weight: 460;
   color: var(--ink-2);
   transition: color var(--t-fast);
 }
@@ -225,3 +226,28 @@
   text-decoration-color: var(--line-strong);
   text-underline-offset: 3px;
 }
+
+/* Kilitli belge: bulanık küçük resim üstünde sakin bir kart. */
+/* Kilitli görünüm sayfaya karışır: kutu, zemin ya da kenar yok. Bulanık önizleme ortada yoğun,
+ * kenarlara doğru tamamen saydamlaşır; hiçbir yerde kesik bulanıklık çizgisi kalmaz. */
+.locked { position: relative; display: grid; place-items: center; min-height: min(70vh, 640px); isolation: isolate; }
+.lockedBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(closest-side, #000 40%, rgba(0, 0, 0, 0.8) 58%, rgba(0, 0, 0, 0.45) 75%, rgba(0, 0, 0, 0.15) 89%, transparent);
+  mask-image: radial-gradient(closest-side, #000 40%, rgba(0, 0, 0, 0.8) 58%, rgba(0, 0, 0, 0.45) 75%, rgba(0, 0, 0, 0.15) 89%, transparent);
+}
+/* Görsel kabın her yanından taşar: bulanıklığın saydamlaşan kenarı maskenin dışında kalır.
+ * Genel img { max-width: 100% } kuralı burada geçersiz. */
+.lockedPreview { position: absolute; top: -160px; left: -160px; width: calc(100% + 320px); height: calc(100% + 320px); max-width: none; object-fit: cover; filter: blur(56px) saturate(0.85); opacity: 0.55; }
+.lockedCard { display: flex; flex-direction: column; align-items: center; max-width: 360px; padding: 28px 26px; border-radius: 22px; background: color-mix(in srgb, var(--surface) 88%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 0 0 1px var(--line), 0 18px 48px rgba(0, 0, 0, 0.1); text-align: center; }
+.lockedBadge { display: grid; place-items: center; width: 50px; height: 50px; border-radius: 999px; background: var(--fill); }
+.lockedTitle { margin-top: 14px; font-family: var(--font-display); font-size: 19px; font-weight: 540; letter-spacing: -0.015em; }
+.lockedLead { margin-top: 6px; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.lockedButton { height: 44px; margin-top: 18px; padding: 0 22px; border-radius: 999px; background: var(--ink); color: var(--ink-inverse); font-size: 14.5px; font-weight: 500; transition: background-color 160ms var(--ease-out), transform 460ms var(--ease-spring); }
+.lockedButton:hover { background: color-mix(in srgb, var(--ink) 86%, transparent); }
+.lockedButton:active { transform: scale(0.96); }
+.hidden { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; color: var(--ink-3); }
+.hidden a { font-weight: 500; color: var(--ink); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }

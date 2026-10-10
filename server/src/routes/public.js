@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { isMember, viewerOf } from '../accounts.js';
 import * as q from '../queries.js';
 import { languages } from '../content.js';
 
@@ -33,6 +34,11 @@ publicRoutes.get('/folders/:slug', (req, res) => {
 publicRoutes.get('/documents/:id', (req, res) => {
   const d = q.documentDetail(req.params.id);
   if (!d) return res.status(404).json({ error: 'Doküman bulunamadı' });
+  // Eski sürümler üyelere açık; diğerleri yalnızca güncel sürümü ve kaç eski sürüm olduğunu görür.
+  if (!isMember(viewerOf(req))) {
+    const hidden = d.versions.filter((v) => v.no !== d.current?.no).length;
+    return res.json({ ...d, versions: d.versions.filter((v) => v.no === d.current?.no), hiddenVersions: hidden });
+  }
   res.json(d);
 });
 
