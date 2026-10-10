@@ -81,6 +81,11 @@
     rgba(22, 18, 8, 0.001) 95%,
     rgba(22, 18, 8, 0) 100%
   );
+  /* İç sayfalarda (açık zemin) daha hafif; ana sayfada koyu fotoğrafın üstünde tam koyuluk. */
+  opacity: 0.66;
+}
+.topShade[data-home] {
+  opacity: 1;
 }
 /* Beyaz yazı, ikon ve logoya yumuşak bir gölge: karartmanın açık kalan alt kısmında da okunur. */
 .barRow {
