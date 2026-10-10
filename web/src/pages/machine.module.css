@@ -88,6 +88,10 @@
   backdrop-filter: blur(16px) saturate(1.4);
   box-shadow: 0 1px 0 var(--line);
 }
+/*
+ * Segment kontrolü: yuva mürekkebin çok soluk saydam tonu (düz gri değil — altındaki altın şeridin
+ * sıcaklığını alır); etkin bölüm beyaz, hafif gölgeli kapsülde yükselir ve bölüm değişince kayar.
+ */
 .sections {
   display: flex;
   flex: 0 1 auto;
@@ -97,12 +101,9 @@
   overflow-x: auto;
   scrollbar-width: none;
   border-radius: 999px;
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line), 0 1px 2px rgba(0, 0, 0, 0.04);
+  background: rgba(31, 31, 33, 0.06);
 }
 .sections::-webkit-scrollbar { display: none; }
-/* Segment kontrolü: beyaz, ince çerçeveli yuva (paylaş düğmesiyle aynı dil; altın şeridin üstünde
- * de net); etkin bölüm yumuşak gri kapsülde, yazısı koyulaşır. */
 .sections a {
   position: relative;
   display: inline-flex;
@@ -115,17 +116,17 @@
   font-weight: 500;
   letter-spacing: -0.005em;
   color: var(--ink-2);
-  transition: color 180ms var(--ease-out);
+  transition: color 160ms var(--ease-out);
 }
-/* Yalnızca yazı (son çocuk) kapsülün üstünde; kapsülün kendisi mutlak konumlu kalmalı. */
-.sections a > span:last-child { position: relative; }
-.sections a:hover { color: var(--ink); }
+.sections a:hover,
 .sections a[data-active] { color: var(--ink); }
+.sectionLabel { position: relative; }
 .sectionPill {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: rgba(0, 0, 0, 0.07);
+  background: #fff;
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.08), 0 3px 8px rgba(0, 0, 0, 0.05);
 }
 .count {
   font-size: 11.5px;
@@ -158,12 +159,12 @@
   width: 40px;
   height: 40px;
   border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--surface);
+  background: #fff;
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.08), 0 3px 8px rgba(0, 0, 0, 0.05);
   color: var(--ink-2);
-  transition: border-color 180ms var(--ease-out), color 180ms var(--ease-out), transform 460ms var(--ease-spring);
+  transition: color 180ms var(--ease-out), transform 460ms var(--ease-spring);
 }
-@media (hover: hover) { .secondary:hover { border-color: var(--line-strong); color: var(--ink); } }
+@media (hover: hover) { .secondary:hover { color: var(--ink); } }
 .secondary:active { transform: scale(0.92); transition-duration: 120ms; }
 .menuWrap { position: relative; }
 .menu {

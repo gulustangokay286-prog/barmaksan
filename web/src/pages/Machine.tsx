@@ -259,8 +259,8 @@ function SectionNav({ sections }: { sections: { id: string; label: string; count
     <nav className={m.sections} aria-label={lang === 'tr' ? 'Makine bölümleri' : 'Machine sections'}>
       {sections.map((sec) => (
         <a key={sec.id} href={`#${sec.id}`} data-active={sec.id === active || undefined} aria-current={sec.id === active ? 'location' : undefined} onClick={() => setActive(sec.id)}>
-          {sec.id === active && <motion.span layoutId="section-pill" className={m.sectionPill} transition={{ type: 'spring', bounce: 0.25, duration: 0.5 }} />}
-          <span>{sec.label}</span>
+          {sec.id === active && <motion.span layoutId="section-pill" className={m.sectionPill} transition={{ type: 'spring', bounce: 0.15, duration: 0.45 }} />}
+          <span className={m.sectionLabel}>{sec.label}</span>
         </a>
       ))}
     </nav>
