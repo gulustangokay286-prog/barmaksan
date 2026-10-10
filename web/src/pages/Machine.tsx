@@ -51,6 +51,28 @@ function useStickyAside(ref: RefObject<HTMLElement | null>, deps: unknown[]) {
 }
 
 /**
+ * Araç şeridi üst çubuğun altına yapıştı mı: yapışınca buzlu cam zemin alır, yapışmadan önce zeminsiz
+ * durur (sayfanın altın şeridinin üstünde kutu gibi görünmesin).
+ */
+function useStuck(ref: RefObject<HTMLElement | null>, deps: unknown[]) {
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const on = () => {
+      const bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 72;
+      setStuck(el.getBoundingClientRect().top <= bar + 8); // yapışınca birkaç px aşağıda durabiliyor
+    };
+    on();
+    window.addEventListener('scroll', on, { passive: true });
+    window.addEventListener('resize', on);
+    return () => { window.removeEventListener('scroll', on); window.removeEventListener('resize', on); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+  return stuck;
+}
+
+/**
  * Makine sayfası. Solda galeri ve altında ürün özeti (özellikler, kullanım alanları); sağda ad,
  * yapışık bölüm menüsü, açıklama ve hemen ardından belgeler — belgeler ilk ekranda görünür.
  * Mobilde sıra: ad, galeri, menü, açıklama, özet, belgeler, bakım, medya.
@@ -63,6 +85,7 @@ export default function Machine() {
   const ready = useRouteReady();
   const titleRef = useRef<HTMLHeadingElement>(null);
   const asideRef = useRef<HTMLElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
   // Özet tek yerde çizilir: geniş ekranda galerinin altında, dar ekranda açıklamanın altında.
   const wide = useMediaQuery('(min-width: 1100px)');
   const { data: f, isLoading, error } = useQuery(folderQuery(slug));
@@ -70,6 +93,7 @@ export default function Machine() {
   usePageChrome(f ? f.content?.profiles[code]?.title || pick(f.name) : null, parent ? { to: `/k/${parent.slug}`, label: pick(parent.name) } : null);
   useLargeTitle(titleRef, [f?.slug, ready]);
   useStickyAside(asideRef, [f?.slug, ready, !!f, code, wide]);
+  const stuck = useStuck(toolbarRef, [f?.slug, ready, !!f]);
   const tr = lang === 'tr';
   if (error) return <NotFound />;
   if (!ready || isLoading || !f) return <MachineSkeleton />;
@@ -109,7 +133,7 @@ export default function Machine() {
         {wide && <ProductSummary profile={profile} dir={direction} lang={code} />}
       </aside>
       <div className={m.main} dir={direction} lang={code}>
-        <div className={m.toolbar}>
+        <div ref={toolbarRef} className={m.toolbar} data-stuck={stuck || undefined}>
           <SectionNav sections={sections} />
           <div className={m.tools}>
             {technical.length > 0 && <TechnicalMenu docs={technical} />}
