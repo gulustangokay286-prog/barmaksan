@@ -285,7 +285,9 @@ function useNavPath() {
 function NavPathScope({ className, children }: { className: string; children: ReactNode }) {
   const { pathname } = useLocation();
   const [pending, setPending] = useState<{ path: string; from: string } | null>(null);
-  // Adres değişince (gezinme tamamlanınca) bekleyen seçim kendiliğinden düşer.
+  // Adres değişince (gezinme tamamlanınca) bekleyen seçim silinir; yoksa başladığı sayfaya geri
+  // dönüldüğünde (ör. logoyla ana sayfaya) eski tıklama yeniden seçili görünürdü.
+  useEffect(() => { setPending(null); }, [pathname]);
   const current = pending && pending.from === pathname ? pending.path : null;
   useEffect(() => {
     if (!current) return;
@@ -913,7 +915,7 @@ function Toast() {
 // ── Ekran geçişi perdesi ────────────────────────────────────────────────────
 
 /**
- * Açılış perdesinin küçüğü: içerik alanı kapanır, Barmaksan logosu açılıştaki gibi belirir,
+ * Açılış perdesinin küçüğü: ekranın tamamı kapanır (üst çubuk ve sekmeler dahil), Barmaksan logosu açılıştaki gibi belirir,
  * altın çizgi dolar; sonra perde logonun ekseninden ikiye ayrılıp yeni ekranı gösterir.
  * Görsel morph'lu geçişlerde (html[data-morph]) ve azaltılmış harekette çıkmaz.
  */
@@ -982,11 +984,11 @@ export function Shell({ children, overlays }: { children: ReactNode; overlays?: 
         {pathname !== '/' && <PageWash />}
         {section && <Sidebar section={section} />}
         <main className={s.content}>
-          <RouteCurtain />
           {children}
         </main>
       </div>
       <TabBar />
+      <RouteCurtain />
       <NavSheet />
       <Toast />
       {overlays}
