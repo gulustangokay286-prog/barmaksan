@@ -102,7 +102,7 @@
 }
 .sections::-webkit-scrollbar { display: none; }
 /* Segment kontrolü: beyaz, ince çerçeveli yuva (paylaş düğmesiyle aynı dil; altın şeridin üstünde
- * de net); etkin bölüm siyah kapsülde beyaz yazıyla öne çıkar. */
+ * de net); etkin bölüm yumuşak gri kapsülde, yazısı koyulaşır. */
 .sections a {
   position: relative;
   display: inline-flex;
@@ -120,20 +120,18 @@
 /* Yalnızca yazı (son çocuk) kapsülün üstünde; kapsülün kendisi mutlak konumlu kalmalı. */
 .sections a > span:last-child { position: relative; }
 .sections a:hover { color: var(--ink); }
-.sections a[data-active] { color: #fff; }
+.sections a[data-active] { color: var(--ink); }
 .sectionPill {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: #121212;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.07);
 }
 .count {
   font-size: 11.5px;
   font-variant-numeric: tabular-nums;
   color: var(--ink-3);
 }
-.sections a[data-active] .count { color: rgba(255, 255, 255, 0.55); }
 .tools { display: flex; flex: none; align-items: center; gap: 8px; margin-left: auto; }
 .primary {
   display: inline-flex;
