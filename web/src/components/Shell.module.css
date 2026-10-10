@@ -64,15 +64,15 @@
     backdrop-filter 360ms var(--ease-out);
 }
 /* Değirmen dokusu (değirmen, başak, valsli, taş, silo çizimleri): plakanın üstünde ayrı katman, aynı
- * kavisle. Desen dosyası kenar çubuğu için çok soluk çizildiği için üst üste üç kat basılır.
- * Ana sayfanın en üstünde (saydam hâl) yok; kaydırınca belirir. */
+ * kavisle. Desen dosyası kenar çubuğu için çok soluk çizildiği için iki kat basılır: cam saydam
+ * kalırken çizimler seçilir ama baskın olmaz. Ana sayfanın en üstünde (saydam hâl) yok. */
 .topbar::after {
   content: '';
   position: absolute;
   inset: 0 var(--plate-inset);
   z-index: -1;
   border-radius: 0 0 var(--plate-r) var(--plate-r);
-  background-image: var(--chrome-texture), var(--chrome-texture), var(--chrome-texture);
+  background-image: var(--chrome-texture), var(--chrome-texture);
   background-size: 420px 420px;
   background-position: 0 -24px;
   pointer-events: none;
@@ -81,17 +81,17 @@
 .topbar[data-over]::after {
   opacity: 0;
 }
-/* Kaydırınca: yine cam, ama daha yoğun ve keskin — net bir kenar çizgisi, üstte ince ışık, belirgin gölge. */
+/* Kaydırınca: saydam buzlu cam (yoğunluk --plate-scrolled); kenarı hafif sert — net bir kenar
+ * çizgisi, üstte ince ışık, toplu bir gölge. */
 .topbar[data-scrolled] {
   --plate-inset: 10px;
   --plate-r: 24px;
   --plate-a: var(--plate-scrolled);
-  --plate-blur: 30px;
+  --plate-blur: 26px;
   --plate-shadow:
     0 0 0 1px var(--bar-line),
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 2px 6px rgba(0, 0, 0, 0.12),
-    0 16px 36px -14px rgba(0, 0, 0, 0.48);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 30px -12px rgba(0, 0, 0, 0.38);
 }
 /* Ana sayfanın en üstü: plaka saydam, yalnızca yazıların okunması için yukarıdan hafif gölge;
  * çubuktaki her şey koyu fotoğrafın üstünde beyaz. */
