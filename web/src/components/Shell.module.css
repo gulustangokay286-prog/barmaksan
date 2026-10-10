@@ -52,8 +52,6 @@
   z-index: -1;
   border-radius: 0 0 var(--plate-r) var(--plate-r);
   background-color: color-mix(in srgb, var(--bar-bg-solid) var(--plate-a), transparent);
-  background-image: var(--chrome-texture);
-  background-size: 420px 420px;
   -webkit-backdrop-filter: blur(var(--plate-blur)) saturate(170%);
   backdrop-filter: blur(var(--plate-blur)) saturate(170%);
   box-shadow: var(--plate-shadow);
@@ -65,12 +63,35 @@
     -webkit-backdrop-filter 360ms var(--ease-out),
     backdrop-filter 360ms var(--ease-out);
 }
+/* Değirmen dokusu (değirmen, başak, valsli, taş, silo çizimleri): plakanın üstünde ayrı katman, aynı
+ * kavisle. Desen dosyası kenar çubuğu için çok soluk çizildiği için üst üste üç kat basılır.
+ * Ana sayfanın en üstünde (saydam hâl) yok; kaydırınca belirir. */
+.topbar::after {
+  content: '';
+  position: absolute;
+  inset: 0 var(--plate-inset);
+  z-index: -1;
+  border-radius: 0 0 var(--plate-r) var(--plate-r);
+  background-image: var(--chrome-texture), var(--chrome-texture), var(--chrome-texture);
+  background-size: 420px 420px;
+  background-position: 0 -24px;
+  pointer-events: none;
+  transition: inset 560ms var(--ease-out), border-radius 560ms var(--ease-out), opacity 360ms var(--ease-out);
+}
+.topbar[data-over]::after {
+  opacity: 0;
+}
+/* Kaydırınca: yine cam, ama daha yoğun ve keskin — net bir kenar çizgisi, üstte ince ışık, belirgin gölge. */
 .topbar[data-scrolled] {
   --plate-inset: 10px;
   --plate-r: 24px;
   --plate-a: var(--plate-scrolled);
-  --plate-blur: 26px;
-  --plate-shadow: 0 0 0 0.5px var(--bar-line), 0 12px 32px -12px rgba(0, 0, 0, 0.32);
+  --plate-blur: 30px;
+  --plate-shadow:
+    0 0 0 1px var(--bar-line),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 2px 6px rgba(0, 0, 0, 0.12),
+    0 16px 36px -14px rgba(0, 0, 0, 0.48);
 }
 /* Ana sayfanın en üstü: plaka saydam, yalnızca yazıların okunması için yukarıdan hafif gölge;
  * çubuktaki her şey koyu fotoğrafın üstünde beyaz. */
@@ -95,7 +116,7 @@
   .topbar::before { background-color: var(--bar-bg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .topbar::before { transition-duration: 1ms; }
+  .topbar::before, .topbar::after { transition-duration: 1ms; }
 }
 .barRow {
   display: flex;
