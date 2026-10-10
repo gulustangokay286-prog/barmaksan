@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { createContext, memo, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { useLocation } from 'react-router';
 import { AnimatePresence, motion, useTransform } from 'motion/react';
 import { Icon } from './Icon';
@@ -6,7 +6,7 @@ import { AccountMenu } from './AccountMenu';
 import { BrandLockup, Button } from './ui';
 import { SearchTrigger } from './SearchTrigger';
 import { topSearchReveal } from '../lib/reveal';
-import { Link, NavLink, useGoBack } from '../lib/link';
+import { Link, useGoBack } from '../lib/link';
 import { useBootstrap, useChromeState, useUi } from '../lib/ui';
 import { useI18n } from '../lib/i18n';
 import { useTheme } from '../lib/theme';
@@ -143,8 +143,7 @@ function Tree({ onNavigate }: { onNavigate?: () => void }) {
   const orderedRoots = useMemo(() => [...roots].sort((a, b) =>
     (ROOT_ORDER.get(a.slug) ?? ROOT_ORDER.size) - (ROOT_ORDER.get(b.slug) ?? ROOT_ORDER.size)
   ), [roots]);
-  const { pathname } = useLocation();
-  const active = activeSlugOf(pathname);
+  const active = activeSlugOf(useNavPath());
   const { collapsed, toggle: toggleSection } = useCollapsedSections();
   const navRef = useRef<HTMLElement>(null);
 
@@ -270,8 +269,38 @@ function TreeSkeleton() {
   );
 }
 
+/*
+ * Seçimin titrememesi: tıklanan bağlantı, yeni sayfa hazır olmayı beklemeden seçili görünür. Yoksa
+ * basılı hâlin zemini parmak kalkınca söner, seçili zemin bir an sonra gelir (gözle zor, ama hissedilir).
+ */
+const PendingPathCtx = createContext<string | null>(null);
+function useNavPath() {
+  const { pathname } = useLocation();
+  return useContext(PendingPathCtx) ?? pathname;
+}
+function NavPathScope({ className, children }: { className: string; children: ReactNode }) {
+  const { pathname } = useLocation();
+  const [pending, setPending] = useState<{ path: string; from: string } | null>(null);
+  // Adres değişince (gezinme tamamlanınca) bekleyen seçim kendiliğinden düşer.
+  const current = pending && pending.from === pathname ? pending.path : null;
+  useEffect(() => {
+    if (!current) return;
+    const id = window.setTimeout(() => setPending(null), 4000); // iptal edilen gezinmede takılı kalmasın
+    return () => window.clearTimeout(id);
+  }, [current]);
+  const onClickCapture = (e: ReactMouseEvent) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[href]');
+    if (!a || a.target === '_blank') return;
+    const url = new URL(a.href, window.location.href);
+    if (url.origin === window.location.origin) setPending({ path: decodeURIComponent(url.pathname), from: pathname });
+  };
+  return <PendingPathCtx.Provider value={current}><div className={className} onClickCapture={onClickCapture}>{children}</div></PendingPathCtx.Provider>;
+}
+
 function PrimaryNav({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useI18n();
+  const path = useNavPath();
   const items = [
     { to: '/', icon: 'library', label: t('home'), end: true },
     { to: '/son', icon: 'clock', label: t('recent') },
@@ -280,14 +309,17 @@ function PrimaryNav({ onNavigate }: { onNavigate?: () => void }) {
   ];
   return (
     <ul className={s.primary}>
-      {items.map((i) => (
-        <li key={i.to}>
-          <NavLink to={i.to} end={'end' in i ? i.end : undefined} className={s.primaryLink} onClick={onNavigate}>
-            <Icon name={i.icon} size={18} />
-            <span>{i.label}</span>
-          </NavLink>
-        </li>
-      ))}
+      {items.map((i) => {
+        const on = i.end ? path === i.to : path === i.to || path.startsWith(`${i.to}/`);
+        return (
+          <li key={i.to}>
+            <Link to={i.to} className={s.primaryLink} aria-current={on ? 'page' : undefined} onClick={onNavigate}>
+              <Icon name={i.icon} size={18} />
+              <span>{i.label}</span>
+            </Link>
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -418,10 +450,10 @@ const Sidebar = memo(function Sidebar({ open }: { open: boolean }) {
   return (
     <aside id="desktop-sidebar" className={s.sidebar} data-open={open || undefined} inert={!open} aria-hidden={!open || undefined}>
       <div className={s.sidebarInner}>
-        <div className={s.sidebarScroll}>
+        <NavPathScope className={s.sidebarScroll}>
           <PrimaryNav />
           <Tree />
-        </div>
+        </NavPathScope>
         <SidebarFoot />
       </div>
     </aside>
@@ -749,11 +781,11 @@ function NavSheet() {
             <Button variant="ghost" icon="search" aria-label={t('search')} onClick={() => { close(); openSearch(); }} />
           </div>
         </div>
-        <div className={s.sheetBody}>
+        <NavPathScope className={s.sheetBody}>
           <PrimaryNav onNavigate={close} />
           <Tree onNavigate={close} />
           <SheetControls />
-        </div>
+        </NavPathScope>
       </div>
     </>
   );
