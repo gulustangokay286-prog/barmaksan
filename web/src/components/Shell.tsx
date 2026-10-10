@@ -641,7 +641,7 @@ function TabBar() {
       if (Math.abs(dx) > 0.5) icon.animate([{ transform: `translateX(${dx}px)` }, { transform: 'none' }], opts);
     });
     if (to && from.pill) {
-      const [, middle, right] = parts;
+      const [, , middle, right] = parts; // parts = [hap, sol uç, orta, sağ uç]
       const span = (w: number) => Math.max(1, w - PILL_CAP * 2);
       pill.animate([{ transform: `translateX(${from.pill.x}px)` }, { transform: `translateX(${to.x}px)` }], opts);
       right.animate([{ transform: `translateX(${from.pill.w - to.w}px)` }, { transform: 'none' }], opts);

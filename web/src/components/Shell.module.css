@@ -1376,10 +1376,11 @@
     background: var(--surface);
     will-change: transform;
   }
-  .tabPill > i:nth-child(1) { left: 0; width: 29px; border-radius: 29px 0 0 29px; }
+  /* Uçlar ortanın altına 4px girer: geçişte ara piksellerde ek yeri (koyu çizgi) görünmez. */
+  .tabPill > i:nth-child(1) { left: 0; width: 32px; border-radius: 29px 0 0 29px; }
   .tabPill > i:nth-child(2) { left: 28px; right: 28px; transform-origin: 0 50%; }
-  .tabPill > i:nth-child(3) { right: 0; width: 29px; border-radius: 0 29px 29px 0; }
-  .tabLabel { position: relative; display: block; overflow: hidden; padding-left: 8px; white-space: nowrap; }
+  .tabPill > i:nth-child(3) { right: 0; width: 32px; border-radius: 0 29px 29px 0; }
+  .tabLabel { position: relative; display: block; overflow: hidden; padding-left: 8px; white-space: nowrap; text-overflow: ellipsis; }
   /* Menü: üç çizgi, açılınca yaylanarak çarpıya döner. */
   .tabMenu {
     flex: none;
@@ -1419,10 +1420,18 @@
   .topbar:not([data-home]) .brandArea { display: none; }
   .topbar:not([data-home]) .topbarInner { padding-left: 6px; }
 }
-@media (max-width: 360px) {
+/* Küçük telefonlar: çubuk biraz alçalır; hap alçalan grubun içinde ortalı kalır, dışına taşmaz. */
+@media (max-width: 374px) {
   .tabbar { left: 10px; right: 10px; gap: 8px; }
   .tabMenu { width: 58px; height: 58px; }
   .tabGroup { height: 58px; padding: 4px; }
+  .tabPill { top: 1px; height: 56px; }
+}
+/* En dar ekranlar: pasif sekmeler ikona kadar daralır, etkin sekmenin etiketi kesilmeden sığar. */
+@media (max-width: 351px) {
+  .tabGroup { gap: 2px; }
+  .tab { min-width: 40px; padding: 0 10px; }
+  .tabLabel { padding-left: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .menuGlyph > span, .tab, .tabGroup { transition-duration: 1ms; }
