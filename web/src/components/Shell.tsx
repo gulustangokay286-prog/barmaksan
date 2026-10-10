@@ -639,8 +639,9 @@ function useBarContext(pathname: string) {
 /*
  * Malzeme üç hâlde (Shell.module.css .topbar::before):
  *  - ana sayfada giriş fotoğrafı altındayken: şeffaf; fotoğraf çubuğun altına kadar uzanır, yazılar beyaz;
- *  - diğer sayfaların en üstü: çıplak — plaka yok, sayfanın altın şeridi doğrudan görünür, yazılar koyu;
- *  - beyaz içeriğe geçince (kaydırınca): dolu plaka, kenardan kenara, alt köşeler kavisli; doku, net kenar, gölge.
+ *  - iç sayfaların en üstü: çıplak — plaka yok, sayfanın altın şeridi doğrudan görünür, yazılar koyu;
+ *  - kaydırınca (ana sayfada beyaz içeriğe geçince): düz, koyu bir geçiş — üstte koyu, aşağı doğru
+ *    saydamlaşır; yazılar beyaz.
  */
 function Topbar({ desktop }: { desktop: boolean }) {
   const { openSearch } = useUi();
@@ -649,11 +650,12 @@ function Topbar({ desktop }: { desktop: boolean }) {
   const home = pathname === '/';
   const { scrolled, overHero } = useBarContext(pathname);
   const over = home && (!scrolled || overHero);
-  const naked = !home && !scrolled;
-  const brand = <Link to="/" className={s.brand} aria-label={t('library')}><BrandLockup compact onDark={over ? true : naked ? false : undefined} /></Link>;
+  const naked = !over && !scrolled;
+  const fade = !over && scrolled;
+  const brand = <Link to="/" className={s.brand} aria-label={t('library')}><BrandLockup compact onDark={!naked} /></Link>;
 
   return (
-    <header className={s.topbar} data-home={home || undefined} data-scrolled={scrolled || undefined} data-over={over || undefined} data-naked={naked || undefined}>
+    <header className={s.topbar} data-home={home || undefined} data-scrolled={scrolled || undefined} data-over={over || undefined} data-naked={naked || undefined} data-fade={fade || undefined}>
       <div className={s.barRow}>
         {desktop ? (
           <>
