@@ -107,7 +107,7 @@ function MobileHero({ children }: HeroProps) {
   useEffect(() => { progress.set(active ? 0 : 1); }, [active, progress]);
 
   return (
-    <section className={s.mobileHero}>
+    <section className={s.mobileHero} data-hero-dark>
       <div ref={introRef} className={s.mobileIntro}>
         <div className={s.mobileBackdrop} aria-hidden="true">
           {photo && <img className={s.mobilePhoto} src={photo.src} alt="" decoding="async" fetchPriority="high" />}
@@ -356,7 +356,7 @@ function DesktopHero({ children }: HeroProps) {
   }, [p, reduce, active]);
 
   return (
-    <section ref={sectionRef} className={s.pin} data-pin style={{ ['--scrub-span' as string]: span }}>
+    <section ref={sectionRef} className={s.pin} data-pin data-hero-dark style={{ ['--scrub-span' as string]: span }}>
       <div
         ref={stickyRef}
         className={s.sticky}
