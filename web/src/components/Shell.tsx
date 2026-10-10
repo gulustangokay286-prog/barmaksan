@@ -606,31 +606,47 @@ function SavedLink() {
  * ince bir ayraçtan sonra dil, tema ve hesap. Tam genişlik ve her sayfada aynı: hiçbir öğe yer
  * değiştirmez. Mobilde geri, sayfanın adı, arama ve hesap (gezinme alttaki sekmelerde).
  */
-/** Sayfa en üstten kaydırıldı mı (üst çubuğun malzemesi buna göre değişir). */
-function useScrolled() {
-  const [scrolled, setScrolled] = useState(() => window.scrollY > 4);
+/**
+ * Üst çubuğun malzemesini belirleyen iki bilgi: sayfa en üstten kaydırıldı mı, çubuğun hemen altında
+ * koyu giriş fotoğrafı mı var ([data-hero-dark]). Ana sayfada çubuk, beyaz içerik sayfası (son
+ * güncellenenler) altına girene kadar şeffaf kalır; o an dolu plakaya geçer.
+ */
+function useBarContext(pathname: string) {
+  const [state, setState] = useState({ scrolled: false, overHero: false });
   useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 4);
+    const on = () => {
+      const scrolled = window.scrollY > 4;
+      const bar = document.querySelector('header')?.getBoundingClientRect().bottom ?? 0;
+      const below = document.elementFromPoint(window.innerWidth / 2, bar + 1);
+      const overHero = !!below?.closest('[data-hero-dark]');
+      setState((s) => (s.scrolled === scrolled && s.overHero === overHero ? s : { scrolled, overHero }));
+    };
     on();
+    const id = window.setTimeout(on, 400); // sayfa ilk çizildikten sonra bir kez daha
     window.addEventListener('scroll', on, { passive: true });
-    return () => window.removeEventListener('scroll', on);
-  }, []);
-  return scrolled;
+    window.addEventListener('resize', on);
+    return () => {
+      window.clearTimeout(id);
+      window.removeEventListener('scroll', on);
+      window.removeEventListener('resize', on);
+    };
+  }, [pathname]);
+  return state;
 }
 
 /*
  * Malzeme üç hâlde (Shell.module.css .topbar::before):
- *  - ana sayfanın en üstü: şeffaf; giriş fotoğrafı çubuğun altına kadar uzanır, yazılar beyaz;
+ *  - ana sayfada giriş fotoğrafı altındayken: şeffaf; fotoğraf çubuğun altına kadar uzanır, yazılar beyaz;
  *  - diğer sayfaların en üstü: yarı saydam cam, alt köşeler kavisli, sayfanın altın şeridi altından görünür;
- *  - kaydırınca: dolu plaka, kenardan kenara, alt köşeler kavisli; değirmen dokusu, net kenar, gölge.
+ *  - beyaz içeriğe geçince (kaydırınca): dolu plaka, kenardan kenara, alt köşeler kavisli; doku, net kenar, gölge.
  */
 function Topbar({ desktop }: { desktop: boolean }) {
   const { openSearch } = useUi();
   const { t } = useI18n();
   const { pathname } = useLocation();
   const home = pathname === '/';
-  const scrolled = useScrolled();
-  const over = home && !scrolled;
+  const { scrolled, overHero } = useBarContext(pathname);
+  const over = home && (!scrolled || overHero);
   const brand = <Link to="/" className={s.brand} aria-label={t('library')}><BrandLockup compact onDark={over ? true : undefined} /></Link>;
 
   return (
