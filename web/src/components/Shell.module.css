@@ -81,8 +81,9 @@
     rgba(22, 18, 8, 0.001) 95%,
     rgba(22, 18, 8, 0) 100%
   );
-  /* İç sayfalarda (açık zemin) daha hafif; ana sayfada koyu fotoğrafın üstünde tam koyuluk. */
-  opacity: 0.66;
+  /* İç sayfalarda en üstte yok; kaydırdıkça Shell.tsx (useTopShade) en fazla 0.66'ya kadar açar.
+   * Ana sayfada koyu fotoğrafın üstünde hep tam. */
+  opacity: 0;
 }
 .topShade[data-home] {
   opacity: 1;
@@ -94,6 +95,28 @@
 .barRow svg,
 .brand img {
   filter: drop-shadow(0 1px 5px rgba(0, 0, 0, 0.3));
+}
+/* İç sayfanın en üstü (karartma yok): açık zeminde koyu yazı ve düğmeler, gölgesiz; menüler açık zeminli.
+ * Arama ve hesap düğmesinin zemini düz beyaz (saydam değil: altın desen arkasından geçmez). */
+.topbar[data-light] {
+  --on-bar: var(--ink);
+  --on-bar-2: var(--ink-2);
+  --on-bar-3: var(--ink-3);
+  --bar-fill: #fff;
+  --bar-fill-hover: #f1f0eb;
+  --bar-line: rgba(0, 0, 0, 0.08);
+  --bar-bg-solid: #f6f6f4;
+  --bar-menu-ring: rgba(0, 0, 0, 0.08);
+}
+.topbar[data-light] .barRow {
+  text-shadow: none;
+}
+.topbar[data-light] .barRow svg,
+.topbar[data-light] .brand img {
+  filter: none;
+}
+.topbar[data-light] [data-search-trigger][data-variant] {
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 @media (prefers-reduced-transparency: reduce) {
   .topShade { mix-blend-mode: normal; height: var(--bar-h); background: #1f1f22; }

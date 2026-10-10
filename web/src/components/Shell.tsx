@@ -1,4 +1,4 @@
-import { createContext, memo, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { createContext, memo, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react';
 import { useLocation } from 'react-router';
 import { AnimatePresence, motion, useTransform } from 'motion/react';
 import { Icon } from './Icon';
@@ -607,17 +607,18 @@ function SavedLink() {
  * Üst çubuk. Masaüstünde sitenin ana gezinmesi: solda logo ve bölümler; sağda arama ve kaydedilenler,
  * ince bir ayraçtan sonra dil, tema ve hesap. Tam genişlik ve her sayfada aynı: hiçbir öğe yer
  * değiştirmez. Mobilde geri, sayfanın adı, arama ve hesap (gezinme alttaki sekmelerde).
- * Zemin her yerde aynı yukarıdan karartma (Shell.module.css .topbar::before): yazılar ve logo beyaz.
+ * Zemin yukarıdan karartma (.topShade, useTopShade). `light`: karartma henüz yok (iç sayfanın en
+ * üstü) — logo ve yazılar koyu; karartma gelince beyaz.
  */
-function Topbar({ desktop }: { desktop: boolean }) {
+function Topbar({ desktop, light }: { desktop: boolean; light: boolean }) {
   const { openSearch } = useUi();
   const { t } = useI18n();
   const { pathname } = useLocation();
   const home = pathname === '/';
-  const brand = <Link to="/" className={s.brand} aria-label={t('library')}><BrandLockup compact onDark /></Link>;
+  const brand = <Link to="/" className={s.brand} aria-label={t('library')}><BrandLockup compact onDark={!light} /></Link>;
 
   return (
-    <header className={s.topbar} data-home={home || undefined}>
+    <header className={s.topbar} data-home={home || undefined} data-light={light || undefined}>
       <div className={s.barRow}>
         {desktop ? (
           <>
@@ -934,6 +935,36 @@ function PageWash() {
   );
 }
 
+/**
+ * Üst karartma. Ana sayfada (koyu fotoğrafın üstünde) hep tam. İç sayfalarda en üstte yok; kaydırınca
+ * ilk 72px boyunca kaydırma miktarıyla orantılı belirir (ani geçiş yok), en fazla 0.66 koyulukta.
+ * Yarısını geçince çubuğun yazıları ve logosu beyaza döner (dönüş değeri: karartma var mı).
+ */
+function useTopShade(ref: RefObject<HTMLDivElement | null>, home: boolean) {
+  const [dark, setDark] = useState(home);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (home) {
+      el.style.opacity = '';
+      setDark(true);
+      return;
+    }
+    const on = () => {
+      const p = Math.min(1, Math.max(0, window.scrollY / 72));
+      el.style.opacity = String(0.66 * p);
+      setDark(p > 0.5);
+    };
+    on();
+    window.addEventListener('scroll', on, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', on);
+      el.style.opacity = '';
+    };
+  }, [ref, home]);
+  return dark;
+}
+
 // ── Kabuk ───────────────────────────────────────────────────────────────────
 
 export function Shell({ children, overlays }: { children: ReactNode; overlays?: ReactNode }) {
@@ -942,10 +973,13 @@ export function Shell({ children, overlays }: { children: ReactNode; overlays?: 
   const root = useRootSection(pathname);
   // Kenar çubuğu yalnızca bir bölümün klasör ve makine sayfalarında (ve medya kütüphanesinde).
   const section = desktop && root && /^\/(k|m|medya)(\/|$)/.test(pathname) ? root : null;
+  const home = pathname === '/';
+  const shadeRef = useRef<HTMLDivElement>(null);
+  const shaded = useTopShade(shadeRef, home);
   return (
     <div className={s.shell} data-sidebar-closed={!section || undefined}>
-      <div className={s.topShade} data-home={pathname === '/' || undefined} aria-hidden="true" />
-      <Topbar desktop={desktop} />
+      <div ref={shadeRef} className={s.topShade} data-home={home || undefined} aria-hidden="true" />
+      <Topbar desktop={desktop} light={!shaded} />
       <div className={s.body}>
         {pathname !== '/' && <PageWash />}
         {section && <Sidebar section={section} />}
