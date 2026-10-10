@@ -14,6 +14,11 @@
   transform-box: fill-box;
   transform-origin: 50% 50%;
 }
+/* Kenar çubuğu ve menü sayfası: simgeler yalnızca yön verir, hiç oynamaz (sürekli göz önünde). */
+:is(#desktop-sidebar, #mobile-sidebar) .ai,
+:is(#desktop-sidebar, #mobile-sidebar) .ai > * {
+  animation: none !important;
+}
 
 :is(a, button, summary, label, [role='button'], [role='tab'], [role='menuitem'], [role='menuitemradio'], [role='option']):is(:hover, :focus-visible),
 [data-active],

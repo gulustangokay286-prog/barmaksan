@@ -812,19 +812,6 @@
     height: 40px;
   }
 }
-/* Satır simgesi: açma okunun sütununda durur, böylece tüm bölümlerde adlar aynı hizadan başlar. */
-.treeIcon {
-  position: absolute;
-  top: 50%;
-  left: 9px;
-  margin-top: -7.5px;
-  color: var(--side-ink-3);
-  transition: color 90ms linear;
-}
-.treeLink:hover .treeIcon,
-.treeLink[data-active] .treeIcon {
-  color: var(--side-ink-strong);
-}
 .treeName {
   flex: 1;
   min-width: 0;

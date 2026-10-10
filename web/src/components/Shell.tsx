@@ -38,16 +38,8 @@ function useTree() {
 
 const hrefOf = (n: { kind: string; slug: string }) => (n.kind === 'machine' ? `/m/${n.slug}` : `/k/${n.slug}`);
 const ROOT_ORDER = new Map([['kurumsal', 0], ['makineler', 1], ['medya', 2]]);
-/** Ana bölümler birbirinden ayırt edilsin diye her bölüm başlığında anlamlı bir simge. */
+/** Ana bölümler birbirinden ayırt edilsin diye yalnızca bölüm başlıklarında simge; satırlar simgesiz. */
 const ROOT_ICON = new Map([['kurumsal', 'briefcase'], ['makineler', 'factory'], ['medya', 'images']]);
-/**
- * Kurumsal ve Medya satırlarında içeriği anlatan küçük, soluk simge: göz taranırken aradığını bulur.
- * Makine ağacında simge yok; orada açma okları yön verir (her yere simge basılmaz).
- */
-const ROW_ICON = new Map([
-  ['kurumsal-kimlik', 'swatch'], ['yonetim', 'users'], ['sertifikalar', 'award'], ['kataloglar', 'catalog'], ['sirket-profilleri', 'sheet'], ['musteri-dosyalari', 'handshake'],
-  ['tanitim-videolari', 'clapper'], ['fabrika-fotograflari', 'camera'], ['drone-cekimleri', 'video'], ['urun-gorselleri', 'photo'],
-]);
 
 function activeSlugOf(pathname: string) {
   const m = /^\/(m|k)\/([^/]+)/.exec(pathname);
@@ -100,7 +92,6 @@ const TreeLink = memo(function TreeLink({ node, active, onNavigate, count, inden
       onFocus={() => prefetchFolder(node.slug)}
       aria-current={active ? 'page' : undefined}
     >
-      {indent === 1 && ROW_ICON.has(node.slug) && <Icon name={ROW_ICON.get(node.slug)!} size={15} strokeWidth={1.6} className={s.treeIcon} />}
       <span className={s.treeName}>{pick(node.name)}</span>
       {count != null && <span className={s.count}>{count}</span>}
     </Link>
