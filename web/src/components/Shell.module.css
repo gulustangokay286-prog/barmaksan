@@ -801,6 +801,38 @@
     opacity: 0;
   }
 }
+/* Dokunmatik ekranda satırlar parmak boyunda (44px): yaşça büyük kullanıcı da ıskalamaz. */
+@media (pointer: coarse) {
+  .primaryLink,
+  .treeLink,
+  .sectionHead {
+    height: 44px;
+  }
+  .treeLink[data-indent='2'] {
+    height: 40px;
+  }
+  .disclosure {
+    width: 30px;
+    height: 44px;
+  }
+  .sectionToggle {
+    width: 40px;
+    height: 40px;
+  }
+}
+/* Satır simgesi: açma okunun sütununda durur, böylece tüm bölümlerde adlar aynı hizadan başlar. */
+.treeIcon {
+  position: absolute;
+  top: 50%;
+  left: 9px;
+  margin-top: -7.5px;
+  color: var(--side-ink-3);
+  transition: color 90ms linear;
+}
+.treeLink:hover .treeIcon,
+.treeLink[data-active] .treeIcon {
+  color: var(--side-ink-strong);
+}
 .treeName {
   flex: 1;
   min-width: 0;

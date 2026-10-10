@@ -3,11 +3,11 @@
 // olunca bir kez oynar. Yalnızca transform ve stroke-dashoffset; azaltılmış harekette kapalı.
 import { createElement, type SVGProps } from 'react';
 import {
-  Archive, ArrowDown, ArrowRight, ArrowUp, ArrowUpRight, BadgeCheck, BookMarked, BookOpen, Bookmark, Building2,
-  ChartColumn, Check, CirclePlay, ChevronDown, ChevronLeft, ChevronRight, Clock3, Cog, Copy, DraftingCompass, Droplet, Ellipsis,
-  Eye, File, FileText, Folder, FolderOpen, Globe, GripVertical, History, House, Image, Images, Info, Keyboard,
+  Archive, ArrowDown, ArrowRight, ArrowUp, ArrowUpRight, Award, BadgeCheck, BookMarked, BookOpen, Bookmark, BriefcaseBusiness, Building2,
+  Camera, ChartColumn, Check, CirclePlay, Clapperboard, ChevronDown, ChevronLeft, ChevronRight, Clock3, Cog, Copy, DraftingCompass, Droplet, Ellipsis,
+  Eye, Factory, File, FileText, Folder, FolderOpen, Globe, GripVertical, Handshake, History, House, Image, Images, Info, Keyboard,
   Languages, Layers, LibraryBig, Link2, Lock, LockOpen, LogIn, Mail, Menu, Moon, Palette, PanelLeft, Pause, PenLine,
-  Phone, Play, Plus, Printer, ScrollText, Search, Send, Share, Sparkles, Star, Sun, Table2, Trash2, Upload, User,
+  Phone, Play, Plus, Printer, ScrollText, Search, Send, Share, Sparkles, Star, Sun, SwatchBook, Table2, Trash2, Upload, User,
   Users, Video, Wrench, X, type IconNode,
 } from 'lucide';
 
@@ -85,6 +85,13 @@ const icons: Record<string, [IconNode, string]> = {
   drop: [Droplet, 'hop'],
   seal: [BadgeCheck, 'spin'],
   building: [Building2, 'hop'],
+  briefcase: [BriefcaseBusiness, 'hop'],
+  factory: [Factory, 'hop'],
+  swatch: [SwatchBook, 'tilt'],
+  award: [Award, 'hop'],
+  handshake: [Handshake, 'hop'],
+  clapper: [Clapperboard, 'pop'],
+  camera: [Camera, 'pop'],
   video: [Video, 'right'],
   youtube: [YouTube(), 'pop'],
   watch: [CirclePlay, 'pop'],
