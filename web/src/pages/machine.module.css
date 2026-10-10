@@ -121,12 +121,13 @@
 .sections a:hover,
 .sections a[data-active] { color: var(--ink); }
 .sectionLabel { position: relative; }
+/* Kapsül: soluk, sıcak beyaz (tam beyaz değil; altın şeridin üstünde parlamaz), çok hafif gölge. */
 .sectionPill {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: #fff;
-  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.08), 0 3px 8px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 253, 247, 0.66);
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 .count {
   font-size: 11.5px;
@@ -159,8 +160,8 @@
   width: 40px;
   height: 40px;
   border-radius: 999px;
-  background: #fff;
-  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.08), 0 3px 8px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 253, 247, 0.66);
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.05);
   color: var(--ink-2);
   transition: color 180ms var(--ease-out), transform 460ms var(--ease-spring);
 }
