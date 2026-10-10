@@ -232,10 +232,6 @@ export function MachineCarousel({ items, cardSize, autoplay = true, scrub, scrub
               <Link to={`/m/${m.slug}`} className={s.name} onPointerEnter={() => prefetchFolder(m.slug)}>
                 {pick(m.name)}
               </Link>
-              <span className={s.meta}>
-                {m.modelCode && <span className="mono">{m.modelCode}</span>}
-                <span className="tabular">{String(front + 1).padStart(2, '0')} / {String(n).padStart(2, '0')}</span>
-              </span>
             </motion.div>
           </AnimatePresence>
         </div>

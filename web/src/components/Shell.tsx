@@ -10,7 +10,6 @@ import { Link, NavLink, useGo } from '../lib/link';
 import { useBootstrap, useChromeState, useUi } from '../lib/ui';
 import { useI18n } from '../lib/i18n';
 import { useTheme } from '../lib/theme';
-import { formatNumber } from '../lib/format';
 import { prefetchFolder } from '../lib/query';
 import { useMediaQuery } from '../lib/viewport';
 import { spring } from '../lib/motion';
@@ -397,7 +396,6 @@ function SheetControls() {
 
 function SidebarFoot() {
   const { t, lang } = useI18n();
-  const { data } = useBootstrap();
   const { editor, setUpload } = useUi();
   const { pathname } = useLocation();
   const folderSlug = activeSlugOf(pathname);
@@ -410,15 +408,6 @@ function SidebarFoot() {
           {folderSlug && <span className={s.footUploadHint}>{lang === 'tr' ? 'bu klasöre' : 'to this folder'}</span>}
         </button>
       )}
-      {data ? (
-        <p className={s.footStats}>
-          <span className="tabular">{formatNumber(data.stats.machines, lang)} {t('machine')}</span>
-          <span className="tabular">{formatNumber(data.stats.documents, lang)} {t('documents')}</span>
-        </p>
-      ) : (
-        <div className={s.skelLine} style={{ width: '70%', height: 10 }} />
-      )}
-      <p className={s.footCredit}>Barmaksan Endüstri A.Ş. · Uğur Promilling</p>
       {editor && (
         <Link to="/admin" className={s.footAdmin}>
           {lang === 'tr' ? 'Yönetim paneli' : 'Administration'}

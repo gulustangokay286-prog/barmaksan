@@ -200,7 +200,6 @@ export function MachineTile({ m }: { m: Pick<FolderChild, 'slug' | 'name' | 'mod
           </span>
         </motion.span>
         <span className={s.tileName}>{pick(m.name)}</span>
-        {m.modelCode && <span className={s.tileCode}>{m.modelCode}</span>}
       </Link>
     </li>
   );
